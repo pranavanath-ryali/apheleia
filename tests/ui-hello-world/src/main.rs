@@ -1,18 +1,22 @@
-use apheleia_ui::{node::Node, rootnode::RootNode};
+use apheleia_ui::{rootnode::RootNode};
+use apheleia_ui::node::{BasicNode, NodeData};
 
 fn main() {
     let mut root = RootNode::new();
 
-    let node = Node {
+    let node_data = NodeData {
+        id: 0,
+
         x: 10,
-        y: 10,
+        y: 3,
 
         width: 10,
-        height: 3,
-        ..Default::default()
+        height: 10,
+
+        node: Box::new(BasicNode {})
     };
 
-    root.add_node(Box::new(node));
+    root.add_node(node_data);
 
     root.start();
 }

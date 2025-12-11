@@ -4,6 +4,6 @@ members = [
 	"crates/apheleia-core",
 	"crates/apheleia-ui",
 
-	"examples/core-hello-world",
-	"examples/ui-hello-world"
+	"tests/core-hello-world",
+	"tests/ui-hello-world"
 ]

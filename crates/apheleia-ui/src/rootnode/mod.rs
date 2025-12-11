@@ -3,10 +3,7 @@ use std::{
     sync::Arc,
 };
 
-use crate::{
-    FAKE_NODEID, MAX_NODES, NodeId,
-    node::{Node, NodeTrait},
-};
+use crate::{FAKE_NODEID, MAX_NODES, NodeId, node::{NodeData, NodeDataTrait}};
 use apheleia_core::{
     buffer::{Buffer, NodeBuffer},
     renderer::Renderer,
@@ -18,7 +15,7 @@ pub struct RootNode {
     height: u16,
 
     available_node_ids: VecDeque<NodeId>,
-    nodes: HashMap<NodeId, Box<dyn NodeTrait>>,
+    nodes: HashMap<NodeId, NodeData>,
 
     buffer: Buffer,
     renderer: Renderer,
@@ -48,7 +45,7 @@ impl RootNode {
         self.available_node_ids.pop_front()
     }
 
-    pub fn add_node(&mut self, node: Box<dyn NodeTrait>) {
+    pub fn add_node(&mut self, node: NodeData) {
         let id = self.get_id().unwrap();
         self.nodes.insert(id, node);
     }
@@ -56,8 +53,9 @@ impl RootNode {
     pub fn start(&mut self) {
         for (id, node) in self.nodes.iter_mut() {
             let mut node_buffer = NodeBuffer::new(node.get_width(), node.get_height());
-            node.render(&mut node_buffer);
-            self.buffer.render_node_buffer(node.get_x(), node.get_y(), &node_buffer);
+            node.get_node().render(&mut node_buffer);
+            self.buffer
+                .render_node_buffer(node.get_x(), node.get_y(), &node_buffer);
         }
 
         self.renderer.flip(&mut self.buffer);
