@@ -1,9 +1,7 @@
 use std::collections::{HashMap, VecDeque};
 
-use crate::{
-    MAX_NODES, NodeId,
-    node::{data::{NodeWrapper, NodeWrapperTrait}, node::NodeTrait},
-};
+use crate::{MAX_NODES, NodeId, node::data::NodeWrapperTrait};
+use crate::node::data::NodeWrapper;
 use apheleia_core::{
     buffer::{Buffer, NodeBuffer},
     renderer::Renderer,
@@ -20,6 +18,7 @@ pub struct RootNode {
     buffer: Buffer,
     renderer: Renderer,
 }
+
 impl RootNode {
     pub fn new() -> Self {
         let size = terminal::size().unwrap();
