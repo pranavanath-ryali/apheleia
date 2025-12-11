@@ -1,6 +1,7 @@
 use std::collections::{HashMap, VecDeque};
 
-use crate::{MAX_NODES, NodeId, node::data::{NodeData, NodeDataTrait}};
+use crate::{MAX_NODES, NodeId, node::data::NodeWrapperTrait};
+use crate::node::data::NodeWrapper;
 use apheleia_core::{
     buffer::{Buffer, NodeBuffer},
     renderer::Renderer,
@@ -12,11 +13,12 @@ pub struct RootNode {
     height: u16,
 
     available_node_ids: VecDeque<NodeId>,
-    nodes: HashMap<NodeId, NodeData>,
+    nodes: HashMap<NodeId, NodeWrapper>,
 
     buffer: Buffer,
     renderer: Renderer,
 }
+
 impl RootNode {
     pub fn new() -> Self {
         let size = terminal::size().unwrap();
@@ -42,17 +44,28 @@ impl RootNode {
         self.available_node_ids.pop_front()
     }
 
-    pub fn add_node(&mut self, node: NodeData) {
-        let id = self.get_id().unwrap();
-        self.nodes.insert(id, node);
+    pub fn add_node(&mut self, node: NodeWrapper) {
+        if let Some(id) = self.get_id() {
+            self.nodes.insert(id, node);
+        }
+    }
+
+    pub fn initial_setup(&mut self) {
+        for (id, data) in self.nodes.iter_mut() {
+            data.node.initial_setup(&mut data.data);
+        }
     }
 
     pub fn start(&mut self) {
         for (_, node) in self.nodes.iter_mut() {
-            let mut node_buffer = NodeBuffer::new(node.get_width(), node.get_height());
-            node.get_node().render(&mut node_buffer);
-            self.buffer
-                .render_node_buffer(node.get_x(), node.get_y(), &node_buffer);
+            if let Some(size) = node.get_size() {
+                if let Some(position) = node.get_position() {
+                    let mut node_buffer = NodeBuffer::new(size.0, size.1);
+                    node.get_node().render(&mut node_buffer);
+                    self.buffer
+                        .render_node_buffer(position.0, position.1, &node_buffer);
+                }
+            }
         }
 
         self.renderer.flip(&mut self.buffer);
