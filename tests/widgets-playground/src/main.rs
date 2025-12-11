@@ -1,23 +1,32 @@
-use apheleia_ui::{FAKE_NODEID, node::data::NodeData, rootnode::RootNode};
+use apheleia_core::types::vector::Vector2;
+use apheleia_ui::{FAKE_NODEID, node::data::{NodeData, NodeWrapper}, rootnode::RootNode};
 use apheleia_widgets::label::Label;
 
 fn main() {
     let mut root = RootNode::new();
     
-    // TODO: Have options for some of these fields. especially the ids, width and height and let
-    // the widget define its own width and height
-    root.add_node(NodeData {
-        id: FAKE_NODEID,
-
-        x: 0,
-        y: 0,
-
-        width: 100,
-        height: 1,
-
+    root.add_node(NodeWrapper {
+        data: NodeData {
+            position: Some(Vector2(0, 0)),
+            ..Default::default()
+        },
         node: Box::new(Label::new("Hello World"))
     });
-    let label = Label::new("Hello World");
+    root.add_node(NodeWrapper {
+        data: NodeData {
+            position: Some(Vector2(20, 10)),
+            ..Default::default()
+        },
+        node: Box::new(Label::new("LABELS ARE WORKING"))
+    });
+    root.add_node(NodeWrapper {
+        data: NodeData {
+            position: Some(Vector2(5, 7)),
+            ..Default::default()
+        },
+        node: Box::new(Label::new("WEEEEEEEEEEE"))
+    });
 
+    root.initial_setup();
     root.start();
 }

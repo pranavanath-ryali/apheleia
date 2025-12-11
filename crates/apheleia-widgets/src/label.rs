@@ -1,5 +1,5 @@
-use apheleia_core::{buffer::NodeBuffer, style::Style};
-use apheleia_ui::node::node::NodeTrait;
+use apheleia_core::{buffer::NodeBuffer, style::Style, types::vector::Vector2};
+use apheleia_ui::node::{data::NodeData, node::NodeTrait};
 
 pub struct Label {
     text: String
@@ -12,8 +12,11 @@ impl Label {
 }
 
 impl NodeTrait for Label {
-    fn update(&mut self) {    }
+    fn initial_setup(&mut self, data: &mut NodeData) {
+        data.size = Some(Vector2(self.text.len() as u16, 1));
+    }
 
+    fn update(&mut self) {    }
     fn render(&self, buf: &mut NodeBuffer) {
         buf.write_line(0, 0, &self.text, Some(Style::default()));
     }
