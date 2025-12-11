@@ -1,0 +1,9 @@
+[workspace]
+resolver = "2"
+members = [
+	"crates/apheleia-core",
+	"crates/apheleia-ui",
+
+	"examples/core-hello-world",
+	"examples/ui-hello-world"
+]
