@@ -1,61 +1,49 @@
-use crate::{NodeId, node::node::NodeTrait};
+use apheleia_core::types::vector::Vector2;
+
+use crate::node::node::NodeTrait;
 
 pub struct NodeData {
-    pub id: NodeId,
-
-    pub x: u16,
-    pub y: u16,
-
-    pub width: u16,
-    pub height: u16,
-
-    pub node: Box<dyn NodeTrait>
+    pub position: Option<Vector2>,
+    pub size: Option<Vector2>,
+}
+impl Default for NodeData {
+    fn default() -> Self {
+        NodeData {
+            position: None,
+            size: None,
+        }
+    }
 }
 
-pub trait NodeDataTrait {
-    fn get_x(&self) -> u16;
-    fn get_y(&self) -> u16;
+pub struct NodeWrapper {
+    pub data: NodeData,
+    pub node: Box<dyn NodeTrait>,
+}
 
-    fn set_x(&mut self, x: u16);
-    fn set_y(&mut self, y: u16);
+pub trait NodeWrapperTrait {
+    fn get_position(&self) -> Option<Vector2>;
+    fn set_position(&mut self, v: Vector2);
 
-    fn get_width(&self) -> u16;
-    fn get_height(&self) -> u16;
-
-    fn set_width(&mut self, width: u16);
-    fn set_height(&mut self, height: u16);
+    fn get_size(&self) -> Option<Vector2>;
+    fn set_size(&mut self, s: Vector2);
 
     fn get_node(&self) -> &dyn NodeTrait;
     fn get_node_mut(&mut self) -> &mut dyn NodeTrait;
 }
 
-impl NodeDataTrait for NodeData {
-    fn get_x(&self) -> u16 {
-        self.x
+impl NodeWrapperTrait for NodeWrapper {
+    fn get_position(&self) -> Option<Vector2> {
+        self.data.position
     }
-    fn get_y(&self) -> u16 {
-        self.y
-    }
-
-    fn set_x(&mut self, x: u16) {
-        self.x = x;
-    }
-    fn set_y(&mut self, y: u16) {
-        self.y = y;
+    fn set_position(&mut self, v: Vector2) {
+        self.data.position = Some(v)
     }
 
-    fn get_width(&self) -> u16 {
-        self.width
+    fn get_size(&self) -> Option<Vector2> {
+        self.data.size
     }
-    fn get_height(&self) -> u16 {
-        self.height
-    }
-
-    fn set_width(&mut self, width: u16) {
-        self.width = width;
-    }
-    fn set_height(&mut self, height: u16) {
-        self.height = height;
+    fn set_size(&mut self, s: Vector2) {
+        self.data.size = Some(s);
     }
 
     fn get_node(&self) -> &dyn NodeTrait {
