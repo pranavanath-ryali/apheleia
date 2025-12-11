@@ -1,9 +1,6 @@
-use std::{
-    collections::{HashMap, VecDeque},
-    sync::Arc,
-};
+use std::collections::{HashMap, VecDeque};
 
-use crate::{FAKE_NODEID, MAX_NODES, NodeId, node::{NodeData, NodeDataTrait}};
+use crate::{MAX_NODES, NodeId, node::data::{NodeData, NodeDataTrait}};
 use apheleia_core::{
     buffer::{Buffer, NodeBuffer},
     renderer::Renderer,
@@ -51,7 +48,7 @@ impl RootNode {
     }
 
     pub fn start(&mut self) {
-        for (id, node) in self.nodes.iter_mut() {
+        for (_, node) in self.nodes.iter_mut() {
             let mut node_buffer = NodeBuffer::new(node.get_width(), node.get_height());
             node.get_node().render(&mut node_buffer);
             self.buffer

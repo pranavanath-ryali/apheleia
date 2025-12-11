@@ -1,6 +1,15 @@
-use apheleia_ui::{rootnode::RootNode};
-use apheleia_ui::node::{BasicNode, NodeData};
+use apheleia_core::{buffer::NodeBuffer, style::Style};
+use apheleia_ui::{node::{data::NodeData, node::NodeTrait}, rootnode::RootNode};
 
+struct BasicNode;
+impl NodeTrait for BasicNode {
+    fn update(&mut self) {
+    }
+
+    fn render(&self, buf: &mut NodeBuffer) {
+        buf.write_line(0, 0, "A", Some(Style::default()));
+    }
+}
 fn main() {
     let mut root = RootNode::new();
 
