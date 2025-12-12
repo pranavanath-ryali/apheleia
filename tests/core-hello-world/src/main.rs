@@ -32,7 +32,7 @@ fn main() {
         }),
     );
     buffer.write_line(
-        50,
+        190,
         30,
         "WEEEEEEEEE",
         Some(Style {
