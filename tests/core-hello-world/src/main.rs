@@ -19,6 +19,17 @@ fn main() {
             ..Default::default()
         }),
     );
-
     renderer.flip(&mut buffer);
+
+    buffer.write_line(
+        50,
+        20,
+        "WEEEEEEEEE",
+        Some(Style {
+            fg: Color::Blue,
+            flags: StyleFlags::ITALIC | StyleFlags::UNDERCURLED,
+            ..Default::default()
+        }),
+    );
+    renderer.update(&mut buffer);
 }
