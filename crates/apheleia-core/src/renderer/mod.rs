@@ -3,13 +3,14 @@ use std::io::{Stdout, Write, stdout};
 use crossterm::{
     cursor, execute, queue,
     style::{
-        Attribute, Color, Print, PrintStyledContent, SetAttribute, SetAttributes, SetBackgroundColor, SetForegroundColor, StyledContent, Stylize
+        Attribute, Color, Print, PrintStyledContent, SetAttribute, SetAttributes,
+        SetBackgroundColor, SetForegroundColor, StyledContent, Stylize,
     },
     terminal::Clear,
 };
 
 use crate::{
-    buffer::Buffer,
+    buffer::{Buffer, Cell},
     style::{Style, StyleFlags},
 };
 
@@ -62,21 +63,23 @@ impl Renderer {
         }
     }
 
+    fn queue_write_cell(&mut self, x: u16, y: u16, cell: &Cell) {
+        queue!(self.stdout, cursor::MoveTo(x, y));
+        self.queue_flags(&cell.style.flags);
+        queue!(
+            self.stdout,
+            SetForegroundColor(cell.style.fg),
+            SetBackgroundColor(cell.style.bg),
+            Print(cell.c)
+        );
+    }
+
     pub fn flip(&mut self, buf: &mut Buffer) {
         execute!(self.stdout, Clear(crossterm::terminal::ClearType::All));
 
         for y in 0..(buf.height) {
             for x in 0..(buf.width) {
-                let cell = buf.get(x, y);
-
-                queue!(self.stdout, cursor::MoveTo(x as u16, y as u16));
-                self.queue_flags(&cell.style.flags);
-                queue!(
-                    self.stdout,
-                    SetForegroundColor(cell.style.fg),
-                    SetBackgroundColor(cell.style.bg),
-                    Print(cell.c)
-                );
+                self.queue_write_cell(x as u16, y as u16, &buf.get(x, y));
             }
         }
 
