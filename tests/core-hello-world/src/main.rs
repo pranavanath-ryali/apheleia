@@ -31,5 +31,15 @@ fn main() {
             ..Default::default()
         }),
     );
+    buffer.write_line(
+        50,
+        30,
+        "WEEEEEEEEE",
+        Some(Style {
+            fg: Color::Blue,
+            flags: StyleFlags::ITALIC | StyleFlags::UNDERCURLED,
+            ..Default::default()
+        }),
+    );
     renderer.update(&mut buffer);
 }
