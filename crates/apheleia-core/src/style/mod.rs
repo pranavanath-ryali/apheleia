@@ -4,6 +4,7 @@ use std::fmt::Display;
 use crossterm::style::{Attribute, Attributes, Color};
 
 bitflags! {
+    #[derive(Copy, Clone)]
     pub struct StyleFlags: u16 {
         const EMPTY = 0b0000000000;
 
@@ -25,16 +26,7 @@ pub struct Style {
     pub fg: Color,
     pub bg: Color,
 
-    pub dim: bool,
-    pub reverse: bool,
-    pub bold: bool,
-    pub italic: bool,
-    pub undercurled: bool,
-    pub underlined: bool,
-    pub underdotted: bool,
-    pub underdashed: bool,
-    pub double_underlined: bool,
-    pub slow_blink: bool,
+    pub flags: StyleFlags,
 }
 
 impl Default for Style {
@@ -43,16 +35,7 @@ impl Default for Style {
             fg: Color::Reset,
             bg: Color::Reset,
 
-            dim: false,
-            reverse: false,
-            bold: false,
-            italic: false,
-            undercurled: false,
-            underlined: false,
-            underdotted: false,
-            underdashed: false,
-            double_underlined: false,
-            slow_blink: false,
+            flags: StyleFlags::EMPTY,
         }
     }
 }
