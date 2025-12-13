@@ -6,7 +6,11 @@ fn main() {
     let size = terminal::size().unwrap();
 
     let mut buffer = Buffer::new(size.0, size.1);
+
+    let mut buf = Buffer::new(10, 20);
     let mut renderer = Renderer::new();
+
+    buf.write_line(0, 0, "+", None);
 
     buffer.write_line(
         10,
@@ -41,5 +45,6 @@ fn main() {
             ..Default::default()
         }),
     );
+    buffer.render_buffer(20, 20, &mut buf);
     renderer.update(&mut buffer);
 }

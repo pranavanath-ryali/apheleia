@@ -79,17 +79,14 @@ impl Buffer {
             style: style.unwrap_or_else(|| Style::default()),
         });
     }
-    
-    // FIXME: Comply with line based rendering
-    pub fn render_node_buffer(&mut self, start_pos_x: u16, start_pos_y: u16, buf: &NodeBuffer) {
-        for y in 0..buf.height {
-            for x in 0..buf.width {
-                let cell: &Cell = buf.get(x, y);
-                self.set(start_pos_x + x, start_pos_y + y, cell.ch, cell.style);
-            }
-        }
-    }
 
+    pub fn render_buffer(&mut self, start_pos_x: u16, start_pos_y: u16, buf: &mut Self) {
+        for line in buf.get_update_list() {
+            self.write_line(start_pos_x, start_pos_y, &line.text, Some(line.style));
+        }
+        buf.clear_update_list();
+    }
+    
     pub fn get_update_list(&self) -> &Vec<Line> {
         &self.line_buffer
     }
