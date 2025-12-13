@@ -8,7 +8,7 @@ fn main() {
     let mut buffer = Buffer::new(size.0, size.1);
 
     let mut buf = Buffer::new(10, 20);
-    let mut renderer = Renderer::new();
+    let mut renderer = Renderer::default();
 
     buf.write_line(0, 0, "+", None);
 
