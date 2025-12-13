@@ -2,30 +2,29 @@ use std::io::{Stdout, Write, stdout};
 
 use crossterm::{
     cursor, execute, queue,
-    style::{
-        Attribute, Color, Print, PrintStyledContent, SetAttribute, SetAttributes,
-        SetBackgroundColor, SetForegroundColor, StyledContent, Stylize,
-    },
+    style::{Attribute, Print, SetAttribute, SetBackgroundColor, SetForegroundColor},
     terminal::Clear,
 };
 
 use crate::{
     buffer::{Buffer, Cell, Line},
-    style::{Style, StyleFlags},
+    style::StyleFlags,
 };
 
 pub struct Renderer {
     stdout: Stdout,
 }
 
-impl Renderer {
-    pub fn new() -> Self {
+impl Default for Renderer {
+    fn default() -> Self {
         let mut stdout = stdout();
         execute!(stdout, cursor::Hide);
 
         Self { stdout }
     }
+}
 
+impl Renderer {
     fn queue_flags(&mut self, flags: &StyleFlags) {
         if flags.contains(StyleFlags::BOLD) {
             queue!(self.stdout, SetAttribute(Attribute::Bold));
@@ -75,7 +74,10 @@ impl Renderer {
     }
 
     fn queue_write(&mut self, line: &Line) {
-        queue!(self.stdout, cursor::MoveTo(line.position.0, line.position.1));
+        queue!(
+            self.stdout,
+            cursor::MoveTo(line.position.0, line.position.1)
+        );
         self.queue_flags(&line.style.flags);
         queue!(
             self.stdout,
