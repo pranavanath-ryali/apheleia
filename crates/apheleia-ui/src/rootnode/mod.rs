@@ -3,7 +3,7 @@ use std::collections::{HashMap, VecDeque};
 use crate::{MAX_NODES, NodeId, node::data::NodeWrapperTrait};
 use crate::node::data::NodeWrapper;
 use apheleia_core::{
-    buffer::{Buffer, NodeBuffer},
+    buffer::Buffer,
     renderer::Renderer,
     terminal,
 };
@@ -60,10 +60,10 @@ impl RootNode {
         for (_, node) in self.nodes.iter_mut() {
             if let Some(size) = node.get_size() {
                 if let Some(position) = node.get_position() {
-                    let mut node_buffer = NodeBuffer::new(size.0, size.1);
+                    let mut node_buffer = Buffer::new(size.0, size.1);
                     node.get_node().render(&mut node_buffer);
                     self.buffer
-                        .render_node_buffer(position.0, position.1, &node_buffer);
+                        .render_buffer(position.0, position.1, &mut node_buffer);
                 }
             }
         }

@@ -1,4 +1,4 @@
-use apheleia_core::{buffer::NodeBuffer, style::Style, types::vector::Vector2};
+use apheleia_core::{buffer::Buffer, style::Style, types::vector::Vector2};
 use apheleia_ui::node::{
     data::{self, NodeData},
     node::NodeTrait,
@@ -27,7 +27,7 @@ impl NodeTrait for Label {
     }
 
     fn update(&mut self) {}
-    fn render(&self, buf: &mut NodeBuffer) {
+    fn render(&self, buf: &mut Buffer) {
         buf.write_line(0, 0, &self.text, Some(Style::default()));
     }
 }
