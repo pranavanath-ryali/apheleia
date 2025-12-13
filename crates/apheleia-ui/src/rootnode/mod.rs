@@ -1,7 +1,7 @@
 use std::collections::{HashMap, VecDeque};
 
-use crate::{MAX_NODES, NodeId, node::data::NodeWrapperTrait};
 use crate::node::data::NodeWrapper;
+use crate::{MAX_NODES, NodeId, node::data::NodeWrapperTrait};
 use apheleia_core::{
     buffer::{Buffer, NodeBuffer},
     renderer::Renderer,
@@ -19,8 +19,8 @@ pub struct RootNode {
     renderer: Renderer,
 }
 
-impl RootNode {
-    pub fn new() -> Self {
+impl Default for RootNode {
+    fn default() -> Self {
         let size = terminal::size().unwrap();
 
         let mut available_node_ids: VecDeque<NodeId> = VecDeque::new();
@@ -39,7 +39,9 @@ impl RootNode {
             renderer: Renderer::new(),
         }
     }
+}
 
+impl RootNode {
     fn get_id(&mut self) -> Option<NodeId> {
         self.available_node_ids.pop_front()
     }
