@@ -36,7 +36,7 @@ impl Default for RootNode {
             nodes: HashMap::new(),
 
             buffer: Buffer::new(size.0, size.1),
-            renderer: Renderer::new(),
+            renderer: Renderer::default(),
         }
     }
 }
@@ -53,7 +53,7 @@ impl RootNode {
     }
 
     pub fn initial_setup(&mut self) {
-        for (id, data) in self.nodes.iter_mut() {
+        for (_, data) in self.nodes.iter_mut() {
             data.node.initial_setup(&mut data.data);
         }
     }
