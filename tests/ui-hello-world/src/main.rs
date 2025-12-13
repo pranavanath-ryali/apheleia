@@ -1,4 +1,4 @@
-use apheleia_core::{buffer::NodeBuffer, style::Style, types::vector::Vector2};
+use apheleia_core::{buffer::Buffer, style::Style, types::vector::Vector2};
 use apheleia_ui::{node::{data::{NodeData, NodeWrapper}, node::NodeTrait}, rootnode::RootNode};
 
 struct BasicNode;
@@ -10,12 +10,12 @@ impl NodeTrait for BasicNode {
     fn update(&mut self) {
     }
 
-    fn render(&self, buf: &mut NodeBuffer) {
+    fn render(&self, buf: &mut Buffer) {
         buf.write_line(0, 0, "A", Some(Style::default()));
     }
 }
 fn main() {
-    let mut root = RootNode::new();
+    let mut root = RootNode::default();
 
     let node_data = NodeWrapper {
         data: NodeData {

@@ -1,9 +1,9 @@
 use apheleia_core::types::vector::Vector2;
-use apheleia_ui::{FAKE_NODEID, node::data::{NodeData, NodeWrapper}, rootnode::RootNode};
+use apheleia_ui::{node::data::{NodeData, NodeWrapper}, rootnode::RootNode};
 use apheleia_widgets::label::Label;
 
 fn main() {
-    let mut root = RootNode::new();
+    let mut root = RootNode::default();
     
     root.add_node(NodeWrapper {
         data: NodeData {
