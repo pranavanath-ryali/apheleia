@@ -79,67 +79,19 @@ impl Buffer {
             style: style.unwrap_or_else(|| Style::default()),
         });
     }
-    
-    // FIXME: Comply with line based rendering
-    pub fn render_node_buffer(&mut self, start_pos_x: u16, start_pos_y: u16, buf: &NodeBuffer) {
-        for y in 0..buf.height {
-            for x in 0..buf.width {
-                let cell: &Cell = buf.get(x, y);
-                self.set(start_pos_x + x, start_pos_y + y, cell.ch, cell.style);
-            }
-        }
-    }
 
+    pub fn render_buffer(&mut self, start_pos_x: u16, start_pos_y: u16, buf: &mut Self) {
+        for line in buf.get_update_list() {
+            self.write_line(start_pos_x, start_pos_y, &line.text, Some(line.style));
+        }
+        buf.clear_update_list();
+    }
+    
     pub fn get_update_list(&self) -> &Vec<Line> {
         &self.line_buffer
     }
 
     pub fn clear_update_list(&mut self) {
         self.line_buffer.clear();
-    }
-}
-
-pub struct NodeBuffer {
-    pub width: u16,
-    pub height: u16,
-    cells: Vec<Vec<Cell>>,
-}
-impl NodeBuffer {
-    pub fn new(width: u16, height: u16) -> Self {
-        let default_cell = Cell {
-            ch: ' ',
-            style: Style::default(),
-        };
-
-        Self {
-            width,
-            height,
-            cells: vec![vec![default_cell; width as usize]; height as usize],
-        }
-    }
-    pub fn get(&self, x: u16, y: u16) -> &Cell {
-        &self.cells[y as usize][x as usize]
-    }
-
-    fn set(&mut self, x: u16, y: u16, c: char, style: Style) {
-        if x >= self.width || y >= self.height {
-            return;
-        }
-
-        self.cells[y as usize][x as usize].ch = c;
-        self.cells[y as usize][x as usize].style = style;
-    }
-
-    pub fn write_line(
-        &mut self,
-        start_pos_x: u16,
-        start_pos_y: u16,
-        text: &str,
-        style: Option<Style>,
-    ) {
-        let s = style.unwrap_or_else(|| Style::default());
-        for (i, c) in text.chars().enumerate() {
-            self.set(start_pos_x + (i as u16), start_pos_y, c, s);
-        }
     }
 }
