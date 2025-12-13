@@ -53,13 +53,15 @@ impl Buffer {
         &self.cells[y as usize][x as usize]
     }
 
-    fn set(&mut self, x: u16, y: u16, c: char, style: Style) {
+    fn set(&mut self, x: u16, y: u16, c: char, style: Style) -> bool {
         if x >= self.width || y >= self.height {
-            return;
+            return false;
         }
 
         self.cells[y as usize][x as usize].ch = c;
         self.cells[y as usize][x as usize].style = style;
+
+        true
     }
 
     pub fn write_line(
@@ -70,11 +72,17 @@ impl Buffer {
         style: Option<Style>,
     ) {
         let s = style.unwrap_or_else(|| Style::default());
+        let mut t: String = "".to_string();
         for (i, c) in text.chars().enumerate() {
-            self.set(start_pos_x + (i as u16), start_pos_y, c, s);
+            let is_set = self.set(start_pos_x + (i as u16), start_pos_y, c, s);
+
+            if !is_set {
+                continue;
+            }
+            t += &c.to_string();
         }
         self.line_buffer.push(Line {
-            text: text.to_string(),
+            text: t,
             position: (start_pos_x, start_pos_y),
             style: style.unwrap_or_else(|| Style::default()),
         });
