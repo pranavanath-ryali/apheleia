@@ -124,44 +124,32 @@ impl RootNode {
                 continue;
             }
 
-            let parents = self.relations.get_ancestor_ids(id).unwrap();
             let mut positions: Vector2 = Vector2(0, 0);
-            for id in parents.iter() {
-                if *id == 0_usize {
-                    continue;
-                }
-
-                let pos = self.nodes.get(id).unwrap().get_position();
-                positions.0 += pos.0;
-                positions.1 += pos.1;
-            }
+            let parents = self
+                .relations
+                .get_ancestor_ids(id)
+                .unwrap()
+                .iter()
+                .filter(|v| **v != 0_usize)
+                .for_each(|i| {
+                    let pos = self.nodes.get(i).unwrap().get_position();
+                    positions.0 += pos.0;
+                    positions.1 += pos.1;
+                });
 
             let node = self.nodes.get_mut(id).unwrap();
-
             if let Some(size) = node.get_size() {
-                if let Some(position) = node.get_size() {
-                    let pos = node.get_position();
+                let pos = node.get_position();
 
-                    let mut node_buffer = Buffer::new(size.0, size.1);
-                    node.get_node().render(&mut node_buffer);
-                    self.buffer.render_buffer(
-                        positions.0 + pos.0,
-                        positions.1 + pos.1,
-                        &mut node_buffer,
-                    );
-                }
+                let mut node_buffer = Buffer::new(size.0, size.1);
+                node.get_node().render(&mut node_buffer);
+                self.buffer.render_buffer(
+                    positions.0 + pos.0,
+                    positions.1 + pos.1,
+                    &mut node_buffer,
+                );
             }
         }
-
-        // for (_, node) in self.nodes.iter_mut() {
-        //     if let Some(size) = node.get_size() {
-        //         let mut node_buffer = Buffer::new(size.0, size.1);
-        //         let pos = node.get_position();
-        //         node.get_node().render(&mut node_buffer);
-        //         self.buffer
-        //             .render_buffer(positions.0 + pos.0, positions.1 + pos.1, &mut node_buffer);
-        //     }
-        // }
     }
 
     pub fn run(&mut self) -> Result<(), Box<dyn Error>> {
@@ -195,18 +183,10 @@ impl RootNode {
                 self.nodes.get_mut(id).unwrap().node.update();
             }
 
-            // let frame_start_time = Instant::now();
-            //
-            // // Update shit
-            //
-            // let elapsed_time = frame_start_time.elapsed();
-            // if elapsed_time < UPDATE_RATE {
-            //     sleep(UPDATE_RATE - elapsed_time);
-            // }
-
             self.render();
             self.renderer.update(&mut self.buffer);
         }
+
         disable_raw_mode();
         Ok(())
     }
