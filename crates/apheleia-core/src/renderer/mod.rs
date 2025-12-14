@@ -12,7 +12,7 @@ use crate::{
 };
 
 pub struct Renderer {
-    stdout: Stdout,
+    pub stdout: Stdout,
 }
 
 impl Default for Renderer {

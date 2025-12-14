@@ -1,5 +1,6 @@
 pub mod rootnode;
 pub mod node;
+pub mod commands;
 
 pub type NodeId = usize;
 
