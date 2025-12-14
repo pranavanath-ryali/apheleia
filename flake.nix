@@ -13,6 +13,7 @@
 				rustfmt
 				clippy
 				rust-analyzer
+				lldb
 			];
 
 			nativeBuildInputs = with pkgs; [];
