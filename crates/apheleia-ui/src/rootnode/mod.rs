@@ -1,25 +1,18 @@
 use std::collections::{HashMap, VecDeque};
 use std::error::Error;
-use std::thread::sleep;
-use std::time::{Duration, Instant};
+use std::time::Duration;
 
 use crate::commands::{InitialCallContext, IntialCallCommands};
 use crate::node::data::NodeWrapper;
 use crate::{MAX_NODES, NodeId, node::data::NodeWrapperTrait};
-use apheleia_core::style::{Style, StyleFlags};
 use apheleia_core::{buffer::Buffer, renderer::Renderer, terminal};
-use crossterm::event::{
-    DisableBracketedPaste, DisableFocusChange, DisableMouseCapture, EnableBracketedPaste,
-    EnableFocusChange, EnableMouseCapture, KeyCode, poll, read,
-};
-use crossterm::execute;
-use crossterm::terminal::{disable_raw_mode, enable_raw_mode};
-
-const UPDATE_RATE: u32 = 30;
+use crossterm::{event::{
+    KeyCode, poll, read,
+}, terminal::{disable_raw_mode, enable_raw_mode}};
 
 pub enum UpdateType {
-    EVENT,
-    UPDATE,
+    Event,
+    Update,
 }
 
 pub struct RootNode {
@@ -83,10 +76,10 @@ impl RootNode {
                         data.set_size(*s);
                     }
 
-                    IntialCallCommands::RegisterUpdateType(UpdateType::EVENT) => {
+                    IntialCallCommands::RegisterUpdateType(UpdateType::Event) => {
                         self.event_type_nodes.insert(0, *id);
                     }
-                    IntialCallCommands::RegisterUpdateType(UpdateType::UPDATE) => {
+                    IntialCallCommands::RegisterUpdateType(UpdateType::Update) => {
                         self.update_type_nodes.insert(0, *id);
                     }
                 }
@@ -132,6 +125,10 @@ impl RootNode {
                     crossterm::event::Event::Resize(width, height) => {}
                     _ => {}
                 }
+            }
+
+            for id in self.update_type_nodes.iter() {
+                self.nodes.get_mut(id).unwrap().node.update();
             }
 
             // let frame_start_time = Instant::now();
