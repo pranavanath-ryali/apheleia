@@ -66,20 +66,20 @@ impl NodeTrait for BasicNode {
 fn main() {
     let mut root = RootNode::default();
 
-    root.add_node(NodeWrapper {
+    let wid = root.add_node(NodeWrapper {
         data: NodeData {
-            position: Some(Vector2(0, 0)),
+            position: Vector2(10, 0),
             ..Default::default()
         },
         node: Box::new(BasicNode(false)),
-    });
+    }, None);
     root.add_node(NodeWrapper {
         data: NodeData {
-            position: Some(Vector2(10, 10)),
+            position: Vector2(10, 10),
             ..Default::default()
         },
         node: Box::new(IDKWhatImDoingNode::default()),
-    });
+    }, Some(wid.unwrap()));
 
     root.initial_setup();
     root.run();

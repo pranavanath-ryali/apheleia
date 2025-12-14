@@ -3,13 +3,13 @@ use apheleia_core::types::vector::Vector2;
 use crate::node::node::NodeTrait;
 
 pub struct NodeData {
-    pub position: Option<Vector2>,
+    pub position: Vector2,
     pub size: Option<Vector2>,
 }
 impl Default for NodeData {
     fn default() -> Self {
         NodeData {
-            position: None,
+            position: Vector2(0, 0),
             size: None,
         }
     }
@@ -21,7 +21,7 @@ pub struct NodeWrapper {
 }
 
 pub trait NodeWrapperTrait {
-    fn get_position(&self) -> Option<Vector2>;
+    fn get_position(&self) -> &Vector2;
     fn set_position(&mut self, v: Vector2);
 
     fn get_size(&self) -> Option<Vector2>;
@@ -32,11 +32,11 @@ pub trait NodeWrapperTrait {
 }
 
 impl NodeWrapperTrait for NodeWrapper {
-    fn get_position(&self) -> Option<Vector2> {
-        self.data.position
+    fn get_position(&self) -> &Vector2 {
+        &self.data.position
     }
     fn set_position(&mut self, v: Vector2) {
-        self.data.position = Some(v)
+        self.data.position = v;
     }
 
     fn get_size(&self) -> Option<Vector2> {
