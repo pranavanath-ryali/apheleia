@@ -90,7 +90,7 @@ impl Buffer {
 
     pub fn render_buffer(&mut self, start_pos_x: u16, start_pos_y: u16, buf: &mut Self) {
         for line in buf.get_update_list() {
-            self.write_line(start_pos_x, start_pos_y, &line.text, Some(line.style));
+            self.write_line(start_pos_x + line.position.0, start_pos_y + line.position.1, &line.text, Some(line.style));
         }
         buf.clear_update_list();
     }
