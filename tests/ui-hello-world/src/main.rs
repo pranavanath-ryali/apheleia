@@ -49,7 +49,7 @@ impl NodeTrait for BasicNode {
     fn update(&mut self) {}
 
     fn render(&self, buf: &mut Buffer) {
-        buf.write_line(0, 2, "AAAAAAAAAA", Some(Style { fg: apheleia_core::Color::Blue, ..Default::default() }));
+        buf.write_line(0, 0, "AAAAAAAAAA", Some(Style { fg: apheleia_core::Color::Blue, ..Default::default() }));
         buf.write_line(0, 1, "BBBBBBBBBB", Some(Style { fg: apheleia_core::Color::Blue, ..Default::default() }));
 
         if self.0 {

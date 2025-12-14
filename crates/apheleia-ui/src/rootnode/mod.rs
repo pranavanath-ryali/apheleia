@@ -125,7 +125,7 @@ impl RootNode {
             }
 
             let mut positions: Vector2 = Vector2(0, 0);
-            let parents = self
+            self
                 .relations
                 .get_ancestor_ids(id)
                 .unwrap()
