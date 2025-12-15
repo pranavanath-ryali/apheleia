@@ -451,6 +451,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "widgets-playground"
+version = "0.1.0"
+dependencies = [
+ "apheleia-core",
+ "apheleia-ui",
+ "apheleia-widgets",
+]
+
+[[package]]
 name = "winapi"
 version = "0.3.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"

@@ -6,4 +6,4 @@ members = [
 
 	"tests/core-hello-world",
 	"tests/ui-hello-world"
-]
+, "tests/widgets-playground"]

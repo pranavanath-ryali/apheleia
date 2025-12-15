@@ -7,12 +7,10 @@ use apheleia_ui::{
     commands::{
         InitialCallContext,
         IntialCallCommands::{self, RegisterUpdateType},
-    },
-    node::{
+    }, contexts::RenderContext, node::{
         data::{NodeData, NodeWrapper},
         node::NodeTrait,
-    },
-    rootnode::{RootNode, UpdateType},
+    }, rootnode::{RootNode, UpdateType}
 };
 
 #[derive(Default)]
@@ -30,7 +28,7 @@ impl NodeTrait for IDKWhatImDoingNode {
         self.i += 1;
     }
 
-    fn render(&self, buf: &mut Buffer) {
+    fn render(&self, _ctx: &mut RenderContext, buf: &mut Buffer) {
         buf.write_line(0, 0, &self.i.to_string(), Some(Style::default()));
     }
 }
@@ -48,7 +46,7 @@ impl NodeTrait for BasicNode {
 
     fn update(&mut self) {}
 
-    fn render(&self, buf: &mut Buffer) {
+    fn render(&self, _ctx: &mut RenderContext, buf: &mut Buffer) {
         buf.write_line(0, 0, "AAAAAAAAAA", Some(Style { fg: apheleia_core::Color::Blue, ..Default::default() }));
         buf.write_line(0, 1, "BBBBBBBBBB", Some(Style { fg: apheleia_core::Color::Blue, ..Default::default() }));
 
