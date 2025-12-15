@@ -3,7 +3,7 @@ use std::error::Error;
 use std::time::Duration;
 
 use crate::commands::{InitialCallContext, IntialCallCommands};
-use crate::contexts::RenderContext;
+use crate::contexts::{RenderContext, UpdateContext};
 use crate::node::data::NodeWrapper;
 use crate::{MAX_NODES, NodeId, node::data::NodeWrapperTrait};
 use apheleia_core::types::vector::Vector2;
@@ -126,8 +126,7 @@ impl RootNode {
             }
 
             let mut positions: Vector2 = Vector2(0, 0);
-            self
-                .relations
+            self.relations
                 .get_ancestor_ids(id)
                 .unwrap()
                 .iter()
@@ -158,6 +157,17 @@ impl RootNode {
         }
     }
 
+    fn update(&mut self) {
+        for id in self.update_type_nodes.iter() {
+            let node = self.nodes.get_mut(id).unwrap();
+            let mut ctx = UpdateContext {
+                position: *node.get_position(),
+                size: node.get_size(),
+            };
+            node.get_node_mut().update(&mut ctx);
+        }
+    }
+
     pub fn run(&mut self) -> Result<(), Box<dyn Error>> {
         enable_raw_mode();
 
@@ -185,9 +195,7 @@ impl RootNode {
                 }
             }
 
-            for id in self.update_type_nodes.iter() {
-                self.nodes.get_mut(id).unwrap().node.update();
-            }
+            self.update();
 
             self.render();
             self.renderer.update(&mut self.buffer);

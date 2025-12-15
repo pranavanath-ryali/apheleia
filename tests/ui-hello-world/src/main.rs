@@ -8,6 +8,7 @@ use apheleia_ui::{
         InitialCallContext,
         IntialCallCommands::{self, RegisterUpdateType},
     },
+    contexts::{RenderContext, UpdateContext},
     node::{
         data::{NodeData, NodeWrapper},
         node::NodeTrait,
@@ -26,11 +27,11 @@ impl NodeTrait for IDKWhatImDoingNode {
     }
 
     fn event(&mut self) {}
-    fn update(&mut self) {
+    fn update(&mut self, ctx: &mut UpdateContext) {
         self.i += 1;
     }
 
-    fn render(&self, buf: &mut Buffer) {
+    fn render(&self, ctx: &mut RenderContext, buf: &mut Buffer) {
         buf.write_line(0, 0, &self.i.to_string(), Some(Style::default()));
     }
 }
@@ -46,11 +47,27 @@ impl NodeTrait for BasicNode {
         self.0 = true;
     }
 
-    fn update(&mut self) {}
+    fn update(&mut self, ctx: &mut UpdateContext) {}
 
-    fn render(&self, buf: &mut Buffer) {
-        buf.write_line(0, 0, "AAAAAAAAAA", Some(Style { fg: apheleia_core::Color::Blue, ..Default::default() }));
-        buf.write_line(0, 1, "BBBBBBBBBB", Some(Style { fg: apheleia_core::Color::Blue, ..Default::default() }));
+    fn render(&self, ctx: &mut RenderContext, buf: &mut Buffer) {
+        buf.write_line(
+            0,
+            0,
+            "AAAAAAAAAA",
+            Some(Style {
+                fg: apheleia_core::Color::Blue,
+                ..Default::default()
+            }),
+        );
+        buf.write_line(
+            0,
+            1,
+            "BBBBBBBBBB",
+            Some(Style {
+                fg: apheleia_core::Color::Blue,
+                ..Default::default()
+            }),
+        );
 
         if self.0 {
             buf.write_line(
@@ -68,20 +85,26 @@ impl NodeTrait for BasicNode {
 fn main() {
     let mut root = RootNode::default();
 
-    let wid = root.add_node(NodeWrapper {
-        data: NodeData {
-            position: Vector2(10, 2),
-            ..Default::default()
+    let wid = root.add_node(
+        NodeWrapper {
+            data: NodeData {
+                position: Vector2(10, 2),
+                ..Default::default()
+            },
+            node: Box::new(BasicNode(false)),
         },
-        node: Box::new(BasicNode(false)),
-    }, None);
-    root.add_node(NodeWrapper {
-        data: NodeData {
-            position: Vector2(0, 3),
-            ..Default::default()
+        None,
+    );
+    root.add_node(
+        NodeWrapper {
+            data: NodeData {
+                position: Vector2(0, 3),
+                ..Default::default()
+            },
+            node: Box::new(IDKWhatImDoingNode::default()),
         },
-        node: Box::new(IDKWhatImDoingNode::default()),
-    }, Some(wid.unwrap()));
+        Some(wid.unwrap()),
+    );
 
     root.initial_setup();
     root.run();
