@@ -1,12 +1,12 @@
 use apheleia_core::{Color, style::Style};
-use apheleia_ui::{commands::{self, InitialCallContext}, contexts::RenderContext, node::node::NodeTrait};
+use apheleia_ui::{commands::{self, InitialCallContext}, contexts::{RenderContext, UpdateContext}, node::node::NodeTrait};
 
 pub struct Block;
 impl NodeTrait for Block {
     fn initial_setup(&mut self, _ctx: &mut InitialCallContext) {}
 
     fn event(&mut self) {}
-    fn update(&mut self) {}
+    fn update(&mut self, ctx: &mut UpdateContext) {}
 
     fn render(&self, ctx: &mut RenderContext, buf: &mut apheleia_core::buffer::Buffer) {
         buf.write_line(0, 0, "+", None);
