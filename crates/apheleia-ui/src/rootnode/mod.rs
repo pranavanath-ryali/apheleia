@@ -3,6 +3,7 @@ use std::error::Error;
 use std::time::Duration;
 
 use crate::commands::{InitialCallContext, IntialCallCommands};
+use crate::contexts::RenderContext;
 use crate::node::data::NodeWrapper;
 use crate::{MAX_NODES, NodeId, node::data::NodeWrapperTrait};
 use apheleia_core::types::vector::Vector2;
@@ -141,8 +142,13 @@ impl RootNode {
             if let Some(size) = node.get_size() {
                 let pos = node.get_position();
 
+                let mut ctx = RenderContext {
+                    position: *pos,
+                    size: size,
+                };
+
                 let mut node_buffer = Buffer::new(size.0, size.1);
-                node.get_node().render(&mut node_buffer);
+                node.get_node().render(&mut ctx, &mut node_buffer);
                 self.buffer.render_buffer(
                     positions.0 + pos.0,
                     positions.1 + pos.1,
