@@ -22,10 +22,6 @@ dependencies = [
 [[package]]
 name = "apheleia-widgets"
 version = "0.1.0"
-dependencies = [
- "apheleia-core",
- "apheleia-ui",
-]
 
 [[package]]
 name = "bitflags"
