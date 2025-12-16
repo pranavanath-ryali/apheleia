@@ -24,7 +24,9 @@ Apheleia is a rust toolkit that aims to make the process of building reactive an
         - [X] Scrolling Text if text exceeds the width of node
         - [X] Ellipses at end...
         - [ ] Multi Line rendering
-        - [ ] Alignment (Left, Center, Right, Justify)
+        - [X] Alignment
+            - [X] Left-Center-Right
+            - [ ] Justify
     - [ ] Blocks
         - [X] Basic implementation
         - [ ] Border styling
