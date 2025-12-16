@@ -18,11 +18,16 @@ Apheleia is a rust toolkit that aims to make the process of building reactive an
     - [ ] Nodes should register the events to listen to
 - [X] Update Loop
     - [X] Nodes should register to update if necessary
+- [ ] Margins & Padding
 - [ ] Basic Widgets
     - [ ] Labels
         - [X] Scrolling Text if text exceeds the width of node
         - [X] Ellipses at end...
         - [ ] Multi Line rendering
+        - [ ] Alignment (Left, Center, Right, Justify)
     - [ ] Blocks
         - [X] Basic implementation
         - [ ] Border styling
+    - [ ] Buttons (basically blocks + labels with center alignment)
+        - [ ] callback fn.
+        - [ ] Event by Mouse

@@ -1,4 +1,4 @@
-use apheleia_core::style::Style;
+use apheleia_core::{Color::Red, style::Style};
 use apheleia_ui::{contexts::UpdateContext, node::node::NodeTrait};
 
 pub enum TextOverflow {
@@ -7,10 +7,17 @@ pub enum TextOverflow {
     Scoll(u16, u16),
 }
 
+pub enum LabelAlignment {
+    Left,
+    Center,
+    Right,
+}
+
 pub struct Label {
     pub overflow: TextOverflow,
     pub text: String,
     pub style: Option<Style>,
+    pub alignment: LabelAlignment,
 
     i: u16,
     counter: f32,
@@ -88,6 +95,28 @@ impl NodeTrait for Label {
         buf: &mut apheleia_core::buffer::Buffer,
     ) {
         let size = &ctx.size;
+
+        if self.text.len() <= size.0 as usize {
+            match self.alignment {
+                LabelAlignment::Left => {
+                    buf.write_line(0, 0, &self.text, self.style);
+                }
+                LabelAlignment::Right => {
+                    buf.write_line(size.0 - self.text.len() as u16, 0, &self.text, self.style);
+                }
+                LabelAlignment::Center => {
+                    buf.write_line(
+                        (size.0 as f32 / 2.).ceil() as u16
+                            - (self.text.len() as f32 / 2.).ceil() as u16,
+                        0,
+                        &self.text,
+                        self.style,
+                    );
+                }
+            }
+
+            return;
+        }
         match self.overflow {
             TextOverflow::DoNothing => {}
             TextOverflow::Scoll(_, _) => {
@@ -119,11 +148,17 @@ impl NodeTrait for Label {
 }
 
 impl Label {
-    pub fn new(text: &str, style: Option<Style>, overflow: Option<TextOverflow>) -> Self {
+    pub fn new(
+        text: &str,
+        style: Option<Style>,
+        alignment: Option<LabelAlignment>,
+        overflow: Option<TextOverflow>,
+    ) -> Self {
         Label {
             overflow: overflow.unwrap_or_else(|| TextOverflow::Ellipses),
             text: text.to_string(),
             style: style,
+            alignment: alignment.unwrap_or_else(|| LabelAlignment::Left),
 
             i: 0,
             counter: 0.,

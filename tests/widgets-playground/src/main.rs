@@ -8,7 +8,7 @@ use apheleia_ui::{
 };
 use apheleia_widgets::{
     block::Block,
-    label::{Label, TextOverflow},
+    label::{Label, LabelAlignment, TextOverflow},
 };
 
 fn main() {
@@ -39,6 +39,29 @@ fn main() {
                     flags: StyleFlags::ITALIC | StyleFlags::BOLD,
                     ..Default::default()
                 }),
+                None,
+                Some(TextOverflow::Scoll(1, 10)),
+            )),
+        },
+        Some(node),
+    )
+    .unwrap();
+
+    root.add_node(
+        NodeWrapper {
+            data: NodeData {
+                position: Vector2(0, 10),
+                size: Some(Vector2(20, 1)),
+            },
+            node: Box::new(Label::new(
+                "Label Alignment",
+                Some(Style {
+                    fg: apheleia_core::Color::Black,
+                    bg: apheleia_core::Color::Blue,
+                    flags: StyleFlags::ITALIC | StyleFlags::BOLD,
+                    ..Default::default()
+                }),
+                Some(LabelAlignment::Center),
                 Some(TextOverflow::Scoll(1, 10)),
             )),
         },
