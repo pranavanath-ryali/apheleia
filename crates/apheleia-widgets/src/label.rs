@@ -114,11 +114,14 @@ impl NodeTrait for Label {
                     );
                 }
             }
-
             return;
         }
+
         match self.overflow {
-            TextOverflow::DoNothing => {}
+            TextOverflow::DoNothing => {
+                buf.write_line(0, 0, &self.text, self.style);
+                return;
+            }
             TextOverflow::Scoll(_, _) => {
                 buf.write_line(
                     0,
@@ -126,24 +129,18 @@ impl NodeTrait for Label {
                     &(self.text.split_at(self.i as usize).1.to_string()),
                     self.style,
                 );
-
                 return;
             }
             TextOverflow::Ellipses => {
-                if self.text.len() > size.0 as usize {
-                    buf.write_line(
-                        0,
-                        0,
-                        &(self.text.split_at((size.0 - 3) as usize).0.to_string() + "..."),
-                        self.style,
-                    );
-
-                    return;
-                }
+                buf.write_line(
+                    0,
+                    0,
+                    &(self.text.split_at((size.0 - 3) as usize).0.to_string() + "..."),
+                    self.style,
+                );
+                return;
             }
         }
-
-        buf.write_line(0, 0, &self.text, self.style);
     }
 }
 

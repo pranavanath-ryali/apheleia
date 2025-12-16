@@ -40,7 +40,7 @@ fn main() {
                     ..Default::default()
                 }),
                 None,
-                Some(TextOverflow::Scoll(1, 10)),
+                Some(TextOverflow::Ellipses),
             )),
         },
         Some(node),
