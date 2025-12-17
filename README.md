@@ -29,7 +29,7 @@ Apheleia is a rust toolkit that aims to make the process of building reactive an
             - [ ] Justify
     - [ ] Blocks
         - [X] Basic implementation
-        - [ ] Border styling
+        - [X] Border styling
     - [ ] Buttons (basically blocks + labels with center alignment)
         - [ ] callback fn.
         - [ ] Event by Mouse

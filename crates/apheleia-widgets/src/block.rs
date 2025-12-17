@@ -39,6 +39,7 @@ impl NodeTrait for Block {
     fn update(&mut self, ctx: &mut UpdateContext) {}
 
     fn render(&self, ctx: &mut RenderContext, buf: &mut apheleia_core::buffer::Buffer) {
+        // TODO: Come back to this later
         let style = &self.border_style;
 
         let mut i: u8 = 0;
