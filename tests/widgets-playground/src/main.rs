@@ -7,7 +7,7 @@ use apheleia_ui::{
     rootnode::{self, RootNode},
 };
 use apheleia_widgets::{
-    block::Block,
+    block::{Block, BorderStyle},
     label::{Label, LabelAlignment, TextOverflow},
 };
 
@@ -19,9 +19,17 @@ fn main() {
             NodeWrapper {
                 data: NodeData {
                     position: Vector2(0, 0),
-                    size: Some(Vector2(100, 30)),
+                    size: Some(Vector2(99, 30)),
                 },
-                node: Box::new(Block {}),
+                node: Box::new(Block {
+                    border_style: BorderStyle {
+                        corners_style: Some(Style {
+                            fg: apheleia_core::Color::Red,
+                            ..Default::default()
+                        }),
+                        ..Default::default()
+                    },
+                }),
             },
             None,
         )

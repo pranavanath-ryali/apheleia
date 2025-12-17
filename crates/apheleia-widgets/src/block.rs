@@ -5,7 +5,33 @@ use apheleia_ui::{
     node::node::NodeTrait,
 };
 
-pub struct Block;
+#[derive(Clone)]
+pub struct BorderStyle {
+    pub corners: [char; 4], // topleft, topright, bottomleft, bottomright
+    pub horizontal_pattern: String,
+    pub vertical_pattern: String,
+
+    pub corners_style: Option<Style>,
+    pub horizontal_pattern_style: Option<Style>,
+    pub veritcal_pattern_style: Option<Style>,
+}
+impl Default for BorderStyle {
+    fn default() -> Self {
+        BorderStyle {
+            corners: ['+', '+', '+', '+'],
+            horizontal_pattern: "-".to_string(),
+            vertical_pattern: "|".to_string(),
+
+            corners_style: None,
+            horizontal_pattern_style: None,
+            veritcal_pattern_style: None,
+        }
+    }
+}
+
+pub struct Block {
+    pub border_style: BorderStyle,
+}
 impl NodeTrait for Block {
     fn initial_setup(&mut self, _ctx: &mut InitialCallContext) {}
 
@@ -13,58 +39,75 @@ impl NodeTrait for Block {
     fn update(&mut self, ctx: &mut UpdateContext) {}
 
     fn render(&self, ctx: &mut RenderContext, buf: &mut apheleia_core::buffer::Buffer) {
-        buf.write_line(0, 0, "+", None);
-        buf.write_line(0, ctx.size.1 - 1, "+", None);
-        buf.write_line(ctx.size.0 - 1, 0, "+", None);
-        buf.write_line(ctx.size.0 - 1, ctx.size.1 - 1, "+", None);
+        let style = &self.border_style;
 
+        let mut i: u8 = 0;
         for y in 1..(ctx.size.1 - 1) {
-            buf.write_line(0, y, "|", None);
-            buf.write_line(ctx.size.0 - 1, y, "|", None);
+            i += 1;
+            if i >= style.vertical_pattern.len() as u8 {
+                i = 0;
+            }
+            buf.write_line(
+                0,
+                y,
+                &style
+                    .vertical_pattern
+                    .chars()
+                    .nth(i as usize)
+                    .unwrap_or_else(|| ' ')
+                    .to_string(),
+                None,
+            );
+            buf.write_line(
+                ctx.size.0 - 1,
+                y,
+                &style
+                    .vertical_pattern
+                    .chars()
+                    .nth(i as usize)
+                    .unwrap_or_else(|| ' ')
+                    .to_string(),
+                None,
+            );
         }
-        let mut horizontal_border = String::new();
 
-        for x in 1..(ctx.size.0 - 1) {
-            horizontal_border += "-";
+        if style.horizontal_pattern.len() > 0 {
+            let mut horizontal_border = style
+                .horizontal_pattern
+                .repeat((((ctx.size.0 - 2) as usize) / style.horizontal_pattern.len()) + 1);
+            buf.write_line(1, 0, &horizontal_border, style.horizontal_pattern_style);
+            buf.write_line(
+                1,
+                ctx.size.1 - 1,
+                &horizontal_border,
+                style.horizontal_pattern_style,
+            );
         }
-        buf.write_line(1, 0, &horizontal_border, None);
-        buf.write_line(1, ctx.size.1 - 1, &horizontal_border, None);
 
+        buf.write_line(0, 0, &style.corners[0].to_string(), style.corners_style);
         buf.write_line(
-            1,
-            1,
-            &format!("X: {}", ctx.position.0),
-            Some(Style {
-                fg: Color::Blue,
-                ..Default::default()
-            }),
+            0,
+            ctx.size.1 - 1,
+            &style.corners[1].to_string(),
+            style.corners_style,
         );
         buf.write_line(
-            1,
-            2,
-            &format!("Y: {}", ctx.position.1),
-            Some(Style {
-                fg: Color::Blue,
-                ..Default::default()
-            }),
+            ctx.size.0 - 1,
+            0,
+            &style.corners[2].to_string(),
+            style.corners_style,
         );
         buf.write_line(
-            1,
-            3,
-            &format!("WIDTH: {}", ctx.size.0),
-            Some(Style {
-                fg: Color::Red,
-                ..Default::default()
-            }),
+            ctx.size.0 - 1,
+            ctx.size.1 - 1,
+            &style.corners[3].to_string(),
+            style.corners_style,
         );
-        buf.write_line(
-            1,
-            4,
-            &format!("HEIGHT: {}", ctx.size.1),
-            Some(Style {
-                fg: Color::Red,
-                ..Default::default()
-            }),
-        );
+    }
+}
+
+impl Block {
+    fn new() -> Self {
+        Block { border_style: BorderStyle::default() }
     }
 }
