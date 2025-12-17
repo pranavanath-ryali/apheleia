@@ -1,5 +1,9 @@
 use apheleia_core::{Color, style::Style};
-use apheleia_ui::{commands::{self, InitialCallContext}, contexts::{RenderContext, UpdateContext}, node::node::NodeTrait};
+use apheleia_ui::{
+    commands::{self, InitialCallContext},
+    contexts::{RenderContext, UpdateContext},
+    node::node::NodeTrait,
+};
 
 pub struct Block;
 impl NodeTrait for Block {
@@ -14,9 +18,53 @@ impl NodeTrait for Block {
         buf.write_line(ctx.size.0 - 1, 0, "+", None);
         buf.write_line(ctx.size.0 - 1, ctx.size.1 - 1, "+", None);
 
-        buf.write_line(1, 1, &format!("X: {}", ctx.position.0), Some(Style { fg: Color::Blue, ..Default::default() }));
-        buf.write_line(1, 2, &format!("Y: {}", ctx.position.1), Some(Style { fg: Color::Blue, ..Default::default() }));
-        buf.write_line(1, 3, &format!("WIDTH: {}", ctx.size.0), Some(Style { fg: Color::Red, ..Default::default() }));
-        buf.write_line(1, 4, &format!("HEIGHT: {}", ctx.size.1), Some(Style { fg: Color::Red, ..Default::default() }));
+        for y in 1..(ctx.size.1 - 1) {
+            buf.write_line(0, y, "|", None);
+            buf.write_line(ctx.size.0 - 1, y, "|", None);
+        }
+        let mut horizontal_border = String::new();
+
+        for x in 1..(ctx.size.0 - 1) {
+            horizontal_border += "-";
+        }
+        buf.write_line(1, 0, &horizontal_border, None);
+        buf.write_line(1, ctx.size.1 - 1, &horizontal_border, None);
+
+        buf.write_line(
+            1,
+            1,
+            &format!("X: {}", ctx.position.0),
+            Some(Style {
+                fg: Color::Blue,
+                ..Default::default()
+            }),
+        );
+        buf.write_line(
+            1,
+            2,
+            &format!("Y: {}", ctx.position.1),
+            Some(Style {
+                fg: Color::Blue,
+                ..Default::default()
+            }),
+        );
+        buf.write_line(
+            1,
+            3,
+            &format!("WIDTH: {}", ctx.size.0),
+            Some(Style {
+                fg: Color::Red,
+                ..Default::default()
+            }),
+        );
+        buf.write_line(
+            1,
+            4,
+            &format!("HEIGHT: {}", ctx.size.1),
+            Some(Style {
+                fg: Color::Red,
+                ..Default::default()
+            }),
+        );
     }
 }
