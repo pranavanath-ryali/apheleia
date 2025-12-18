@@ -20,6 +20,8 @@ fn main() {
                 data: NodeData {
                     position: Vector2(0, 0),
                     size: Some(Vector2(99, 30)),
+
+                    ..Default::default()
                 },
                 node: Box::new(Block {
                     border_style: BorderStyle {
@@ -40,6 +42,8 @@ fn main() {
             data: NodeData {
                 position: Vector2(0, 5),
                 size: Some(Vector2(50, 1)),
+
+                ..Default::default()
             },
             node: Box::new(Label::new(
                 "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris finibus vestibulum justo in rhoncus. Fusce commodo tincidunt nulla non vulputate. Maecenas nisl turpis, faucibus et tincidunt ac, eleifend vitae ex. Praesent porttitor commodo lacus, eleifend sodales magna fermentum sed. Vestibulum ac ultricies est. Lorem ipsum dolor sit amet, consectetur adipiscing.",
@@ -60,6 +64,8 @@ fn main() {
             data: NodeData {
                 position: Vector2(0, 10),
                 size: Some(Vector2(20, 1)),
+
+                ..Default::default()
             },
             node: Box::new(Label::new(
                 "Label Alignment",
