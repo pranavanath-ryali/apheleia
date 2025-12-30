@@ -19,7 +19,6 @@ Apheleia is a rust toolkit that aims to make the process of building reactive an
 - [X] Update Loop
     - [X] Nodes should register to update if necessary
 - [ ] Dirty Flag
-- [ ] Classes
 - [ ] Margins & Padding
 - [ ] Basic Widgets
     - [ ] Labels

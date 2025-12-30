@@ -3,7 +3,7 @@ use std::error::Error;
 use std::time::Duration;
 
 use crate::commands::{InitialCallContext, IntialCallCommands};
-use crate::contexts::{RenderContext, UpdateContext};
+use crate::contexts::{EventContext, EventData, RenderContext, UpdateContext};
 use crate::node::data::NodeWrapper;
 use crate::{MAX_NODES, NodeId, node::data::NodeWrapperTrait};
 use apheleia_core::types::vector::Vector2;
@@ -14,9 +14,9 @@ use crossterm::{
 };
 use tree_ds::prelude::{self, Node, TraversalStrategy, Tree};
 
-pub enum UpdateType {
-    Event,
-    Update,
+pub enum EventType {
+    Resize,
+    Keys,
 }
 
 struct Relation {
@@ -33,7 +33,9 @@ pub struct RootNode {
     available_node_ids: VecDeque<NodeId>,
     nodes: HashMap<NodeId, NodeWrapper>,
 
-    event_type_nodes: Vec<NodeId>,
+    event_resize_nodes: Vec<NodeId>,
+    event_keys_nodes: Vec<NodeId>,
+
     update_type_nodes: Vec<NodeId>,
 
     buffer: Buffer,
@@ -61,7 +63,8 @@ impl Default for RootNode {
             available_node_ids,
             nodes: HashMap::new(),
 
-            event_type_nodes: vec![],
+            event_resize_nodes: vec![],
+            event_keys_nodes: vec![],
             update_type_nodes: vec![],
 
             buffer: Buffer::new(size.0, size.1),
@@ -103,11 +106,14 @@ impl RootNode {
                         data.set_size(*s);
                     }
 
-                    IntialCallCommands::RegisterUpdateType(UpdateType::Event) => {
-                        self.event_type_nodes.insert(0, *id);
-                    }
-                    IntialCallCommands::RegisterUpdateType(UpdateType::Update) => {
+                    IntialCallCommands::RegisterUpdate => {
                         self.update_type_nodes.insert(0, *id);
+                    }
+                    IntialCallCommands::RegisterEvent(EventType::Resize) => {
+                        self.event_resize_nodes.insert(0, *id);
+                    }
+                    IntialCallCommands::RegisterEvent(EventType::Keys) => {
+                        self.event_keys_nodes.insert(0, *id);
                     }
                 }
             }
@@ -168,33 +174,50 @@ impl RootNode {
         }
     }
 
+    fn event(&mut self) -> Result<(), Box<dyn Error>> {
+        // event driven updates
+        if poll(Duration::from_nanos(1_000_000_000 / 15))? {
+            match read()? {
+                crossterm::event::Event::Key(event) => {
+                    for id in self.event_keys_nodes.iter() {
+                        let node = self.nodes.get_mut(id).unwrap();
+                        let mut event_ctx = EventContext {
+                            data: EventData::Keys(event.code),
+                            position: *node.get_position(),
+                            size: node.get_size(),
+                        };
+                        node.get_node_mut().event(&event_ctx);
+                    }
+                }
+                crossterm::event::Event::Resize(width, height) => {
+                    for id in self.event_keys_nodes.iter() {
+                        let node = self.nodes.get_mut(id).unwrap();
+                        let mut event_ctx = EventContext {
+                            data: EventData::Resize(Vector2(width, height)),
+                            position: *node.get_position(),
+                            size: node.get_size(),
+                        };
+                        node.get_node_mut().event(&event_ctx);
+                    }
+                }
+                crossterm::event::Event::FocusGained => {}
+                crossterm::event::Event::FocusLost => {}
+                crossterm::event::Event::Mouse(mouse_event) => {}
+                crossterm::event::Event::Paste(_) => {}
+            }
+        }
+
+        Ok(())
+    }
+
     pub fn run(&mut self) -> Result<(), Box<dyn Error>> {
         enable_raw_mode();
 
         self.render();
         self.renderer.flip(&mut self.buffer);
 
-        const UPDATE_RATE: Duration = Duration::from_nanos(1_000_000_000 / 15);
         loop {
-            // event driven updates
-            if poll(UPDATE_RATE)? {
-                match read()? {
-                    crossterm::event::Event::Key(event) => {
-                        if event.code == KeyCode::Esc {
-                            break;
-                        }
-
-                        if event.code == KeyCode::Char('a') {
-                            for id in self.event_type_nodes.iter() {
-                                self.nodes.get_mut(id).unwrap().node.event();
-                            }
-                        }
-                    }
-                    crossterm::event::Event::Resize(width, height) => {}
-                    _ => {}
-                }
-            }
-
+            self.event();
             self.update();
 
             self.render();

@@ -4,10 +4,14 @@ use apheleia_core::{
     types::vector::Vector2,
 };
 use apheleia_ui::{
-    commands::{
+    KeyCode, commands::{
         InitialCallContext,
-        IntialCallCommands::{self, RegisterUpdateType},
-    }, contexts::{RenderContext, UpdateContext}, node::{data::{NodeData, NodeWrapper}, node::NodeTrait}, rootnode::{RootNode, UpdateType}};
+        IntialCallCommands::{self},
+    }, contexts::{RenderContext, UpdateContext}, node::{
+        data::{NodeData, NodeWrapper},
+        node::NodeTrait,
+    }, rootnode::{self, EventType, RootNode}
+};
 
 #[derive(Default)]
 struct IDKWhatImDoingNode {
@@ -16,10 +20,11 @@ struct IDKWhatImDoingNode {
 impl NodeTrait for IDKWhatImDoingNode {
     fn initial_setup(&mut self, ctx: &mut InitialCallContext) {
         ctx.add_command(IntialCallCommands::SetSize(Vector2(3, 1)));
-        ctx.add_command(RegisterUpdateType(UpdateType::Update));
+        ctx.add_command(IntialCallCommands::RegisterUpdate);
     }
 
-    fn event(&mut self) {}
+    fn event(&mut self, ctx: &apheleia_ui::contexts::EventContext) {}
+
     fn update(&mut self, ctx: &mut UpdateContext) {
         self.i += 1;
     }
@@ -33,11 +38,18 @@ struct BasicNode(pub bool);
 impl NodeTrait for BasicNode {
     fn initial_setup(&mut self, ctx: &mut InitialCallContext) {
         ctx.add_command(IntialCallCommands::SetSize(Vector2(10, 10)));
-        ctx.add_command(RegisterUpdateType(UpdateType::Event));
+        ctx.add_command(IntialCallCommands::RegisterEvent(EventType::Keys));
     }
 
-    fn event(&mut self) {
-        self.0 = true;
+    fn event(&mut self, ctx: &apheleia_ui::contexts::EventContext) {
+        match ctx.data {
+            apheleia_ui::contexts::EventData::Keys(code) => {
+                if code == KeyCode::Char('a') {
+                    self.0 = true;
+                }
+            },
+            _ => {}
+        }
     }
 
     fn update(&mut self, ctx: &mut UpdateContext) {}

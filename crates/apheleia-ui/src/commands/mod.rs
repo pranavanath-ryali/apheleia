@@ -1,6 +1,6 @@
 use apheleia_core::types::vector::Vector2;
 
-use crate::rootnode::UpdateType;
+use crate::rootnode::{EventType};
 
 #[derive(Default)]
 pub struct InitialCallContext {
@@ -20,5 +20,6 @@ impl InitialCallContext {
 pub enum IntialCallCommands {
     SetSize(Vector2),
 
-    RegisterUpdateType(UpdateType),
+    RegisterUpdate,
+    RegisterEvent(EventType),
 }
