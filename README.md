@@ -14,8 +14,8 @@ Apheleia is a rust toolkit that aims to make the process of building reactive an
 - [X] Parent child relations
     - [X] Link parent child nodes
     - [X] Relative positioning of children with respect to parent
-- [ ] Event Loop
-    - [ ] Nodes should register the events to listen to
+- [X] Event Loop
+    - [X] Nodes should register the events to listen to
 - [X] Update Loop
     - [X] Nodes should register to update if necessary
 - [ ] Dirty Flag
