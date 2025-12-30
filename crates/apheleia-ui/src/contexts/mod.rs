@@ -1,5 +1,5 @@
 use apheleia_core::types::vector::Vector2;
-use crossterm::event::KeyCode;
+use crossterm::event::{KeyCode, KeyEvent};
 
 pub struct RenderContext {
     pub position: Vector2,
@@ -13,7 +13,7 @@ pub struct UpdateContext {
 
 pub enum EventData {
     Resize(Vector2),
-    Keys(KeyCode),
+    Keys(KeyEvent),
 }
 
 pub struct EventContext {

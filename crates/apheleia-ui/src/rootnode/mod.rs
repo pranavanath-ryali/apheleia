@@ -8,6 +8,7 @@ use crate::node::data::NodeWrapper;
 use crate::{MAX_NODES, NodeId, node::data::NodeWrapperTrait};
 use apheleia_core::types::vector::Vector2;
 use apheleia_core::{buffer::Buffer, renderer::Renderer, terminal};
+use crossterm::event::KeyModifiers;
 use crossterm::{
     event::{KeyCode, poll, read},
     terminal::{disable_raw_mode, enable_raw_mode},
@@ -25,6 +26,8 @@ struct Relation {
 }
 
 pub struct RootNode {
+    running: bool,
+
     width: u16,
     height: u16,
 
@@ -55,6 +58,8 @@ impl Default for RootNode {
         relations.add_node(Node::new(0, None), None);
 
         Self {
+            running: false,
+
             width: size.0,
             height: size.1,
 
@@ -179,10 +184,14 @@ impl RootNode {
         if poll(Duration::from_nanos(1_000_000_000 / 15))? {
             match read()? {
                 crossterm::event::Event::Key(event) => {
+                    if event.code == KeyCode::Char('c') && event.modifiers == KeyModifiers::CONTROL {
+                        self.running = false;
+                    }
+
                     for id in self.event_keys_nodes.iter() {
                         let node = self.nodes.get_mut(id).unwrap();
                         let mut event_ctx = EventContext {
-                            data: EventData::Keys(event.code),
+                            data: EventData::Keys(event),
                             position: *node.get_position(),
                             size: node.get_size(),
                         };
@@ -216,7 +225,8 @@ impl RootNode {
         self.render();
         self.renderer.flip(&mut self.buffer);
 
-        loop {
+        self.running = true;
+        while (self.running) {
             self.event();
             self.update();
 

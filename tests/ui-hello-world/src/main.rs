@@ -4,7 +4,7 @@ use apheleia_core::{
     types::vector::Vector2,
 };
 use apheleia_ui::{
-    KeyCode, commands::{
+    KeyCode, KeyModifiers, commands::{
         InitialCallContext,
         IntialCallCommands::{self},
     }, contexts::{RenderContext, UpdateContext}, node::{
@@ -43,8 +43,8 @@ impl NodeTrait for BasicNode {
 
     fn event(&mut self, ctx: &apheleia_ui::contexts::EventContext) {
         match ctx.data {
-            apheleia_ui::contexts::EventData::Keys(code) => {
-                if code == KeyCode::Char('a') {
+            apheleia_ui::contexts::EventData::Keys(event) => {
+                if event.code == KeyCode::Char('A') {
                     self.0 = true;
                 }
             },
