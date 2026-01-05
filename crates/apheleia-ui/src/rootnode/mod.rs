@@ -130,65 +130,67 @@ impl RootNode {
     //     None
     // }
 
+    // pub fn initial_setup(&mut self) {
+    //     for (id, data) in self.nodes.iter_mut() {
+    //         let mut ctx = InitialCallContext::default();
+    //         data.node.initial_setup(&mut ctx);
+    //
+    //         for command in ctx.get_commands() {
+    //             match command {
+    //                 IntialCallCommands::SetSize(s) => {
+    //                     data.set_size(*s);
+    //                 }
+    //
+    //                 IntialCallCommands::RegisterUpdate => {
+    //                     self.update_type_nodes.insert(0, *id);
+    //                 }
+    //                 IntialCallCommands::RegisterEvent(EventType::Resize) => {
+    //                     self.event_resize_nodes.insert(0, *id);
+    //                 }
+    //                 IntialCallCommands::RegisterEvent(EventType::Keys) => {
+    //                     self.event_keys_nodes.insert(0, *id);
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
+
     pub fn initial_setup(&mut self) {
-        for (id, data) in self.nodes.iter_mut() {
+        for (id, node) in self.id_nodes.iter_mut() {
             let mut ctx = InitialCallContext::default();
-            data.node.initial_setup(&mut ctx);
+            node.initial_setup(&mut ctx);
 
-            for command in ctx.get_commands() {
-                match command {
-                    IntialCallCommands::SetSize(s) => {
-                        data.set_size(*s);
-                    }
-
-                    IntialCallCommands::RegisterUpdate => {
-                        self.update_type_nodes.insert(0, *id);
-                    }
-                    IntialCallCommands::RegisterEvent(EventType::Resize) => {
-                        self.event_resize_nodes.insert(0, *id);
-                    }
-                    IntialCallCommands::RegisterEvent(EventType::Keys) => {
-                        self.event_keys_nodes.insert(0, *id);
-                    }
-                }
-            }
+            // TODO: Handle Context
         }
     }
 
-    fn render(&mut self) {
-        for id in self
-            .relations
-            .traverse(&(0 as usize), TraversalStrategy::PreOrder)
-            .unwrap()
-            .iter()
-        {
-            if *id == 0_usize {
-                continue;
-            }
+    fn render_flip(&mut self) {
+        for id in self.relations.traverse(&(0 as usize), TraversalStrategy::PreOrder).unwrap().iter() {
+            if *id == 0_usize { continue; }
 
-            let mut positions: Vector2 = Vector2(0, 0);
+            let mut positions = Vector2(0, 0);
+            // TODO: Precalculate relative positions
             self.relations
                 .get_ancestor_ids(id)
                 .unwrap()
                 .iter()
                 .filter(|v| **v != 0_usize)
                 .for_each(|i| {
-                    let pos = self.nodes.get(i).unwrap().get_position();
+                    let pos = &self.id_data.get(i).unwrap().position;
                     positions.0 += pos.0;
                     positions.1 += pos.1;
                 });
-
-            let node = self.nodes.get_mut(id).unwrap();
-            if let Some(size) = node.get_size() {
-                let pos = node.get_position();
-
+            
+            let node_data = self.id_data.get_mut(id).unwrap();
+            if let Some(size) = node_data.size {
+                let pos = &node_data.position;
                 let mut ctx = RenderContext {
                     position: *pos,
-                    size: size,
+                    size,
                 };
 
                 let mut node_buffer = Buffer::new(size.0, size.1);
-                node.get_node().render(&mut ctx, &mut node_buffer);
+                self.id_nodes.get_mut(id).unwrap().render(&mut ctx, &mut node_buffer);
                 self.buffer.render_buffer(
                     positions.0 + pos.0,
                     positions.1 + pos.1,
@@ -196,73 +198,114 @@ impl RootNode {
                 );
             }
         }
+
+        self.renderer.flip(&mut self.buffer);
     }
 
-    fn update(&mut self) {
-        for id in self.update_type_nodes.iter() {
-            let node = self.nodes.get_mut(id).unwrap();
-            let mut ctx = UpdateContext {
-                position: *node.get_position(),
-                size: node.get_size(),
-            };
-            node.get_node_mut().update(&mut ctx);
-        }
-    }
+    // fn render(&mut self) {
+    //     for id in self
+    //         .relations
+    //         .traverse(&(0 as usize), TraversalStrategy::PreOrder)
+    //         .unwrap()
+    //         .iter()
+    //     {
+    //         if *id == 0_usize {
+    //             continue;
+    //         }
+    //
+    //         let mut positions: Vector2 = Vector2(0, 0);
+    //         self.relations
+    //             .get_ancestor_ids(id)
+    //             .unwrap()
+    //             .iter()
+    //             .filter(|v| **v != 0_usize)
+    //             .for_each(|i| {
+    //                 let pos = self.nodes.get(i).unwrap().get_position();
+    //                 positions.0 += pos.0;
+    //                 positions.1 += pos.1;
+    //             });
+    //
+    //         let node = self.nodes.get_mut(id).unwrap();
+    //         if let Some(size) = node.get_size() {
+    //             let pos = node.get_position();
+    //
+    //             let mut ctx = RenderContext {
+    //                 position: *pos,
+    //                 size: size,
+    //             };
+    //
+    //             let mut node_buffer = Buffer::new(size.0, size.1);
+    //             node.get_node().render(&mut ctx, &mut node_buffer);
+    //             self.buffer.render_buffer(
+    //                 positions.0 + pos.0,
+    //                 positions.1 + pos.1,
+    //                 &mut node_buffer,
+    //             );
+    //         }
+    //     }
+    // }
 
-    fn event(&mut self) -> Result<(), Box<dyn Error>> {
-        // event driven updates
-        if poll(Duration::from_nanos(1_000_000_000 / 15))? {
-            match read()? {
-                crossterm::event::Event::Key(event) => {
-                    if event.code == KeyCode::Char('c') && event.modifiers == KeyModifiers::CONTROL
-                    {
-                        self.running = false;
-                    }
+    // fn update(&mut self) {
+    //     for id in self.update_type_nodes.iter() {
+    //         let node = self.nodes.get_mut(id).unwrap();
+    //         let mut ctx = UpdateContext {
+    //             position: *node.get_position(),
+    //             size: node.get_size(),
+    //         };
+    //         node.get_node_mut().update(&mut ctx);
+    //     }
+    // }
 
-                    for id in self.event_keys_nodes.iter() {
-                        let node = self.nodes.get_mut(id).unwrap();
-                        let mut event_ctx = EventContext {
-                            data: EventData::Keys(event),
-                            position: *node.get_position(),
-                            size: node.get_size(),
-                        };
-                        node.get_node_mut().event(&event_ctx);
-                    }
-                }
-                crossterm::event::Event::Resize(width, height) => {
-                    for id in self.event_keys_nodes.iter() {
-                        let node = self.nodes.get_mut(id).unwrap();
-                        let mut event_ctx = EventContext {
-                            data: EventData::Resize(Vector2(width, height)),
-                            position: *node.get_position(),
-                            size: node.get_size(),
-                        };
-                        node.get_node_mut().event(&event_ctx);
-                    }
-                }
-                crossterm::event::Event::FocusGained => {}
-                crossterm::event::Event::FocusLost => {}
-                crossterm::event::Event::Mouse(mouse_event) => {}
-                crossterm::event::Event::Paste(_) => {}
-            }
-        }
-
-        Ok(())
-    }
+    // fn event(&mut self) -> Result<(), Box<dyn Error>> {
+    //     // event driven updates
+    //     if poll(Duration::from_nanos(1_000_000_000 / 15))? {
+    //         match read()? {
+    //             crossterm::event::Event::Key(event) => {
+    //                 if event.code == KeyCode::Char('c') && event.modifiers == KeyModifiers::CONTROL
+    //                 {
+    //                     self.running = false;
+    //                 }
+    //
+    //                 for id in self.event_keys_nodes.iter() {
+    //                     let node = self.nodes.get_mut(id).unwrap();
+    //                     let mut event_ctx = EventContext {
+    //                         data: EventData::Keys(event),
+    //                         position: *node.get_position(),
+    //                         size: node.get_size(),
+    //                     };
+    //                     node.get_node_mut().event(&event_ctx);
+    //                 }
+    //             }
+    //             crossterm::event::Event::Resize(width, height) => {
+    //                 for id in self.event_keys_nodes.iter() {
+    //                     let node = self.nodes.get_mut(id).unwrap();
+    //                     let mut event_ctx = EventContext {
+    //                         data: EventData::Resize(Vector2(width, height)),
+    //                         position: *node.get_position(),
+    //                         size: node.get_size(),
+    //                     };
+    //                     node.get_node_mut().event(&event_ctx);
+    //                 }
+    //             }
+    //             crossterm::event::Event::FocusGained => {}
+    //             crossterm::event::Event::FocusLost => {}
+    //             crossterm::event::Event::Mouse(mouse_event) => {}
+    //             crossterm::event::Event::Paste(_) => {}
+    //         }
+    //     }
+    //
+    //     Ok(())
+    // }
 
     pub fn run(&mut self) -> Result<(), Box<dyn Error>> {
         enable_raw_mode();
 
-        self.render();
-        self.renderer.flip(&mut self.buffer);
+        self.render_flip();
 
         self.running = true;
         while (self.running) {
-            self.event();
-            self.update();
-
-            self.render();
-            self.renderer.update(&mut self.buffer);
+            // self.update();
+            self.render_flip();
         }
 
         disable_raw_mode();
