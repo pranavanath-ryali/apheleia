@@ -1,15 +1,15 @@
-use std::collections::{HashMap, VecDeque};
+use std::collections::HashMap;
 use std::error::Error;
 use std::time::Duration;
 
 use crate::contexts::{
-    self, EventData, EventUpdateContext, InitialCallContext, IntialCallCommands,
-    RenderContext, UpdateContext,
+    EventData, EventUpdateContext, InitialCallContext, IntialCallCommands,
+    RenderContext,
 };
-use crate::node::data::{NodeData, NodeWrapper};
+use crate::node::data::NodeData;
 use crate::node::node::NodeTrait;
 use crate::types::{EventType, UpdateTypeNode};
-use crate::{MAX_NODES, NodeId, node::data::NodeWrapperTrait};
+use crate::NodeId;
 use apheleia_core::types::vector::Vector2;
 use apheleia_core::{buffer::Buffer, renderer::Renderer, terminal};
 use crossterm::event::KeyModifiers;
@@ -17,7 +17,7 @@ use crossterm::{
     event::{KeyCode, poll, read},
     terminal::{disable_raw_mode, enable_raw_mode},
 };
-use tree_ds::prelude::{self, Node, TraversalStrategy, Tree};
+use tree_ds::prelude::{Node, TraversalStrategy, Tree};
 
 pub struct RootNode {
     running: bool,
