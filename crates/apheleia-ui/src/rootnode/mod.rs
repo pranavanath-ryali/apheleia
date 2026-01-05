@@ -4,7 +4,8 @@ use std::time::Duration;
 
 use crate::commands::{InitialCallContext, IntialCallCommands};
 use crate::contexts::{EventContext, EventData, RenderContext, UpdateContext};
-use crate::node::data::NodeWrapper;
+use crate::node::data::{NodeData, NodeWrapper};
+use crate::node::node::NodeTrait;
 use crate::{MAX_NODES, NodeId, node::data::NodeWrapperTrait};
 use apheleia_core::types::vector::Vector2;
 use apheleia_core::{buffer::Buffer, renderer::Renderer, terminal};
@@ -28,13 +29,16 @@ struct Relation {
 pub struct RootNode {
     running: bool,
 
+    node_count: NodeId,
+
     width: u16,
     height: u16,
 
     relations: Tree<NodeId, NodeId>,
 
-    available_node_ids: VecDeque<NodeId>,
-    nodes: HashMap<NodeId, NodeWrapper>,
+    id_nodes: HashMap<NodeId, Box<dyn NodeTrait>>,
+    id_data: HashMap<NodeId, NodeData>,
+    class_id: HashMap<String, NodeId>,
 
     event_resize_nodes: Vec<NodeId>,
     event_keys_nodes: Vec<NodeId>,
@@ -49,24 +53,22 @@ impl Default for RootNode {
     fn default() -> Self {
         let size = terminal::size().unwrap();
 
-        let mut available_node_ids: VecDeque<NodeId> = VecDeque::new();
-        for i in 1..MAX_NODES {
-            available_node_ids.push_back(i);
-        }
-
         let mut relations: Tree<NodeId, NodeId> = Tree::new(None);
         relations.add_node(Node::new(0, None), None);
 
         Self {
             running: false,
 
+            node_count: 0,
+
             width: size.0,
             height: size.1,
 
             relations,
 
-            available_node_ids,
-            nodes: HashMap::new(),
+            id_nodes: HashMap::new(),
+            id_data: HashMap::new(),
+            class_id: HashMap::new(),
 
             event_resize_nodes: vec![],
             event_keys_nodes: vec![],
@@ -79,26 +81,54 @@ impl Default for RootNode {
 }
 
 impl RootNode {
-    fn get_id(&mut self) -> Option<NodeId> {
-        self.available_node_ids.pop_front()
+    fn get_id(&mut self) -> NodeId {
+        self.node_count += 1;
+        self.node_count
     }
 
-    pub fn add_node(&mut self, node: NodeWrapper, parent_id: Option<NodeId>) -> Option<NodeId> {
-        if let Some(id) = self.get_id() {
-            self.nodes.insert(id, node);
+    pub fn add_node(
+        &mut self,
+        class: String,
+        parent_class: String,
+        node: Box<dyn NodeTrait>,
+        data: NodeData,
+    ) {
+        let id = self.get_id();
+        self.class_id.insert(class, id);
+        self.id_nodes.insert(id, node);
+        self.id_data.insert(id, data);
 
-            if let Some(parent) = &parent_id {
-                self.relations.add_node(Node::new(id, None), Some(parent));
-            } else {
-                self.relations
-                    .add_node(Node::new(id, None), Some(&(0 as usize)));
-            }
-
-            return Some(id);
+        if parent_class == "" {
+            self.relations
+                .add_node(Node::new(id, None), Some(&(0 as usize)));
+        } else {
+            self.relations.add_node(
+                Node::new(id, None),
+                Some(
+                    self.class_id
+                        .get(&parent_class)
+                        .expect("Given parent class doesn't exist"),
+                ),
+            );
         }
-
-        None
     }
+
+    // pub fn add_node(&mut self, node: NodeWrapper, parent_id: Option<NodeId>) -> Option<NodeId> {
+    //     if let Some(id) = self.get_id() {
+    //         self.nodes.insert(id, node);
+    //
+    //         if let Some(parent) = &parent_id {
+    //             self.relations.add_node(Node::new(id, None), Some(parent));
+    //         } else {
+    //             self.relations
+    //                 .add_node(Node::new(id, None), Some(&(0 as usize)));
+    //         }
+    //
+    //         return Some(id);
+    //     }
+    //
+    //     None
+    // }
 
     pub fn initial_setup(&mut self) {
         for (id, data) in self.nodes.iter_mut() {
@@ -184,7 +214,8 @@ impl RootNode {
         if poll(Duration::from_nanos(1_000_000_000 / 15))? {
             match read()? {
                 crossterm::event::Event::Key(event) => {
-                    if event.code == KeyCode::Char('c') && event.modifiers == KeyModifiers::CONTROL {
+                    if event.code == KeyCode::Char('c') && event.modifiers == KeyModifiers::CONTROL
+                    {
                         self.running = false;
                     }
 
