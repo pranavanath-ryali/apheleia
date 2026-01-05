@@ -1,0 +1,14 @@
+use crate::NodeId;
+
+#[derive(Hash, PartialEq, Eq, Clone, Copy)]
+pub enum EventType {
+    Resize,
+    Keys,
+}
+
+#[derive(Hash, PartialEq, Eq)]
+pub enum UpdateTypeNode {
+    ConstantUpdate,
+    Event(EventType),
+}
+

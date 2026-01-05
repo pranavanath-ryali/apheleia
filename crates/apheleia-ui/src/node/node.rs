@@ -1,6 +1,6 @@
 use apheleia_core::buffer::Buffer;
 
-use crate::{commands::InitialCallContext, contexts::{EventContext, RenderContext, UpdateContext}, node::data::{NodeData, NodeWrapperTrait}};
+use crate::contexts::{EventContext, InitialCallContext, RenderContext, UpdateContext};
 
 pub trait NodeTrait {
     fn initial_setup(&mut self, ctx: &mut InitialCallContext);

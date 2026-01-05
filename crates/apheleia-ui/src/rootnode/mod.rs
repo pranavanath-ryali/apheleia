@@ -2,10 +2,13 @@ use std::collections::{HashMap, VecDeque};
 use std::error::Error;
 use std::time::Duration;
 
-use crate::commands::{InitialCallContext, IntialCallCommands};
-use crate::contexts::{EventContext, EventData, RenderContext, UpdateContext};
+use crate::contexts::{
+    self, EventContext, EventData, EventUpdateContext, InitialCallContext, IntialCallCommands,
+    RenderContext, UpdateContext,
+};
 use crate::node::data::{NodeData, NodeWrapper};
 use crate::node::node::NodeTrait;
+use crate::types::{EventType, UpdateTypeNode};
 use crate::{MAX_NODES, NodeId, node::data::NodeWrapperTrait};
 use apheleia_core::types::vector::Vector2;
 use apheleia_core::{buffer::Buffer, renderer::Renderer, terminal};
@@ -15,16 +18,6 @@ use crossterm::{
     terminal::{disable_raw_mode, enable_raw_mode},
 };
 use tree_ds::prelude::{self, Node, TraversalStrategy, Tree};
-
-pub enum EventType {
-    Resize,
-    Keys,
-}
-
-struct Relation {
-    pub id: NodeId,
-    pub children: Vec<Relation>,
-}
 
 pub struct RootNode {
     running: bool,
@@ -40,21 +33,26 @@ pub struct RootNode {
     id_data: HashMap<NodeId, NodeData>,
     class_id: HashMap<String, NodeId>,
 
-    event_resize_nodes: Vec<NodeId>,
-    event_keys_nodes: Vec<NodeId>,
-
-    update_type_nodes: Vec<NodeId>,
+    // event_resize_nodes: Vec<NodeId>,
+    // event_keys_nodes: Vec<NodeId>,
+    //
+    // update_type_nodes: Vec<NodeId>,
+    id_update_type: HashMap<UpdateTypeNode, Vec<NodeId>>,
 
     buffer: Buffer,
     renderer: Renderer,
 }
-
 impl Default for RootNode {
     fn default() -> Self {
         let size = terminal::size().unwrap();
 
         let mut relations: Tree<NodeId, NodeId> = Tree::new(None);
         relations.add_node(Node::new(0, None), None);
+
+        let mut id_update_type: HashMap<UpdateTypeNode, Vec<NodeId>> = HashMap::new();
+        id_update_type.insert(UpdateTypeNode::ConstantUpdate, vec![]);
+        id_update_type.insert(UpdateTypeNode::Event(EventType::Keys), vec![]);
+        id_update_type.insert(UpdateTypeNode::Event(EventType::Resize), vec![]);
 
         Self {
             running: false,
@@ -65,15 +63,15 @@ impl Default for RootNode {
             height: size.1,
 
             relations,
+            id_update_type,
 
             id_nodes: HashMap::new(),
             id_data: HashMap::new(),
             class_id: HashMap::new(),
 
-            event_resize_nodes: vec![],
-            event_keys_nodes: vec![],
-            update_type_nodes: vec![],
-
+            // event_resize_nodes: vec![],
+            // event_keys_nodes: vec![],
+            // update_type_nodes: vec![],
             buffer: Buffer::new(size.0, size.1),
             renderer: Renderer::default(),
         }
@@ -113,60 +111,51 @@ impl RootNode {
         }
     }
 
-    // pub fn add_node(&mut self, node: NodeWrapper, parent_id: Option<NodeId>) -> Option<NodeId> {
-    //     if let Some(id) = self.get_id() {
-    //         self.nodes.insert(id, node);
-    //
-    //         if let Some(parent) = &parent_id {
-    //             self.relations.add_node(Node::new(id, None), Some(parent));
-    //         } else {
-    //             self.relations
-    //                 .add_node(Node::new(id, None), Some(&(0 as usize)));
-    //         }
-    //
-    //         return Some(id);
-    //     }
-    //
-    //     None
-    // }
-
-    // pub fn initial_setup(&mut self) {
-    //     for (id, data) in self.nodes.iter_mut() {
-    //         let mut ctx = InitialCallContext::default();
-    //         data.node.initial_setup(&mut ctx);
-    //
-    //         for command in ctx.get_commands() {
-    //             match command {
-    //                 IntialCallCommands::SetSize(s) => {
-    //                     data.set_size(*s);
-    //                 }
-    //
-    //                 IntialCallCommands::RegisterUpdate => {
-    //                     self.update_type_nodes.insert(0, *id);
-    //                 }
-    //                 IntialCallCommands::RegisterEvent(EventType::Resize) => {
-    //                     self.event_resize_nodes.insert(0, *id);
-    //                 }
-    //                 IntialCallCommands::RegisterEvent(EventType::Keys) => {
-    //                     self.event_keys_nodes.insert(0, *id);
-    //                 }
-    //             }
-    //         }
-    //     }
-    // }
-
     pub fn initial_setup(&mut self) {
-        for (id, node) in self.id_nodes.iter_mut() {
-            let mut ctx = InitialCallContext::default();
+        for id in self
+            .relations
+            .traverse(&(0 as usize), TraversalStrategy::PreOrder)
+            .unwrap()
+            .iter()
+        {
+            if *id == 0_usize {
+                continue;
+            }
+
+            let data = self.id_data.get_mut(id).unwrap();
+            let node = self.id_nodes.get_mut(id).unwrap();
+
+            let mut ctx = InitialCallContext::new(&data.position, &data.size);
             node.initial_setup(&mut ctx);
 
-            // TODO: Handle Context
+            for command in ctx.get_commands().iter() {
+                match command {
+                    IntialCallCommands::SetSize(size) => data.size = Some(*size),
+                    IntialCallCommands::RegisterForUpdate => self
+                        .id_update_type
+                        .get_mut(&UpdateTypeNode::ConstantUpdate)
+                        .unwrap()
+                        .push(*id),
+                    IntialCallCommands::RegisterForEvent(event_type) => self
+                        .id_update_type
+                        .get_mut(&UpdateTypeNode::Event(*event_type))
+                        .unwrap()
+                        .push(*id),
+                }
+            }
         }
     }
 
     fn render_flip(&mut self) {
-        for id in self.relations.traverse(&(0 as usize), TraversalStrategy::PreOrder).unwrap().iter() {
-            if *id == 0_usize { continue; }
+        for id in self
+            .relations
+            .traverse(&(0 as usize), TraversalStrategy::PreOrder)
+            .unwrap()
+            .iter()
+        {
+            if *id == 0_usize {
+                continue;
+            }
 
             let mut positions = Vector2(0, 0);
             // TODO: Precalculate relative positions
@@ -180,7 +169,7 @@ impl RootNode {
                     positions.0 += pos.0;
                     positions.1 += pos.1;
                 });
-            
+
             let node_data = self.id_data.get_mut(id).unwrap();
             if let Some(size) = node_data.size {
                 let pos = &node_data.position;
@@ -190,7 +179,10 @@ impl RootNode {
                 };
 
                 let mut node_buffer = Buffer::new(size.0, size.1);
-                self.id_nodes.get_mut(id).unwrap().render(&mut ctx, &mut node_buffer);
+                self.id_nodes
+                    .get_mut(id)
+                    .unwrap()
+                    .render(&mut ctx, &mut node_buffer);
                 self.buffer.render_buffer(
                     positions.0 + pos.0,
                     positions.1 + pos.1,
@@ -256,46 +248,64 @@ impl RootNode {
     //     }
     // }
 
-    // fn event(&mut self) -> Result<(), Box<dyn Error>> {
-    //     // event driven updates
-    //     if poll(Duration::from_nanos(1_000_000_000 / 15))? {
-    //         match read()? {
-    //             crossterm::event::Event::Key(event) => {
-    //                 if event.code == KeyCode::Char('c') && event.modifiers == KeyModifiers::CONTROL
-    //                 {
-    //                     self.running = false;
-    //                 }
-    //
-    //                 for id in self.event_keys_nodes.iter() {
-    //                     let node = self.nodes.get_mut(id).unwrap();
-    //                     let mut event_ctx = EventContext {
-    //                         data: EventData::Keys(event),
-    //                         position: *node.get_position(),
-    //                         size: node.get_size(),
-    //                     };
-    //                     node.get_node_mut().event(&event_ctx);
-    //                 }
-    //             }
-    //             crossterm::event::Event::Resize(width, height) => {
-    //                 for id in self.event_keys_nodes.iter() {
-    //                     let node = self.nodes.get_mut(id).unwrap();
-    //                     let mut event_ctx = EventContext {
-    //                         data: EventData::Resize(Vector2(width, height)),
-    //                         position: *node.get_position(),
-    //                         size: node.get_size(),
-    //                     };
-    //                     node.get_node_mut().event(&event_ctx);
-    //                 }
-    //             }
-    //             crossterm::event::Event::FocusGained => {}
-    //             crossterm::event::Event::FocusLost => {}
-    //             crossterm::event::Event::Mouse(mouse_event) => {}
-    //             crossterm::event::Event::Paste(_) => {}
-    //         }
-    //     }
-    //
-    //     Ok(())
-    // }
+    fn event(&mut self) -> Result<(), Box<dyn Error>> {
+        // event driven updates
+        if poll(Duration::from_nanos(1_000_000_000 / 15))? {
+            match read()? {
+                crossterm::event::Event::Key(event) => {
+                    if event.code == KeyCode::Char('c') && event.modifiers == KeyModifiers::CONTROL
+                    {
+                        self.running = false;
+                    }
+
+                    for id in self
+                        .id_update_type
+                        .get_mut(&UpdateTypeNode::Event(EventType::Keys))
+                        .unwrap()
+                        .iter()
+                    {
+                        let node = self.id_nodes.get_mut(id).unwrap();
+                        let data = self.id_data.get_mut(id).unwrap();
+
+                        let mut ctx = EventUpdateContext::new(
+                            &data.position,
+                            &data.size,
+                            EventData::Keys(event),
+                        );
+                        node.event(&mut ctx);
+
+                        // handle ctx commands
+                    }
+                }
+                crossterm::event::Event::Resize(width, height) => {
+                    for id in self
+                        .id_update_type
+                        .get_mut(&UpdateTypeNode::Event(EventType::Resize))
+                        .unwrap()
+                        .iter()
+                    {
+                        let node = self.id_nodes.get_mut(id).unwrap();
+                        let data = self.id_data.get_mut(id).unwrap();
+
+                        let mut ctx = EventUpdateContext::new(
+                            &data.position,
+                            &data.size,
+                            EventData::Resize(Vector2(width, height)),
+                        );
+                        node.event(&mut ctx);
+
+                        // handle ctx commands
+                    }
+                }
+                crossterm::event::Event::FocusGained => {}
+                crossterm::event::Event::FocusLost => {}
+                crossterm::event::Event::Mouse(mouse_event) => {}
+                crossterm::event::Event::Paste(_) => {}
+            }
+        }
+
+        Ok(())
+    }
 
     pub fn run(&mut self) -> Result<(), Box<dyn Error>> {
         enable_raw_mode();
