@@ -26,34 +26,34 @@ impl Default for Renderer {
 
 impl Renderer {
     fn queue_flags(&mut self, flags: &StyleFlags) {
-        if flags.contains(StyleFlags::BOLD) {
+        if flags.contains(StyleFlags::Bold) {
             queue!(self.stdout, SetAttribute(Attribute::Bold));
         }
-        if flags.contains(StyleFlags::ITALIC) {
+        if flags.contains(StyleFlags::Italic) {
             queue!(self.stdout, SetAttribute(Attribute::Italic));
         }
-        if flags.contains(StyleFlags::DIM) {
+        if flags.contains(StyleFlags::Dim) {
             queue!(self.stdout, SetAttribute(Attribute::Dim));
         }
-        if flags.contains(StyleFlags::REVERSE) {
+        if flags.contains(StyleFlags::Reverse) {
             queue!(self.stdout, SetAttribute(Attribute::Reverse));
         }
-        if flags.contains(StyleFlags::UNDERCURLED) {
+        if flags.contains(StyleFlags::UnderCurled) {
             queue!(self.stdout, SetAttribute(Attribute::Undercurled));
         }
-        if flags.contains(StyleFlags::UNDERLINED) {
+        if flags.contains(StyleFlags::UnderLined) {
             queue!(self.stdout, SetAttribute(Attribute::Underlined));
         }
-        if flags.contains(StyleFlags::UNDERDOTTED) {
+        if flags.contains(StyleFlags::UnderDotted) {
             queue!(self.stdout, SetAttribute(Attribute::Underdotted));
         }
-        if flags.contains(StyleFlags::UNDERDASHED) {
+        if flags.contains(StyleFlags::UnderDashed) {
             queue!(self.stdout, SetAttribute(Attribute::Underdashed));
         }
-        if flags.contains(StyleFlags::DOUBLE_UNDERLINED) {
+        if flags.contains(StyleFlags::DoubleUnderLined) {
             queue!(self.stdout, SetAttribute(Attribute::DoubleUnderlined));
         }
-        if flags.contains(StyleFlags::SLOW_BLINK) {
+        if flags.contains(StyleFlags::SlowBlink) {
             queue!(self.stdout, SetAttribute(Attribute::SlowBlink));
         }
 

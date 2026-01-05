@@ -80,7 +80,7 @@ impl NodeTrait for BasicNode {
                 0,
                 "PRESSED A!",
                 Some(Style {
-                    flags: StyleFlags::UNDERLINED,
+                    flags: StyleFlags::UnderLined,
                     ..Default::default()
                 }),
             );

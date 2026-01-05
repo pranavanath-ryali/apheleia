@@ -19,7 +19,7 @@ fn main() {
         Some(Style {
             fg: Color::Red,
             bg: Color::Blue,
-            flags: StyleFlags::BOLD | StyleFlags::ITALIC,
+            flags: StyleFlags::Bold | StyleFlags::Italic,
             ..Default::default()
         }),
     );
@@ -31,7 +31,7 @@ fn main() {
         "WEEEEEEEEE",
         Some(Style {
             fg: Color::Blue,
-            flags: StyleFlags::ITALIC | StyleFlags::UNDERCURLED,
+            flags: StyleFlags::Italic | StyleFlags::UnderCurled,
             ..Default::default()
         }),
     );
@@ -41,7 +41,7 @@ fn main() {
         "WEEEEEEEEE",
         Some(Style {
             fg: Color::Blue,
-            flags: StyleFlags::ITALIC | StyleFlags::UNDERCURLED,
+            flags: StyleFlags::Italic | StyleFlags::UnderCurled,
             ..Default::default()
         }),
     );

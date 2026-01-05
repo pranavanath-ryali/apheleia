@@ -48,7 +48,7 @@ fn main() {
             node: Box::new(Label::new(
                 "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris finibus vestibulum justo in rhoncus. Fusce commodo tincidunt nulla non vulputate. Maecenas nisl turpis, faucibus et tincidunt ac, eleifend vitae ex. Praesent porttitor commodo lacus, eleifend sodales magna fermentum sed. Vestibulum ac ultricies est. Lorem ipsum dolor sit amet, consectetur adipiscing.",
                 Some(Style {
-                    flags: StyleFlags::ITALIC | StyleFlags::BOLD,
+                    flags: StyleFlags::Italic | StyleFlags::Bold,
                     ..Default::default()
                 }),
                 None,
@@ -72,7 +72,7 @@ fn main() {
                 Some(Style {
                     fg: apheleia_core::Color::Black,
                     bg: apheleia_core::Color::Blue,
-                    flags: StyleFlags::ITALIC | StyleFlags::BOLD,
+                    flags: StyleFlags::Italic | StyleFlags::Bold,
                     ..Default::default()
                 }),
                 Some(LabelAlignment::Center),
