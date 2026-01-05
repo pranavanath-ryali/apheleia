@@ -4,13 +4,17 @@ use apheleia_core::{
     types::vector::Vector2,
 };
 use apheleia_ui::{
-    KeyCode, KeyModifiers, commands::{
+    KeyCode, KeyModifiers,
+    commands::{
         InitialCallContext,
         IntialCallCommands::{self},
-    }, contexts::{RenderContext, UpdateContext}, node::{
+    },
+    contexts::{RenderContext, UpdateContext},
+    node::{
         data::{NodeData, NodeWrapper},
         node::NodeTrait,
-    }, rootnode::{self, EventType, RootNode}
+    },
+    rootnode::{self, EventType, RootNode},
 };
 
 #[derive(Default)]
@@ -47,7 +51,7 @@ impl NodeTrait for BasicNode {
                 if event.code == KeyCode::Char('A') {
                     self.0 = true;
                 }
-            },
+            }
             _ => {}
         }
     }
@@ -90,7 +94,15 @@ impl NodeTrait for BasicNode {
 fn main() {
     let mut root = RootNode::default();
 
-    root.add_node("test", "", Box::new(IDKWhatImDoingNode::default()), NodeData { position: Vector2(10, 10), size: Some(Vector2(20, 1)) });
+    root.add_node(
+        "test",
+        "",
+        Box::new(BasicNode(false)),
+        NodeData {
+            position: Vector2(10, 10),
+            size: Some(Vector2(20, 1)),
+        },
+    );
 
     root.initial_setup();
     root.run();
