@@ -3,7 +3,7 @@ use std::error::Error;
 use std::time::Duration;
 
 use crate::contexts::{
-    self, EventContext, EventData, EventUpdateContext, InitialCallContext, IntialCallCommands,
+    self, EventData, EventUpdateContext, InitialCallContext, IntialCallCommands,
     RenderContext, UpdateContext,
 };
 use crate::node::data::{NodeData, NodeWrapper};
