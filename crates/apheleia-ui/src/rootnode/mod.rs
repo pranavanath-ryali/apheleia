@@ -88,13 +88,13 @@ impl RootNode {
 
     pub fn add_node(
         &mut self,
-        class: String,
-        parent_class: String,
+        class: &str,
+        parent_class: &str,
         node: Box<dyn NodeTrait>,
         data: NodeData,
     ) {
         let id = self.get_id();
-        self.class_id.insert(class, id);
+        self.class_id.insert(class.to_string(), id);
         self.id_nodes.insert(id, node);
         self.id_data.insert(id, data);
 
@@ -106,7 +106,7 @@ impl RootNode {
                 Node::new(id, None),
                 Some(
                     self.class_id
-                        .get(&parent_class)
+                        .get(&parent_class.to_string())
                         .expect("Given parent class doesn't exist"),
                 ),
             );
