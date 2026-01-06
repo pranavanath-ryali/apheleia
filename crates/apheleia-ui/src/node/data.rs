@@ -7,6 +7,8 @@ pub struct NodeData {
     pub position: Vector2,
 
     pub size: Option<Vector2>,
+
+    pub dirty: Dirty
 }
 impl NodeData {
     pub fn new(position: Vector2) -> Self {
@@ -14,6 +16,8 @@ impl NodeData {
             global_positon: None,
             position,
             size: None,
+
+            dirty: Dirty::default()
         }
     }
 
@@ -29,5 +33,14 @@ impl NodeData {
     }
     pub fn get_size(&self) -> &Option<Vector2> {
         &self.size
+    }
+}
+
+pub struct Dirty {
+    pub render_dirty: bool
+}
+impl Default for Dirty {
+    fn default() -> Self {
+        Dirty { render_dirty: false }
     }
 }
