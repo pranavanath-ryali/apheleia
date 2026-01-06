@@ -5,7 +5,7 @@ use std::time::Duration;
 use crate::contexts::{
     EventUpdateContext, InitialCallContext, IntialCallCommands
 };
-use crate::node::data::NodeData;
+use crate::node::data::{Bool, NodeData};
 use crate::node::node::NodeTrait;
 use crate::types::{EventData, EventType, UpdateTypeNode};
 use crate::NodeId;
@@ -140,6 +140,7 @@ impl RootNode {
                         .get_mut(&UpdateTypeNode::Event(*event_type))
                         .unwrap()
                         .push(*id),
+                    IntialCallCommands::MarkRenderDirty => data.dirty.dirty = Bool::True,
                 }
             }
         }

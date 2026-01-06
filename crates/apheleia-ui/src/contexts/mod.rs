@@ -1,13 +1,15 @@
 use apheleia_core::types::vector::Vector2;
 use crossterm::event::{KeyCode, KeyEvent};
 
-use crate::{NodeId, types::EventType};
+use crate::{NodeId, types::{EventData, EventType}};
 
 pub enum IntialCallCommands {
     SetSize(Vector2),
 
     RegisterForUpdate,
     RegisterForEvent(EventType),
+
+    MarkRenderDirty,
 }
 pub struct InitialCallContext {
     position: Vector2,

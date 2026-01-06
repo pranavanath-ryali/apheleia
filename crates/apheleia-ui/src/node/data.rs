@@ -37,10 +37,10 @@ impl NodeData {
 }
 
 pub struct Dirty {
-    pub render_dirty: bool
+    pub dirty: bool
 }
 impl Default for Dirty {
     fn default() -> Self {
-        Dirty { render_dirty: false }
+        Dirty { dirty: false }
     }
 }
