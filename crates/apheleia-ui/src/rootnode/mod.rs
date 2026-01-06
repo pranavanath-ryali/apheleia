@@ -2,13 +2,11 @@ use std::collections::HashMap;
 use std::error::Error;
 use std::time::Duration;
 
-use crate::contexts::{
-    EventUpdateContext, InitialCallContext, IntialCallCommands
-};
+use crate::NodeId;
+use crate::contexts::{EventUpdateContext, InitialCallContext, IntialCallCommands};
 use crate::node::data::NodeData;
 use crate::node::node::NodeTrait;
 use crate::types::{EventData, EventType, UpdateTypeNode};
-use crate::NodeId;
 use apheleia_core::types::vector::Vector2;
 use apheleia_core::{buffer::Buffer, renderer::Renderer, terminal};
 use crossterm::event::KeyModifiers;
@@ -135,11 +133,13 @@ impl RootNode {
                         .get_mut(&UpdateTypeNode::ConstantUpdate)
                         .unwrap()
                         .push(*id),
-                    IntialCallCommands::RegisterForEvent(event_type) => self
-                        .id_update_type
-                        .get_mut(&UpdateTypeNode::Event(*event_type))
-                        .unwrap()
-                        .push(*id),
+                    IntialCallCommands::RegisterForEvent(event_type) => {
+                        self.id_update_type
+                            .get_mut(&UpdateTypeNode::Event(*event_type))
+                            .unwrap()
+                            .push(*id);
+
+                    }
                 }
             }
         }
@@ -173,10 +173,7 @@ impl RootNode {
             if let Some(size) = node_data.size {
                 let pos = &node_data.position;
                 let mut node_buffer = Buffer::new(size.0, size.1);
-                self.id_nodes
-                    .get_mut(id)
-                    .unwrap()
-                    .render(&mut node_buffer);
+                self.id_nodes.get_mut(id).unwrap().render(&mut node_buffer);
                 self.buffer.render_buffer(
                     positions.0 + pos.0,
                     positions.1 + pos.1,
@@ -254,6 +251,7 @@ impl RootNode {
 
         self.running = true;
         while (self.running) {
+            self.event();
             // self.update();
             self.render_flip();
         }

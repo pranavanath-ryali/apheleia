@@ -1,7 +1,7 @@
 use apheleia_core::types::vector::Vector2;
 use crossterm::event::{KeyCode, KeyEvent};
 
-use crate::{NodeId, types::EventType};
+use crate::{NodeId, types::{EventData, EventType}};
 
 pub enum IntialCallCommands {
     SetSize(Vector2),
@@ -35,7 +35,7 @@ pub struct EventUpdateContext {
     position: Vector2,
     size: Option<Vector2>,
 
-    event_data: EventData,
+    pub event_data: EventData,
 
     commands: Vec<EventUpdateCommands>
 }

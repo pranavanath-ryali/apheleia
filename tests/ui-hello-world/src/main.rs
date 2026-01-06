@@ -1,108 +1,42 @@
-use apheleia_core::{
-    buffer::Buffer,
-    style::{Style, StyleFlags},
-    types::vector::Vector2,
-};
-use apheleia_ui::{
-    KeyCode, KeyModifiers,
-    commands::{
-        InitialCallContext,
-        IntialCallCommands::{self},
-    },
-    contexts::{RenderContext, UpdateContext},
-    node::{
-        data::{NodeData, NodeWrapper},
-        node::NodeTrait,
-    },
-    rootnode::{self, EventType, RootNode},
-};
+use apheleia_core::types::vector::Vector2;
+use apheleia_ui::{KeyCode, contexts::{self, IntialCallCommands}, node::{data::NodeData, node::NodeTrait}, rootnode::RootNode, types::{self, EventType}};
 
-#[derive(Default)]
-struct IDKWhatImDoingNode {
-    i: u16,
-}
-impl NodeTrait for IDKWhatImDoingNode {
-    fn initial_setup(&mut self, ctx: &mut InitialCallContext) {
-        ctx.add_command(IntialCallCommands::SetSize(Vector2(3, 1)));
-        ctx.add_command(IntialCallCommands::RegisterUpdate);
+struct TestNode(bool);
+impl NodeTrait for TestNode {
+    fn initial_setup(&mut self, ctx: &mut contexts::InitialCallContext) {
+        ctx.add_command(IntialCallCommands::SetSize(Vector2(5, 1)));
+        ctx.add_command(IntialCallCommands::RegisterForEvent(EventType::Keys));
+
+        println!("YAYYY");
     }
 
-    fn event(&mut self, ctx: &apheleia_ui::contexts::EventContext) {}
-
-    fn update(&mut self, ctx: &mut UpdateContext) {
-        self.i += 1;
-    }
-
-    fn render(&self, ctx: &mut RenderContext, buf: &mut Buffer) {
-        buf.write_line(0, 0, &self.i.to_string(), Some(Style::default()));
-    }
-}
-
-struct BasicNode(pub bool);
-impl NodeTrait for BasicNode {
-    fn initial_setup(&mut self, ctx: &mut InitialCallContext) {
-        ctx.add_command(IntialCallCommands::SetSize(Vector2(10, 10)));
-        ctx.add_command(IntialCallCommands::RegisterEvent(EventType::Keys));
-    }
-
-    fn event(&mut self, ctx: &apheleia_ui::contexts::EventContext) {
-        match ctx.data {
-            apheleia_ui::contexts::EventData::Keys(event) => {
-                if event.code == KeyCode::Char('A') {
+    fn event(&mut self, ctx: &contexts::EventUpdateContext) {
+        match ctx.event_data {
+            types::EventData::Keys(event) => {
+                if event.code == KeyCode::Char('a') {
                     self.0 = true;
                 }
-            }
-            _ => {}
+            },
+            _ => ()
         }
     }
 
-    fn update(&mut self, ctx: &mut UpdateContext) {}
+    fn update(&mut self) {
+    }
 
-    fn render(&self, ctx: &mut RenderContext, buf: &mut Buffer) {
-        buf.write_line(
-            0,
-            0,
-            "AAAAAAAAAA",
-            Some(Style {
-                fg: apheleia_core::Color::Blue,
-                ..Default::default()
-            }),
-        );
-        buf.write_line(
-            0,
-            1,
-            "BBBBBBBBBB",
-            Some(Style {
-                fg: apheleia_core::Color::Blue,
-                ..Default::default()
-            }),
-        );
-
+    fn render(&self, buf: &mut apheleia_core::buffer::Buffer) {
         if self.0 {
-            buf.write_line(
-                0,
-                0,
-                "PRESSED A!",
-                Some(Style {
-                    flags: StyleFlags::UnderLined,
-                    ..Default::default()
-                }),
-            );
+            buf.write_line(0, 0, "B", None);
+        } else {
+            buf.write_line(0, 0, "AAAAAA", None);
         }
     }
 }
+
 fn main() {
     let mut root = RootNode::default();
 
-    root.add_node(
-        "test",
-        "",
-        Box::new(BasicNode(false)),
-        NodeData {
-            position: Vector2(10, 10),
-            size: Some(Vector2(20, 1)),
-        },
-    );
+    root.add_node("test_node", "", Box::new(TestNode(false)), NodeData::new(Vector2(20, 0)));
 
     root.initial_setup();
     root.run();
