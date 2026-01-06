@@ -108,6 +108,25 @@ impl RootNode {
         }
     }
 
+    fn calculate_global_position_for_id(&mut self, id: NodeId) -> Vector2 {
+        let mut position = Vector2(0, 0);
+        self.relations
+            .get_ancestor_ids(&id)
+            .unwrap()
+            .iter()
+            .filter(|v| **v != 0_usize)
+            .for_each(|id| {
+                let pos = &self.id_data.get(id).unwrap().position;
+                position.0 += pos.0;
+                position.1 += pos.1;
+            });
+
+        let data = self.id_data.get_mut(&id).unwrap();
+        data.set_global_position(position);
+
+        position
+    }
+
     pub fn initial_setup(&mut self) {
         for id in self
             .relations
@@ -143,6 +162,27 @@ impl RootNode {
                 }
             }
         }
+
+        for (id, _) in self.id_nodes.iter_mut() {
+            if *id == 0_usize {
+                continue;
+            }
+
+            let mut position = Vector2(0, 0);
+            self.relations
+                .get_ancestor_ids(&id)
+                .unwrap()
+                .iter()
+                .filter(|v| **v != 0_usize)
+                .for_each(|id| {
+                    let pos = &self.id_data.get(id).unwrap().position;
+                    position.0 += pos.0;
+                    position.1 += pos.1;
+                });
+
+            let data = self.id_data.get_mut(&id).unwrap();
+            data.set_global_position(position);
+        }
     }
 
     fn render_flip(&mut self) {
@@ -156,29 +196,19 @@ impl RootNode {
                 continue;
             }
 
-            let mut positions = Vector2(0, 0);
-            // TODO: Precalculate relative positions
-            self.relations
-                .get_ancestor_ids(id)
-                .unwrap()
-                .iter()
-                .filter(|v| **v != 0_usize)
-                .for_each(|i| {
-                    let pos = &self.id_data.get(i).unwrap().position;
-                    positions.0 += pos.0;
-                    positions.1 += pos.1;
-                });
+            let data = self.id_data.get_mut(id).unwrap();
+            if let Some(size) = data.size {
+                let position = data
+                    .global_positon
+                    .unwrap_or_else(|| todo!("Implement calculate_global_position function"));
 
-            let node_data = self.id_data.get_mut(id).unwrap();
-            if let Some(size) = node_data.size {
-                let pos = &node_data.position;
                 let mut node_buffer = Buffer::new(size.0, size.1);
-                self.id_nodes.get_mut(id).unwrap().render(&mut node_buffer);
-                self.buffer.render_buffer(
-                    positions.0 + pos.0,
-                    positions.1 + pos.1,
-                    &mut node_buffer,
-                );
+                self.id_nodes
+                    .get_mut(id)
+                    .unwrap()
+                    .render(&mut node_buffer);
+                self.buffer
+                    .render_buffer(position.0, position.1, &mut node_buffer);
             }
         }
 
