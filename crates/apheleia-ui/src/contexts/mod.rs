@@ -8,8 +8,6 @@ pub enum IntialCallCommands {
 
     RegisterForUpdate,
     RegisterForEvent(EventType),
-
-    MarkRenderDirty,
 }
 pub struct InitialCallContext {
     position: Vector2,

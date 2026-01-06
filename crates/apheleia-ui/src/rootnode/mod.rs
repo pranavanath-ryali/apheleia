@@ -140,7 +140,6 @@ impl RootNode {
                         .get_mut(&UpdateTypeNode::Event(*event_type))
                         .unwrap()
                         .push(*id),
-                    IntialCallCommands::MarkRenderDirty => data.dirty.dirty = Bool::True,
                 }
             }
         }
