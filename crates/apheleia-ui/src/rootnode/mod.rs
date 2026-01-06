@@ -4,11 +4,20 @@ use std::time::Duration;
 
 use crate::NodeId;
 use crate::contexts::{
+<<<<<<< HEAD
     EventData, EventUpdateContext, InitialCallContext, IntialCallCommands, RenderContext,
 };
 use crate::node::data::NodeData;
 use crate::node::node::NodeTrait;
 use crate::types::{EventType, UpdateTypeNode};
+=======
+    EventUpdateContext, InitialCallContext, IntialCallCommands
+};
+use crate::node::data::NodeData;
+use crate::node::node::NodeTrait;
+use crate::types::{EventData, EventType, UpdateTypeNode};
+use crate::NodeId;
+>>>>>>> master
 use apheleia_core::types::vector::Vector2;
 use apheleia_core::{buffer::Buffer, renderer::Renderer, terminal};
 use crossterm::event::KeyModifiers;

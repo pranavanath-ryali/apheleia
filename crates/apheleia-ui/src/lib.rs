@@ -1,6 +1,5 @@
 pub mod rootnode;
 pub mod node;
-pub mod commands;
 pub mod contexts;
 pub mod types;
 
