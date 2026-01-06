@@ -36,6 +36,10 @@ impl NodeData {
     }
 }
 
+pub enum DirtyRenderLevel {
+    SimpleDirty, // Rerender node alone. Leave already defined attributes unless specified
+    SubtreeDirty, // Rerender entire subtree which includes the node and including all its children
+}
 pub struct Dirty {
     pub dirty: bool
 }
