@@ -10,11 +10,13 @@ impl NodeTrait for TestNode {
         println!("YAYYY");
     }
 
-    fn event(&mut self, ctx: &contexts::EventUpdateContext) {
+    fn event(&mut self, ctx: &mut contexts::EventUpdateContext) {
         match ctx.event_data {
             types::EventData::Keys(event) => {
                 if event.code == KeyCode::Char('a') {
                     self.0 = true;
+
+                    ctx.add_command(contexts::EventUpdateCommands::MarkRenderDirty(apheleia_ui::node::data::DirtyRenderLevel::SimpleDirty));
                 }
             },
             _ => ()

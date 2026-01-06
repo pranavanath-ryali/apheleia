@@ -190,6 +190,8 @@ impl RootNode {
     }
 
     fn render_flip(&mut self) {
+        // TODO: Clear Buffer before all this stuff
+
         for id in self
             .relations
             .traverse(&(0 as usize), TraversalStrategy::PreOrder)
@@ -265,7 +267,8 @@ impl RootNode {
                     {
                         self.running = false;
                     }
-
+                    
+                    // TODO: Find a cleaner implementation for handling ctx commands
                     for id in self
                         .id_update_type
                         .get_mut(&UpdateTypeNode::Event(EventType::Keys))
@@ -284,6 +287,15 @@ impl RootNode {
                         node.event(&mut ctx);
 
                         // handle ctx commands
+                        for command in ctx.get_commands() {
+                            match command {
+                                EventUpdateCommands::MarkRenderDirty(level) => {
+                                    self.dirty_ids.push(*id);
+                                    data.dirty.render = *level;
+                                },
+                                _ => ()
+                            }
+                        }
                     }
                 }
                 crossterm::event::Event::Resize(width, height) => {
@@ -327,7 +339,7 @@ impl RootNode {
         while (self.running) {
             self.event();
             // self.update();
-            self.render_flip();
+            self.render();
         }
 
         disable_raw_mode();

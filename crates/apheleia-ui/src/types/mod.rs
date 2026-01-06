@@ -13,6 +13,7 @@ pub enum UpdateTypeNode {
     Event(EventType),
 }
 
+#[derive(Clone, Copy)]
 pub enum EventData {
     Resize(Vector2),
     Keys(KeyEvent),
