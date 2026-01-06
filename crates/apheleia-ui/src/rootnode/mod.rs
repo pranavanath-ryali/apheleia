@@ -5,7 +5,7 @@ use std::time::Duration;
 use crate::contexts::{
     EventUpdateCommands, EventUpdateContext, InitialCallContext, IntialCallCommands
 };
-use crate::node::data::{NodeData};
+use crate::node::data::{DirtyRenderLevel, NodeData};
 use crate::node::node::NodeTrait;
 use crate::types::{EventData, EventType, UpdateTypeNode};
 use crate::NodeId;
@@ -190,6 +190,30 @@ impl RootNode {
         }
 
         self.renderer.flip(&mut self.buffer);
+    }
+
+    fn render(&mut self) {
+        for id in self.dirty_ids.iter() {
+            let mut data = self.id_data.get_mut(id).unwrap();
+            if let Some(size) = data.get_size() {
+                match data.dirty.render {
+                    DirtyRenderLevel::SimpleDirty => {
+                        let position = data.global_positon.unwrap();
+
+                        for y in 0..size.1 {
+                            self.buffer.write_line(position.0, position.1 + y, &" ".repeat(size.0 as usize), None);
+                        }
+
+                        let mut node_buffer = Buffer::new(size.0, size.1);
+                        self.id_nodes.get_mut(id)
+                            .unwrap().render(&mut node_buffer);
+                        self.buffer.render_buffer(position.0, position.1, &mut node_buffer);
+                    },
+                    _ => {}
+                }
+            }
+        }
+        self.renderer.update(&mut self.buffer);
     }
 
     fn event(&mut self) -> Result<(), Box<dyn Error>> {
