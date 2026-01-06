@@ -1,7 +1,7 @@
 use apheleia_core::types::vector::Vector2;
 use crossterm::event::{KeyCode, KeyEvent};
 
-use crate::{NodeId, types::{EventData, EventType}};
+use crate::{NodeId, node::data::DirtyRenderLevel, types::{EventData, EventType}};
 
 pub enum IntialCallCommands {
     SetSize(Vector2),
@@ -29,9 +29,14 @@ impl InitialCallContext {
 }
 
 pub enum EventUpdateCommands {
+    SetSize(Vector2),
+    SetPosition(Vector2),
 
+    MarkRenderDirty(DirtyRenderLevel),
 }
 pub struct EventUpdateContext {
+    pub id: NodeId,
+
     position: Vector2,
     size: Option<Vector2>,
 
@@ -40,8 +45,8 @@ pub struct EventUpdateContext {
     commands: Vec<EventUpdateCommands>
 }
 impl EventUpdateContext {
-    pub fn new(position: &Vector2, size: &Option<Vector2>, event_data: EventData) -> Self{
-        EventUpdateContext { position: *position, size: *size, event_data, commands: vec![] }
+    pub fn new(id: NodeId, position: &Vector2, size: &Option<Vector2>, event_data: EventData) -> Self{
+        EventUpdateContext { id, position: *position, size: *size, event_data, commands: vec![] }
     }
 
     pub fn add_command(&mut self, command: EventUpdateCommands) {
