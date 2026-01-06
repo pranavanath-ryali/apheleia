@@ -1,7 +1,5 @@
 use apheleia_core::types::vector::Vector2;
 
-use crate::node::node::NodeTrait;
-
 pub struct NodeData {
     pub global_positon: Option<Vector2>,
     pub position: Vector2,
@@ -36,15 +34,18 @@ impl NodeData {
     }
 }
 
+#[derive(Clone, Copy)]
 pub enum DirtyRenderLevel {
+    None,
+
     SimpleDirty, // Rerender node alone. Leave already defined attributes unless specified
     SubtreeDirty, // Rerender entire subtree which includes the node and including all its children
 }
 pub struct Dirty {
-    pub dirty: bool
+    pub render: DirtyRenderLevel 
 }
 impl Default for Dirty {
     fn default() -> Self {
-        Dirty { dirty: false }
+        Dirty { render: DirtyRenderLevel::None }
     }
 }

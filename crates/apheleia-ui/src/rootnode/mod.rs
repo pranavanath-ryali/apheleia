@@ -3,9 +3,9 @@ use std::error::Error;
 use std::time::Duration;
 
 use crate::contexts::{
-    EventUpdateContext, InitialCallContext, IntialCallCommands
+    EventUpdateCommands, EventUpdateContext, InitialCallContext, IntialCallCommands
 };
-use crate::node::data::{Bool, NodeData};
+use crate::node::data::{NodeData};
 use crate::node::node::NodeTrait;
 use crate::types::{EventData, EventType, UpdateTypeNode};
 use crate::NodeId;
@@ -38,6 +38,8 @@ pub struct RootNode {
     // update_type_nodes: Vec<NodeId>,
     id_update_type: HashMap<UpdateTypeNode, Vec<NodeId>>,
 
+    dirty_ids: Vec<NodeId>,
+
     buffer: Buffer,
     renderer: Renderer,
 }
@@ -67,6 +69,8 @@ impl Default for RootNode {
             id_nodes: HashMap::new(),
             id_data: HashMap::new(),
             class_id: HashMap::new(),
+
+            dirty_ids: vec![],
 
             // event_resize_nodes: vec![],
             // event_keys_nodes: vec![],
@@ -189,6 +193,19 @@ impl RootNode {
     }
 
     fn event(&mut self) -> Result<(), Box<dyn Error>> {
+        fn handle_ctx(root: &mut RootNode, ctx: &EventUpdateContext) {
+            for command in ctx.get_commands() {
+                match command {
+                    EventUpdateCommands::SetSize(vector2) => todo!(),
+                    EventUpdateCommands::SetPosition(vector2) => todo!(),
+                    EventUpdateCommands::MarkRenderDirty(dirty_render_level) => {
+                        root.dirty_ids.push(ctx.id);
+                        root.id_data.get_mut(&ctx.id).unwrap().dirty.render = *dirty_render_level;
+                    },
+                }
+            }
+        }
+
         // event driven updates
         if poll(Duration::from_nanos(1_000_000_000 / 15))? {
             match read()? {
@@ -208,6 +225,7 @@ impl RootNode {
                         let data = self.id_data.get_mut(id).unwrap();
 
                         let mut ctx = EventUpdateContext::new(
+                            *id,
                             &data.position,
                             &data.size,
                             EventData::Keys(event),
@@ -228,6 +246,8 @@ impl RootNode {
                         let data = self.id_data.get_mut(id).unwrap();
 
                         let mut ctx = EventUpdateContext::new(
+                            *id,
+
                             &data.position,
                             &data.size,
                             EventData::Resize(Vector2(width, height)),
