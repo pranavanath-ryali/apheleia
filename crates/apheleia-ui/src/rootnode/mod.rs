@@ -194,60 +194,6 @@ impl RootNode {
         self.renderer.flip(&mut self.buffer);
     }
 
-    // fn render(&mut self) {
-    //     for id in self
-    //         .relations
-    //         .traverse(&(0 as usize), TraversalStrategy::PreOrder)
-    //         .unwrap()
-    //         .iter()
-    //     {
-    //         if *id == 0_usize {
-    //             continue;
-    //         }
-    //
-    //         let mut positions: Vector2 = Vector2(0, 0);
-    //         self.relations
-    //             .get_ancestor_ids(id)
-    //             .unwrap()
-    //             .iter()
-    //             .filter(|v| **v != 0_usize)
-    //             .for_each(|i| {
-    //                 let pos = self.nodes.get(i).unwrap().get_position();
-    //                 positions.0 += pos.0;
-    //                 positions.1 += pos.1;
-    //             });
-    //
-    //         let node = self.nodes.get_mut(id).unwrap();
-    //         if let Some(size) = node.get_size() {
-    //             let pos = node.get_position();
-    //
-    //             let mut ctx = RenderContext {
-    //                 position: *pos,
-    //                 size: size,
-    //             };
-    //
-    //             let mut node_buffer = Buffer::new(size.0, size.1);
-    //             node.get_node().render(&mut ctx, &mut node_buffer);
-    //             self.buffer.render_buffer(
-    //                 positions.0 + pos.0,
-    //                 positions.1 + pos.1,
-    //                 &mut node_buffer,
-    //             );
-    //         }
-    //     }
-    // }
-
-    // fn update(&mut self) {
-    //     for id in self.update_type_nodes.iter() {
-    //         let node = self.nodes.get_mut(id).unwrap();
-    //         let mut ctx = UpdateContext {
-    //             position: *node.get_position(),
-    //             size: node.get_size(),
-    //         };
-    //         node.get_node_mut().update(&mut ctx);
-    //     }
-    // }
-
     fn event(&mut self) -> Result<(), Box<dyn Error>> {
         // event driven updates
         if poll(Duration::from_nanos(1_000_000_000 / 15))? {
