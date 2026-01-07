@@ -42,7 +42,7 @@ pub struct EventUpdateContext {
 
     pub event_data: EventData,
 
-    commands: Vec<EventUpdateCommands>
+    pub commands: Vec<EventUpdateCommands>
 }
 impl EventUpdateContext {
     pub fn new(id: NodeId, position: &Vector2, size: &Option<Vector2>, event_data: EventData) -> Self{

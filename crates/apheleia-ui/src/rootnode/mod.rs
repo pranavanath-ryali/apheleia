@@ -114,23 +114,32 @@ impl RootNode {
         }
     }
 
-    fn calculate_global_position_for_id(&mut self, id: NodeId) -> Vector2 {
-        let mut position = Vector2(0, 0);
-        self.relations
-            .get_ancestor_ids(&id)
-            .unwrap()
-            .iter()
-            .filter(|v| **v != 0_usize)
-            .for_each(|id| {
-                let pos = &self.id_data.get(id).unwrap().position;
-                position.0 += pos.0;
-                position.1 += pos.1;
-            });
+    fn calculate_global_position_for_id(&mut self, id: NodeId) {
+        if let Ok(children) = self.relations.get_subtree(&id, None) {
+            children
+                .traverse(&id, TraversalStrategy::PreOrder)
+                .unwrap()
+                .iter()
+                .for_each(|child_id| {
+                    let mut position = self.id_data.get(&child_id).unwrap().position;
+                    self.relations
+                        .get_ancestor_ids(&child_id)
+                        .unwrap()
+                        .iter()
+                        .filter(|v| **v != 0_usize)
+                        .for_each(|id| {
+                            let pos = &self.id_data.get(id).unwrap().position;
+                            position.0 += pos.0;
+                            position.1 += pos.1;
+                        });
 
-        let data = self.id_data.get_mut(&id).unwrap();
-        data.set_global_position(position);
-
-        position
+                    let data = self
+                        .id_data
+                        .get_mut(&child_id)
+                        .unwrap()
+                        .set_global_position(position);
+                });
+        }
     }
 
     pub fn initial_setup(&mut self) {
@@ -173,14 +182,14 @@ impl RootNode {
                 continue;
             }
 
-            let mut position = Vector2(0, 0);
+            let mut position = self.id_data.get(id).unwrap().position;
             self.relations
                 .get_ancestor_ids(&id)
                 .unwrap()
                 .iter()
-                .filter(|v| **v != 0_usize)
+                .filter(|id| **id != 0)
                 .for_each(|id| {
-                    let pos = &self.id_data.get(id).unwrap().position;
+                    let pos = self.id_data.get(id).unwrap().get_position();
                     position.0 += pos.0;
                     position.1 += pos.1;
                 });
@@ -254,7 +263,7 @@ impl RootNode {
                         {
                             let data = self.id_data.get_mut(child_id).unwrap();
                             if let Some(size) = data.get_size() {
-                                let position = data.global_positon.unwrap();
+                                let position = data.get_global_position().unwrap();
 
                                 for y in 0..size.1 {
                                     self.buffer.write_line(
@@ -266,7 +275,10 @@ impl RootNode {
                                 }
 
                                 let mut node_buffer = Buffer::new(size.0, size.1);
-                                self.id_nodes.get_mut(child_id).unwrap().render(&mut node_buffer);
+                                self.id_nodes
+                                    .get_mut(child_id)
+                                    .unwrap()
+                                    .render(&mut node_buffer);
                                 self.buffer
                                     .render_buffer(position.0, position.1, &mut node_buffer);
                             }
@@ -280,19 +292,35 @@ impl RootNode {
         self.renderer.update(&mut self.buffer);
     }
 
-    fn event(&mut self) -> Result<(), Box<dyn Error>> {
-        fn handle_ctx(root: &mut RootNode, ctx: &EventUpdateContext) {
-            for command in ctx.get_commands() {
-                match command {
-                    EventUpdateCommands::SetSize(vector2) => todo!(),
-                    EventUpdateCommands::SetPosition(vector2) => todo!(),
-                    EventUpdateCommands::MarkRenderDirty(dirty_render_level) => {
-                        root.dirty_ids.push(ctx.id);
-                        root.id_data.get_mut(&ctx.id).unwrap().dirty.render = *dirty_render_level;
-                    }
+    fn handle_event_ctx_commands(&mut self, id: NodeId, commands: &Vec<EventUpdateCommands>) {
+        for command in commands {
+            match command {
+                EventUpdateCommands::MarkRenderDirty(level) => {
+                    let data = self.id_data.get_mut(&id).unwrap();
+                    self.dirty_ids.push(id);
+                    data.dirty.render = *level;
+                }
+                EventUpdateCommands::SetSize(size) => {
+                    let data = self.id_data.get_mut(&id).unwrap();
+                    data.set_size(*size);
+
+                    self.dirty_ids.push(id);
+                    data.dirty.render = DirtyRenderLevel::SimpleDirty;
+                }
+                EventUpdateCommands::SetPosition(position) => {
+                    self.id_data.get_mut(&id).unwrap().set_position(*position);
+
+                    self.dirty_ids.push(id);
+                    self.id_data.get_mut(&id).unwrap().dirty.render =
+                        DirtyRenderLevel::SubtreeDirty;
+                    self.calculate_global_position_for_id(id);
                 }
             }
         }
+    }
+
+    fn event(&mut self) -> Result<(), Box<dyn Error>> {
+        let mut commands: HashMap<NodeId, Vec<EventUpdateCommands>> = HashMap::new();
 
         // event driven updates
         if poll(Duration::from_nanos(1_000_000_000 / 15))? {
@@ -303,34 +331,18 @@ impl RootNode {
                         self.running = false;
                     }
 
-                    // TODO: Find a cleaner implementation for handling ctx commands
                     for id in self
                         .id_update_type
-                        .get_mut(&UpdateTypeNode::Event(EventType::Keys))
+                        .get(&UpdateTypeNode::Event(EventType::Keys))
                         .unwrap()
                         .iter()
                     {
-                        let node = self.id_nodes.get_mut(id).unwrap();
-                        let data = self.id_data.get_mut(id).unwrap();
-
-                        let mut ctx = EventUpdateContext::new(
-                            *id,
-                            &data.position,
-                            &data.size,
-                            EventData::Keys(event),
-                        );
-                        node.event(&mut ctx);
-
-                        // handle ctx commands
-                        for command in ctx.get_commands() {
-                            match command {
-                                EventUpdateCommands::MarkRenderDirty(level) => {
-                                    self.dirty_ids.push(*id);
-                                    data.dirty.render = *level;
-                                }
-                                _ => (),
-                            }
-                        }
+                        let position = *self.id_data.get(id).unwrap().get_position();
+                        let size = *self.id_data.get(id).unwrap().get_size();
+                        let mut ctx =
+                            EventUpdateContext::new(*id, &position, &size, EventData::Keys(event));
+                        self.id_nodes.get_mut(id).unwrap().event(&mut ctx);
+                        commands.insert(*id, ctx.commands);
                     }
                 }
                 crossterm::event::Event::Resize(width, height) => {
@@ -351,7 +363,7 @@ impl RootNode {
                         );
                         node.event(&mut ctx);
 
-                        // handle ctx commands
+                        commands.insert(*id, ctx.commands);
                     }
                 }
                 crossterm::event::Event::FocusGained => {}
@@ -359,6 +371,10 @@ impl RootNode {
                 crossterm::event::Event::Mouse(mouse_event) => {}
                 crossterm::event::Event::Paste(_) => {}
             }
+        }
+
+        for (id, commands) in commands {
+            self.handle_event_ctx_commands(id, &commands);
         }
 
         Ok(())
@@ -372,6 +388,21 @@ impl RootNode {
         self.running = true;
         while (self.running) {
             self.event();
+            self.buffer.write_line(
+                100,
+                0,
+                &format!(
+                    "{} {}",
+                    1,
+                    self.id_data
+                        .get(&1)
+                        .unwrap()
+                        .get_global_position()
+                        .unwrap()
+                        .0
+                ),
+                None,
+            );
             // self.update();
             self.render();
         }

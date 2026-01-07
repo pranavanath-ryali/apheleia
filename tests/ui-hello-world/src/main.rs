@@ -17,6 +17,7 @@ impl NodeTrait for TestNode {
                     self.0 = true;
 
                     ctx.add_command(contexts::EventUpdateCommands::MarkRenderDirty(apheleia_ui::node::data::DirtyRenderLevel::SubtreeDirty));
+                    ctx.add_command(contexts::EventUpdateCommands::SetPosition(Vector2(8, 2)));
                 }
             },
             _ => ()
@@ -53,7 +54,7 @@ impl NodeTrait for ChildNode {
         if self.0 {
             buf.write_line(0, 0, "C", None);
         } else {
-            buf.write_line(0, 0, "AAAAAA", None);
+            buf.write_line(0, 0, "Hello", None);
         }
     }
 }
@@ -62,7 +63,7 @@ fn main() {
     let mut root = RootNode::default();
 
     root.add_node("test_node", "", Box::new(TestNode(false)), NodeData::new(Vector2(20, 3)));
-    root.add_node("child_node", "test_node", Box::new(ChildNode(false)), NodeData::new(Vector2(5, 5)));
+    root.add_node("child_node", "test_node", Box::new(ChildNode(false)), NodeData::new(Vector2(0, 5)));
 
     root.initial_setup();
     root.run();
