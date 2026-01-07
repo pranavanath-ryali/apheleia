@@ -35,10 +35,34 @@ impl NodeTrait for TestNode {
     }
 }
 
+struct ChildNode(bool);
+impl NodeTrait for ChildNode {
+    fn initial_setup(&mut self, ctx: &mut contexts::InitialCallContext) {
+        ctx.add_command(IntialCallCommands::SetSize(Vector2(5, 1)));
+        ctx.add_command(IntialCallCommands::RegisterForEvent(EventType::Keys));
+    }
+
+    fn event(&mut self, ctx: &mut contexts::EventUpdateContext) {
+        self.0 = true;
+    }
+
+    fn update(&mut self) {
+    }
+
+    fn render(&self, buf: &mut apheleia_core::buffer::Buffer) {
+        if self.0 {
+            buf.write_line(0, 0, "C", None);
+        } else {
+            buf.write_line(0, 0, "AAAAAA", None);
+        }
+    }
+}
+
 fn main() {
     let mut root = RootNode::default();
 
-    root.add_node("test_node", "", Box::new(TestNode(false)), NodeData::new(Vector2(20, 0)));
+    root.add_node("test_node", "", Box::new(TestNode(false)), NodeData::new(Vector2(20, 3)));
+    root.add_node("child_node", "test_node", Box::new(ChildNode(false)), NodeData::new(Vector2(5, 5)));
 
     root.initial_setup();
     root.run();
