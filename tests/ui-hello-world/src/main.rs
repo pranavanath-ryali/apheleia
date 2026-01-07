@@ -16,7 +16,7 @@ impl NodeTrait for TestNode {
                 if event.code == KeyCode::Char('a') {
                     self.0 = true;
 
-                    ctx.add_command(contexts::EventUpdateCommands::MarkRenderDirty(apheleia_ui::node::data::DirtyRenderLevel::SimpleDirty));
+                    ctx.add_command(contexts::EventUpdateCommands::MarkRenderDirty(apheleia_ui::node::data::DirtyRenderLevel::SubtreeDirty));
                 }
             },
             _ => ()

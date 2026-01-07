@@ -3,7 +3,9 @@ use std::error::Error;
 use std::time::Duration;
 
 use crate::NodeId;
-use crate::contexts::{EventUpdateCommands, EventUpdateContext, InitialCallContext, IntialCallCommands};
+use crate::contexts::{
+    EventUpdateCommands, EventUpdateContext, InitialCallContext, IntialCallCommands,
+};
 use crate::node::data::{DirtyRenderLevel, NodeData};
 use crate::node::node::NodeTrait;
 use crate::types::{EventData, EventType, UpdateTypeNode};
@@ -161,7 +163,6 @@ impl RootNode {
                             .get_mut(&UpdateTypeNode::Event(*event_type))
                             .unwrap()
                             .push(*id);
-
                     }
                 }
             }
@@ -209,10 +210,7 @@ impl RootNode {
                     .unwrap_or_else(|| todo!("Implement calculate_global_position function"));
 
                 let mut node_buffer = Buffer::new(size.0, size.1);
-                self.id_nodes
-                    .get_mut(id)
-                    .unwrap()
-                    .render(&mut node_buffer);
+                self.id_nodes.get_mut(id).unwrap().render(&mut node_buffer);
                 self.buffer
                     .render_buffer(position.0, position.1, &mut node_buffer);
             }
@@ -223,23 +221,60 @@ impl RootNode {
 
     fn render(&mut self) {
         for id in self.dirty_ids.iter() {
-            let mut data = self.id_data.get_mut(id).unwrap();
-            if let Some(size) = data.get_size() {
-                match data.dirty.render {
-                    DirtyRenderLevel::SimpleDirty => {
+            let data = self.id_data.get(id).unwrap();
+            match data.dirty.render {
+                DirtyRenderLevel::SimpleDirty => {
+                    let mut data = self.id_data.get_mut(id).unwrap();
+
+                    if let Some(size) = data.get_size() {
                         let position = data.global_positon.unwrap();
 
                         for y in 0..size.1 {
-                            self.buffer.write_line(position.0, position.1 + y, &" ".repeat(size.0 as usize), None);
+                            self.buffer.write_line(
+                                position.0,
+                                position.1 + y,
+                                &" ".repeat(size.0 as usize),
+                                None,
+                            );
                         }
 
                         let mut node_buffer = Buffer::new(size.0, size.1);
-                        self.id_nodes.get_mut(id)
-                            .unwrap().render(&mut node_buffer);
-                        self.buffer.render_buffer(position.0, position.1, &mut node_buffer);
-                    },
-                    _ => {}
+                        self.id_nodes.get_mut(id).unwrap().render(&mut node_buffer);
+                        self.buffer
+                            .render_buffer(position.0, position.1, &mut node_buffer);
+                        data.dirty.render = DirtyRenderLevel::None;
+                    }
                 }
+                DirtyRenderLevel::SubtreeDirty => {
+                    if let Ok(children) = self.relations.get_subtree(id, None) {
+                        for child_id in children
+                            .traverse(id, TraversalStrategy::PreOrder)
+                            .unwrap()
+                            .iter()
+                        {
+                            let data = self.id_data.get_mut(child_id).unwrap();
+                            if let Some(size) = data.get_size() {
+                                let position = data.global_positon.unwrap();
+
+                                for y in 0..size.1 {
+                                    self.buffer.write_line(
+                                        position.0,
+                                        position.1 + y,
+                                        &" ".repeat(size.0 as usize),
+                                        None,
+                                    );
+                                }
+
+                                let mut node_buffer = Buffer::new(size.0, size.1);
+                                self.id_nodes.get_mut(child_id).unwrap().render(&mut node_buffer);
+                                self.buffer
+                                    .render_buffer(position.0, position.1, &mut node_buffer);
+                            }
+                        }
+                        self.id_data.get_mut(id).unwrap().dirty.render = DirtyRenderLevel::None;
+                    }
+                }
+                _ => {}
             }
         }
         self.renderer.update(&mut self.buffer);
@@ -254,7 +289,7 @@ impl RootNode {
                     EventUpdateCommands::MarkRenderDirty(dirty_render_level) => {
                         root.dirty_ids.push(ctx.id);
                         root.id_data.get_mut(&ctx.id).unwrap().dirty.render = *dirty_render_level;
-                    },
+                    }
                 }
             }
         }
@@ -267,7 +302,7 @@ impl RootNode {
                     {
                         self.running = false;
                     }
-                    
+
                     // TODO: Find a cleaner implementation for handling ctx commands
                     for id in self
                         .id_update_type
@@ -292,8 +327,8 @@ impl RootNode {
                                 EventUpdateCommands::MarkRenderDirty(level) => {
                                     self.dirty_ids.push(*id);
                                     data.dirty.render = *level;
-                                },
-                                _ => ()
+                                }
+                                _ => (),
                             }
                         }
                     }
@@ -310,7 +345,6 @@ impl RootNode {
 
                         let mut ctx = EventUpdateContext::new(
                             *id,
-
                             &data.position,
                             &data.size,
                             EventData::Resize(Vector2(width, height)),
