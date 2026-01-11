@@ -32,10 +32,6 @@ pub struct RootNode {
     id_data: HashMap<NodeId, NodeData>,
     class_id: HashMap<String, NodeId>,
 
-    // event_resize_nodes: Vec<NodeId>,
-    // event_keys_nodes: Vec<NodeId>,
-    //
-    // update_type_nodes: Vec<NodeId>,
     id_update_type: HashMap<UpdateTypeNode, Vec<NodeId>>,
 
     dirty_ids: Vec<NodeId>,
@@ -72,9 +68,6 @@ impl Default for RootNode {
 
             dirty_ids: vec![],
 
-            // event_resize_nodes: vec![],
-            // event_keys_nodes: vec![],
-            // update_type_nodes: vec![],
             buffer: Buffer::new(size.0, size.1),
             renderer: Renderer::default(),
         }
@@ -322,7 +315,6 @@ impl RootNode {
     fn event(&mut self) -> Result<(), Box<dyn Error>> {
         let mut commands: HashMap<NodeId, Vec<EventUpdateCommands>> = HashMap::new();
 
-        // event driven updates
         if poll(Duration::from_nanos(1_000_000_000 / 15))? {
             match read()? {
                 crossterm::event::Event::Key(event) => {
@@ -403,7 +395,7 @@ impl RootNode {
                 ),
                 None,
             );
-            // self.update();
+            // TODO: self.update();
             self.render();
         }
 
