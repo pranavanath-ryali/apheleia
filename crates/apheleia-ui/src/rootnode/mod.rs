@@ -372,6 +372,12 @@ impl RootNode {
         Ok(())
     }
 
+    fn update(&mut self) {
+        for id in self.id_update_type.get(&UpdateTypeNode::ConstantUpdate).unwrap().iter() {
+            self.id_nodes.get_mut(id).unwrap().update();
+        }
+    }
+
     pub fn run(&mut self) -> Result<(), Box<dyn Error>> {
         enable_raw_mode();
 
@@ -395,7 +401,7 @@ impl RootNode {
                 ),
                 None,
             );
-            // TODO: self.update();
+            self.update();
             self.render();
         }
 
