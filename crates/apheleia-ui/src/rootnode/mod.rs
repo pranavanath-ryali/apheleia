@@ -4,7 +4,7 @@ use std::time::Duration;
 
 use crate::NodeId;
 use crate::contexts::{
-    EventUpdateCommands, EventUpdateContext, InitialCallContext, IntialCallCommands,
+    EventUpdateCommands, EventUpdateContext, InitialCallContext, IntialCallCommands, UpdateContext,
 };
 use crate::node::data::{DirtyRenderLevel, NodeData};
 use crate::node::node::NodeTrait;
@@ -374,7 +374,10 @@ impl RootNode {
 
     fn update(&mut self) {
         for id in self.id_update_type.get(&UpdateTypeNode::ConstantUpdate).unwrap().iter() {
-            self.id_nodes.get_mut(id).unwrap().update();
+            let data = self.id_data.get(id).unwrap();
+            let mut ctx = UpdateContext::new(*id, *data.get_position(), data.get_size());
+
+            self.id_nodes.get_mut(id).unwrap().update(&mut ctx);
         }
     }
 
