@@ -76,3 +76,23 @@ impl UpdateContext {
         self.size
     }
 }
+
+pub struct RenderContext {
+    pub id: NodeId,
+
+    position: Vector2,
+    size: Option<Vector2>,
+}
+impl RenderContext {
+    pub fn new(id: NodeId, position: Vector2, size: &Option<Vector2>) -> Self {
+        RenderContext { id, position, size: *size }
+    }
+
+    pub fn get_position(&self) -> Vector2 {
+        self.position
+    }
+
+    pub fn get_size(&self) -> Option<Vector2> {
+        self.size
+    }
+}

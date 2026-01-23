@@ -1,5 +1,8 @@
 use apheleia_core::{Color::Red, style::Style};
-use apheleia_ui::{contexts::UpdateContext, node::node::NodeTrait};
+use apheleia_ui::{
+    contexts::{InitialCallContext, UpdateContext},
+    node::node::NodeTrait,
+};
 
 pub enum TextOverflow {
     DoNothing,
@@ -26,25 +29,19 @@ pub struct Label {
     scroll_wait_count: u16,
 }
 impl NodeTrait for Label {
-    fn initial_setup(&mut self, ctx: &mut apheleia_ui::commands::InitialCallContext) {
+    fn initial_setup(&mut self, ctx: &mut InitialCallContext) {
         match self.overflow {
             TextOverflow::Scoll(_, _) => {
-                ctx.add_command(
-                    apheleia_ui::commands::IntialCallCommands::RegisterUpdateType(
-                        apheleia_ui::rootnode::UpdateType::Update,
-                    ),
-                );
+                ctx.add_command(apheleia_ui::contexts::IntialCallCommands::RegisterForUpdate);
             }
             _ => {}
         }
     }
 
-    fn event(&mut self) {}
-
     fn update(&mut self, ctx: &mut UpdateContext) {
-        match &self.overflow {
-            TextOverflow::Scoll(ticks_per_char, ticks_for_wait) => {
-                if let Some(size) = ctx.size {
+        if let Some(size) = ctx.get_size() {
+            match &self.overflow {
+                TextOverflow::Scoll(ticks_per_char, ticks_for_wait) => {
                     if self.text.len() > size.0 as usize {
                         self.counter += (1. / *ticks_per_char as f32);
                         if self.counter > 1. {
@@ -84,14 +81,13 @@ impl NodeTrait for Label {
                         self.i = 0;
                     }
                 }
+                _ => {}
             }
-            _ => {}
         }
     }
 
     fn render(
         &self,
-        ctx: &mut apheleia_ui::contexts::RenderContext,
         buf: &mut apheleia_core::buffer::Buffer,
     ) {
         let size = &ctx.size;
@@ -141,6 +137,10 @@ impl NodeTrait for Label {
                 return;
             }
         }
+    }
+
+    fn event(&mut self, ctx: &mut apheleia_ui::contexts::EventUpdateContext) {
+        todo!()
     }
 }
 

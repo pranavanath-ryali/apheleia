@@ -221,31 +221,35 @@ impl RootNode {
         self.renderer.flip(&mut self.buffer);
     }
 
+    fn render_node(&mut self, id: &NodeId) {
+        let mut data = self.id_data.get_mut(id).unwrap();
+        if let Some(size) = data.get_size() {
+            let position = data.global_positon.unwrap();
+
+            for y in 0..size.1 {
+                self.buffer.write_line(
+                    position.0,
+                    position.1 + y,
+                    &" ".repeat(size.0 as usize),
+                    None,
+                );
+            }
+
+            let mut node_buffer = Buffer::new(size.0, size.1);
+            self.id_nodes.get(id).unwrap().render(&mut node_buffer);
+            self.buffer
+                .render_buffer(position.0, position.1, &mut node_buffer);
+            data.dirty.render = DirtyRenderLevel::None;
+        }
+    }
+
     fn render(&mut self) {
-        for id in self.dirty_ids.iter() {
-            let data = self.id_data.get(id).unwrap();
-            match data.dirty.render {
+        let ids = self.dirty_ids.clone();
+        self.dirty_ids.clear();
+        for id in ids.iter() {
+            match self.id_data.get(id).unwrap().dirty.render {
                 DirtyRenderLevel::SimpleDirty => {
-                    let mut data = self.id_data.get_mut(id).unwrap();
-
-                    if let Some(size) = data.get_size() {
-                        let position = data.global_positon.unwrap();
-
-                        for y in 0..size.1 {
-                            self.buffer.write_line(
-                                position.0,
-                                position.1 + y,
-                                &" ".repeat(size.0 as usize),
-                                None,
-                            );
-                        }
-
-                        let mut node_buffer = Buffer::new(size.0, size.1);
-                        self.id_nodes.get_mut(id).unwrap().render(&mut node_buffer);
-                        self.buffer
-                            .render_buffer(position.0, position.1, &mut node_buffer);
-                        data.dirty.render = DirtyRenderLevel::None;
-                    }
+                    self.render_node(id);
                 }
                 DirtyRenderLevel::SubtreeDirty => {
                     if let Ok(children) = self.relations.get_subtree(id, None) {
@@ -254,6 +258,8 @@ impl RootNode {
                             .unwrap()
                             .iter()
                         {
+                            self.render_node(id);
+
                             let data = self.id_data.get_mut(child_id).unwrap();
                             if let Some(size) = data.get_size() {
                                 let position = data.get_global_position().unwrap();
@@ -373,7 +379,12 @@ impl RootNode {
     }
 
     fn update(&mut self) {
-        for id in self.id_update_type.get(&UpdateTypeNode::ConstantUpdate).unwrap().iter() {
+        for id in self
+            .id_update_type
+            .get(&UpdateTypeNode::ConstantUpdate)
+            .unwrap()
+            .iter()
+        {
             let data = self.id_data.get(id).unwrap();
             let mut ctx = UpdateContext::new(*id, *data.get_position(), data.get_size());
 
