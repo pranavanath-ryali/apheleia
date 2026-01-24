@@ -4,7 +4,8 @@ use std::time::Duration;
 
 use crate::NodeId;
 use crate::contexts::{
-    EventUpdateCommands, EventUpdateContext, InitialCallContext, IntialCallCommands, RenderContext, UpdateContext
+    EventUpdateCommands, EventUpdateContext, InitialCallContext, IntialCallCommands, RenderContext,
+    UpdateCommands, UpdateContext,
 };
 use crate::node::data::{DirtyRenderLevel, NodeData};
 use crate::node::node::NodeTrait;
@@ -249,9 +250,12 @@ impl RootNode {
             }
 
             let mut node_buffer = Buffer::new(size.0, size.1);
-        
+
             let mut ctx = RenderContext::new(*id, position, *size);
-            self.id_nodes.get(id).unwrap().render(&mut node_buffer, &mut ctx);
+            self.id_nodes
+                .get(id)
+                .unwrap()
+                .render(&mut node_buffer, &mut ctx);
 
             self.buffer
                 .render_buffer(position.0, position.1, &mut node_buffer);
@@ -395,6 +399,7 @@ impl RootNode {
     }
 
     fn update(&mut self) {
+        let mut ctxs: Vec<(NodeId, UpdateContext)> = vec![];
         for id in self
             .id_update_type
             .get(&UpdateTypeNode::ConstantUpdate)
@@ -405,6 +410,34 @@ impl RootNode {
             let mut ctx = UpdateContext::new(*id, *data.get_position(), data.get_size());
 
             self.id_nodes.get_mut(id).unwrap().update(&mut ctx);
+            ctxs.push((*id, ctx));
+        }
+
+        for (id, ctx) in ctxs {
+            for command in ctx.get_commands().iter() {
+                match command {
+                    UpdateCommands::MarkRenderDirty(level) => {
+                        let data = self.id_data.get_mut(&id).unwrap();
+                        self.dirty_ids.push(id);
+                        data.dirty.render = *level;
+                    }
+                    UpdateCommands::SetSize(size) => {
+                        let data = self.id_data.get_mut(&id).unwrap();
+                        data.set_size(*size);
+
+                        self.dirty_ids.push(id);
+                        data.dirty.render = DirtyRenderLevel::SimpleDirty;
+                    }
+                    UpdateCommands::SetPosition(position) => {
+                        self.id_data.get_mut(&id).unwrap().set_position(*position);
+
+                        self.dirty_ids.push(id);
+                        self.id_data.get_mut(&id).unwrap().dirty.render =
+                            DirtyRenderLevel::SubtreeDirty;
+                        self.calculate_global_position_for_id(id);
+                    }
+                }
+            }
         }
     }
 

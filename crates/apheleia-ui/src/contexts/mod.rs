@@ -57,15 +57,23 @@ impl EventUpdateContext {
     }
 }
 
+pub enum UpdateCommands {
+    SetSize(Vector2),
+    SetPosition(Vector2),
+
+    MarkRenderDirty(DirtyRenderLevel),
+}
 pub struct UpdateContext {
     pub id: NodeId,
 
     position: Vector2,
     size: Option<Vector2>,
+
+    pub commands: Vec<UpdateCommands>
 }
 impl UpdateContext {
     pub fn new(id: NodeId, position: Vector2, size: &Option<Vector2>) -> Self {
-        UpdateContext { id, position, size: *size }
+        UpdateContext { id, position, size: *size, commands: vec![] }
     }
 
     pub fn get_position(&self) -> Vector2 {
@@ -74,6 +82,13 @@ impl UpdateContext {
 
     pub fn get_size(&self) -> Option<Vector2> {
         self.size
+    }
+
+    pub fn add_command(&mut self, command: UpdateCommands) {
+        self.commands.insert(0, command);
+    }
+    pub fn get_commands(&self) -> &Vec<UpdateCommands> {
+        &self.commands
     }
 }
 

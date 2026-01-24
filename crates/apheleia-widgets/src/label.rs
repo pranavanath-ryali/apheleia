@@ -1,7 +1,7 @@
 use apheleia_core::{Color::Red, style::Style};
 use apheleia_ui::{
-    contexts::{InitialCallContext, UpdateContext},
-    node::node::NodeTrait,
+    contexts::{self, InitialCallContext, RenderContext, UpdateCommands, UpdateContext},
+    node::{data::DirtyRenderLevel::SimpleDirty, node::NodeTrait},
 };
 
 pub enum TextOverflow {
@@ -32,7 +32,7 @@ impl NodeTrait for Label {
     fn initial_setup(&mut self, ctx: &mut InitialCallContext) {
         match self.overflow {
             TextOverflow::Scoll(_, _) => {
-                ctx.add_command(apheleia_ui::contexts::IntialCallCommands::RegisterForUpdate);
+                ctx.add_command(contexts::IntialCallCommands::RegisterForUpdate);
             }
             _ => {}
         }
@@ -80,17 +80,16 @@ impl NodeTrait for Label {
                     } else {
                         self.i = 0;
                     }
+
+                    ctx.add_command(UpdateCommands::MarkRenderDirty(SimpleDirty));
                 }
                 _ => {}
             }
         }
     }
 
-    fn render(
-        &self,
-        buf: &mut apheleia_core::buffer::Buffer,
-    ) {
-        let size = &ctx.size;
+    fn render(&self, buf: &mut apheleia_core::buffer::Buffer, ctx: &mut RenderContext) {
+        let size = &ctx.get_size();
 
         if self.text.len() <= size.0 as usize {
             match self.alignment {
@@ -139,7 +138,7 @@ impl NodeTrait for Label {
         }
     }
 
-    fn event(&mut self, ctx: &mut apheleia_ui::contexts::EventUpdateContext) {
+    fn event(&mut self, ctx: &mut contexts::EventUpdateContext) {
         todo!()
     }
 }
@@ -150,8 +149,8 @@ impl Label {
         style: Option<Style>,
         alignment: Option<LabelAlignment>,
         overflow: Option<TextOverflow>,
-    ) -> Self {
-        Label {
+    ) -> Box<Self> {
+        Box::new(Label {
             overflow: overflow.unwrap_or_else(|| TextOverflow::Ellipses),
             text: text.to_string(),
             style: style,
@@ -162,6 +161,6 @@ impl Label {
             scroll_right_dir: false,
             should_scroll: true,
             scroll_wait_count: 0,
-        }
+        })
     }
 }

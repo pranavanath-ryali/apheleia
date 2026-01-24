@@ -1,5 +1,5 @@
 use apheleia_core::{Color, style::Style};
-use apheleia_ui::{contexts::{InitialCallContext, UpdateContext}, node::node::NodeTrait};
+use apheleia_ui::{contexts::{InitialCallContext, RenderContext, UpdateContext}, node::node::NodeTrait};
 
 #[derive(Clone)]
 pub struct BorderStyle {
@@ -33,11 +33,12 @@ impl NodeTrait for Block {
 
     fn update(&mut self, ctx: &mut UpdateContext) {}
 
-    fn render(&self, buf: &mut apheleia_core::buffer::Buffer) {
+    fn render(&self, buf: &mut apheleia_core::buffer::Buffer, ctx: &mut RenderContext) {
+        let size = ctx.get_size();
         // TODO: Come back to this later
         let style = &self.border_style;
         let mut i: u8 = 0;
-        for y in 1..(ctx.size.1 - 1) {
+        for y in 1..(size.1 - 1) {
             i += 1;
             if i >= style.vertical_pattern.len() as u8 {
                 i = 0;
@@ -54,7 +55,7 @@ impl NodeTrait for Block {
                 None,
             );
             buf.write_line(
-                ctx.size.0 - 1,
+                size.0 - 1,
                 y,
                 &style
                     .vertical_pattern
@@ -69,11 +70,11 @@ impl NodeTrait for Block {
         if style.horizontal_pattern.len() > 0 {
             let mut horizontal_border = style
                 .horizontal_pattern
-                .repeat((((ctx.size.0 - 2) as usize) / style.horizontal_pattern.len()) + 1);
+                .repeat((((size.0 - 2) as usize) / style.horizontal_pattern.len()) + 1);
             buf.write_line(1, 0, &horizontal_border, style.horizontal_pattern_style);
             buf.write_line(
                 1,
-                ctx.size.1 - 1,
+                size.1 - 1,
                 &horizontal_border,
                 style.horizontal_pattern_style,
             );
@@ -82,19 +83,19 @@ impl NodeTrait for Block {
         buf.write_line(0, 0, &style.corners[0].to_string(), style.corners_style);
         buf.write_line(
             0,
-            ctx.size.1 - 1,
+            size.1 - 1,
             &style.corners[1].to_string(),
             style.corners_style,
         );
         buf.write_line(
-            ctx.size.0 - 1,
+            size.0 - 1,
             0,
             &style.corners[2].to_string(),
             style.corners_style,
         );
         buf.write_line(
-            ctx.size.0 - 1,
-            ctx.size.1 - 1,
+            size.0 - 1,
+            size.1 - 1,
             &style.corners[3].to_string(),
             style.corners_style,
         );
@@ -106,7 +107,7 @@ impl NodeTrait for Block {
 }
 
 impl Block {
-    fn new() -> Self {
-        Block { border_style: BorderStyle::default() }
+    pub fn new() -> Box<Self> {
+        Box::new(Block { border_style: BorderStyle::default() })
     }
 }

@@ -8,6 +8,11 @@ pub struct NodeData {
 
     pub dirty: Dirty
 }
+impl Default for NodeData {
+    fn default() -> Self {
+        NodeData { global_positon: None, position: Vector2(0, 0), size: None, dirty: Dirty::default() }
+    }
+}
 impl NodeData {
     pub fn new(position: Vector2) -> Self {
         NodeData {
