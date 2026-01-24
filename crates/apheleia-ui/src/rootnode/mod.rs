@@ -4,7 +4,7 @@ use std::time::Duration;
 
 use crate::NodeId;
 use crate::contexts::{
-    EventUpdateCommands, EventUpdateContext, InitialCallContext, IntialCallCommands, UpdateContext,
+    EventUpdateCommands, EventUpdateContext, InitialCallContext, IntialCallCommands, RenderContext, UpdateContext
 };
 use crate::node::data::{DirtyRenderLevel, NodeData};
 use crate::node::node::NodeTrait;
@@ -205,23 +205,25 @@ impl RootNode {
                 continue;
             }
 
-            let data = self.id_data.get_mut(id).unwrap();
-            if let Some(size) = data.size {
-                let position = data
-                    .global_positon
-                    .unwrap_or_else(|| todo!("Implement calculate_global_position function"));
+            self.render_node(id, false);
 
-                let mut node_buffer = Buffer::new(size.0, size.1);
-                self.id_nodes.get_mut(id).unwrap().render(&mut node_buffer);
-                self.buffer
-                    .render_buffer(position.0, position.1, &mut node_buffer);
-            }
+            // let data = self.id_data.get_mut(id).unwrap();
+            // if let Some(size) = data.size {
+            //     let position = data
+            //         .global_positon
+            //         .unwrap_or_else(|| todo!("Implement calculate_global_position function"));
+            //
+            //     let mut node_buffer = Buffer::new(size.0, size.1);
+            //     self.id_nodes.get_mut(id).unwrap().render(&mut node_buffer);
+            //     self.buffer
+            //         .render_buffer(position.0, position.1, &mut node_buffer);
+            // }
         }
 
         self.renderer.flip(&mut self.buffer);
     }
 
-    fn render_node(&mut self, id: &NodeId) {
+    fn render_node(&mut self, id: &NodeId, fill_empty: bool) {
         let mut data = self.id_data.get_mut(id).unwrap();
         if let Some(size) = data.get_size() {
             let position = data.global_positon.unwrap();
@@ -235,8 +237,22 @@ impl RootNode {
                 );
             }
 
+            if fill_empty {
+                for y in 0..size.1 {
+                    self.buffer.write_line(
+                        position.0,
+                        position.1 + y,
+                        &" ".repeat(size.0 as usize),
+                        None,
+                    );
+                }
+            }
+
             let mut node_buffer = Buffer::new(size.0, size.1);
-            self.id_nodes.get(id).unwrap().render(&mut node_buffer);
+        
+            let mut ctx = RenderContext::new(*id, position, *size);
+            self.id_nodes.get(id).unwrap().render(&mut node_buffer, &mut ctx);
+
             self.buffer
                 .render_buffer(position.0, position.1, &mut node_buffer);
             data.dirty.render = DirtyRenderLevel::None;
@@ -249,7 +265,7 @@ impl RootNode {
         for id in ids.iter() {
             match self.id_data.get(id).unwrap().dirty.render {
                 DirtyRenderLevel::SimpleDirty => {
-                    self.render_node(id);
+                    self.render_node(id, false);
                 }
                 DirtyRenderLevel::SubtreeDirty => {
                     if let Ok(children) = self.relations.get_subtree(id, None) {
@@ -258,29 +274,29 @@ impl RootNode {
                             .unwrap()
                             .iter()
                         {
-                            self.render_node(id);
+                            self.render_node(id, true);
 
-                            let data = self.id_data.get_mut(child_id).unwrap();
-                            if let Some(size) = data.get_size() {
-                                let position = data.get_global_position().unwrap();
-
-                                for y in 0..size.1 {
-                                    self.buffer.write_line(
-                                        position.0,
-                                        position.1 + y,
-                                        &" ".repeat(size.0 as usize),
-                                        None,
-                                    );
-                                }
-
-                                let mut node_buffer = Buffer::new(size.0, size.1);
-                                self.id_nodes
-                                    .get_mut(child_id)
-                                    .unwrap()
-                                    .render(&mut node_buffer);
-                                self.buffer
-                                    .render_buffer(position.0, position.1, &mut node_buffer);
-                            }
+                            // let data = self.id_data.get_mut(child_id).unwrap();
+                            // if let Some(size) = data.get_size() {
+                            //     let position = data.get_global_position().unwrap();
+                            //
+                            //     for y in 0..size.1 {
+                            //         self.buffer.write_line(
+                            //             position.0,
+                            //             position.1 + y,
+                            //             &" ".repeat(size.0 as usize),
+                            //             None,
+                            //         );
+                            //     }
+                            //
+                            //     let mut node_buffer = Buffer::new(size.0, size.1);
+                            //     self.id_nodes
+                            //         .get_mut(child_id)
+                            //         .unwrap()
+                            //         .render(&mut node_buffer);
+                            //     self.buffer
+                            //         .render_buffer(position.0, position.1, &mut node_buffer);
+                            // }
                         }
                         self.id_data.get_mut(id).unwrap().dirty.render = DirtyRenderLevel::None;
                     }

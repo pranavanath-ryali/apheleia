@@ -81,18 +81,18 @@ pub struct RenderContext {
     pub id: NodeId,
 
     position: Vector2,
-    size: Option<Vector2>,
+    size: Vector2,
 }
 impl RenderContext {
-    pub fn new(id: NodeId, position: Vector2, size: &Option<Vector2>) -> Self {
-        RenderContext { id, position, size: *size }
+    pub fn new(id: NodeId, position: Vector2, size: Vector2) -> Self {
+        RenderContext { id, position, size }
     }
 
     pub fn get_position(&self) -> Vector2 {
         self.position
     }
 
-    pub fn get_size(&self) -> Option<Vector2> {
+    pub fn get_size(&self) -> Vector2 {
         self.size
     }
 }

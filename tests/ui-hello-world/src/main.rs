@@ -1,5 +1,5 @@
 use apheleia_core::types::vector::Vector2;
-use apheleia_ui::{KeyCode, contexts::{self, IntialCallCommands}, node::{data::NodeData, node::NodeTrait}, rootnode::RootNode, types::{self, EventType}};
+use apheleia_ui::{KeyCode, contexts::{self, IntialCallCommands, RenderContext}, node::{data::NodeData, node::NodeTrait}, rootnode::RootNode, types::{self, EventType}};
 
 struct TestNode(bool);
 impl NodeTrait for TestNode {
@@ -24,15 +24,16 @@ impl NodeTrait for TestNode {
         }
     }
 
-    fn update(&mut self) {
-    }
-
-    fn render(&self, buf: &mut apheleia_core::buffer::Buffer) {
+    fn render(&self, buf: &mut apheleia_core::buffer::Buffer, ctx: &mut RenderContext) {
         if self.0 {
             buf.write_line(0, 0, "B", None);
         } else {
             buf.write_line(0, 0, "AAAAAA", None);
         }
+    }
+
+    fn update(&mut self, ctx: &mut contexts::UpdateContext) {
+        todo!()
     }
 }
 
@@ -47,15 +48,16 @@ impl NodeTrait for ChildNode {
         self.0 = true;
     }
 
-    fn update(&mut self) {
-    }
-
-    fn render(&self, buf: &mut apheleia_core::buffer::Buffer) {
+    fn render(&self, buf: &mut apheleia_core::buffer::Buffer, ctx: &mut RenderContext) {
         if self.0 {
             buf.write_line(0, 0, "C", None);
         } else {
             buf.write_line(0, 0, "Hello", None);
         }
+    }
+
+    fn update(&mut self, ctx: &mut contexts::UpdateContext) {
+        todo!()
     }
 }
 

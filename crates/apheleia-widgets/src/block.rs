@@ -1,5 +1,5 @@
 use apheleia_core::{Color, style::Style};
-use apheleia_ui::contexts::{InitialCallContext, UpdateContext};
+use apheleia_ui::{contexts::{InitialCallContext, UpdateContext}, node::node::NodeTrait};
 
 #[derive(Clone)]
 pub struct BorderStyle {
@@ -31,13 +31,11 @@ pub struct Block {
 impl NodeTrait for Block {
     fn initial_setup(&mut self, _ctx: &mut InitialCallContext) {}
 
-    fn event(&mut self) {}
     fn update(&mut self, ctx: &mut UpdateContext) {}
 
     fn render(&self, buf: &mut apheleia_core::buffer::Buffer) {
         // TODO: Come back to this later
         let style = &self.border_style;
-
         let mut i: u8 = 0;
         for y in 1..(ctx.size.1 - 1) {
             i += 1;
@@ -100,6 +98,10 @@ impl NodeTrait for Block {
             &style.corners[3].to_string(),
             style.corners_style,
         );
+    }
+
+    fn event(&mut self, ctx: &mut apheleia_ui::contexts::EventUpdateContext) {
+        todo!()
     }
 }
 
