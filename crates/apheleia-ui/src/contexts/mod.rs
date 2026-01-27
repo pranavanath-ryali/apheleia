@@ -8,7 +8,7 @@ use crate::{
     NodeId,
     node::data::{DirtyRenderLevel, NodeData},
     rootnode::RootNode,
-    types::{EventData, EventType},
+    types::{EventType},
 };
 
 // pub enum IntialCallCommands {
@@ -149,8 +149,14 @@ pub enum Commands {
 
     MarkRenderDirty(DirtyRenderLevel),
 }
+pub enum EventData {
+    Resize(Vector2),
+    Keys(KeyEvent),
+}
 pub struct Context<'a> {
     id: NodeId,
+
+    event_data: Option<EventData>,
 
     class_ids: &'a HashMap<String, NodeId>,
     relations: &'a Tree<NodeId, NodeId>,
@@ -161,6 +167,21 @@ impl<'a> Context<'a> {
     pub fn new(id: NodeId, class_ids: &'a HashMap<String, NodeId>, relations: &'a Tree<NodeId, NodeId>) -> Self {
         Self {
             id,
+
+            event_data: None,
+            
+            class_ids,
+            relations,
+
+            commands: Box::new(vec![]),
+        }
+    }
+
+    pub fn new_event_context(id: NodeId, class_ids: &'a HashMap<String, NodeId>, relations: &'a Tree<NodeId, NodeId>, event_data: EventData) -> Self {
+        Self {
+            id,
+
+            event_data: Some(event_data),
             
             class_ids,
             relations,

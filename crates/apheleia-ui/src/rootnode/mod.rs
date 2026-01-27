@@ -2,14 +2,14 @@ use std::collections::HashMap;
 use std::error::Error;
 use std::time::Duration;
 
-use crate::NodeId;
+use crate::{NodeId, contexts};
 use crate::contexts::{Commands, Context};
 use crate::node::data::{DirtyRenderLevel, NodeData};
 use crate::node::node::NodeTrait;
 use crate::types::{EventData, EventType, UpdateTypeNode};
 use apheleia_core::types::vector::Vector2;
 use apheleia_core::{buffer::Buffer, renderer::Renderer, terminal};
-use crossterm::event::KeyModifiers;
+use crossterm::event::{Event, KeyModifiers};
 use crossterm::{
     event::{KeyCode, poll, read},
     terminal::{disable_raw_mode, enable_raw_mode},
@@ -335,89 +335,54 @@ impl RootNode {
         self.renderer.update(&mut self.buffer);
     }
 
-    fn handle_event_ctx_commands(&mut self, id: NodeId, commands: &Vec<EventUpdateCommands>) {
-        for command in commands {
-            match command {
-                EventUpdateCommands::MarkRenderDirty(level) => {
-                    let data = self.id_data.get_mut(&id).unwrap();
-                    self.dirty_ids.push(id);
-                    data.dirty.render = *level;
-                }
-                EventUpdateCommands::SetSize(size) => {
-                    let data = self.id_data.get_mut(&id).unwrap();
-                    data.set_size(*size);
-
-                    self.dirty_ids.push(id);
-                    data.dirty.render = DirtyRenderLevel::SimpleDirty;
-                }
-                EventUpdateCommands::SetPosition(position) => {
-                    self.id_data.get_mut(&id).unwrap().set_position(*position);
-
-                    self.dirty_ids.push(id);
-                    self.id_data.get_mut(&id).unwrap().dirty.render =
-                        DirtyRenderLevel::SubtreeDirty;
-                    self.calculate_global_position_for_id(id);
-                }
-            }
-        }
-    }
-
     fn event(&mut self) -> Result<(), Box<dyn Error>> {
-        let mut commands: HashMap<NodeId, Vec<EventUpdateCommands>> = HashMap::new();
-
+        let mut commands: Vec<(NodeId, Box<Vec<Commands>>)> = vec![];
         if poll(Duration::from_nanos(1_000_000_000 / 15))? {
             match read()? {
-                crossterm::event::Event::Key(event) => {
-                    if event.code == KeyCode::Char('c') && event.modifiers == KeyModifiers::CONTROL
-                    {
-                        self.running = false;
-                    }
-
+                Event::FocusGained => todo!(),
+                Event::FocusLost => todo!(),
+                Event::Key(key_event) => {
                     for id in self
                         .id_update_type
                         .get(&UpdateTypeNode::Event(EventType::Keys))
                         .unwrap()
                         .iter()
                     {
-                        let position = *self.id_data.get(id).unwrap().get_position();
-                        let size = *self.id_data.get(id).unwrap().get_size();
-                        let mut ctx =
-                            EventUpdateContext::new(*id, &position, &size, EventData::Keys(event));
-                        self.id_nodes.get_mut(id).unwrap().event(&mut ctx);
-                        commands.insert(*id, ctx.commands);
+                        let mut ctx = Context::new_event_context(
+                            *id,
+                            &self.class_id,
+                            &self.relations,
+                            contexts::EventData::Keys(key_event),
+                        );
+                        self.id_nodes.get_mut(&id).unwrap().event(&mut ctx);
+                        commands.push((*id, ctx.commands));
                     }
                 }
-                crossterm::event::Event::Resize(width, height) => {
+                Event::Mouse(mouse_event) => todo!(),
+                Event::Paste(_) => todo!(),
+                Event::Resize(width, height) => {
                     for id in self
                         .id_update_type
-                        .get_mut(&UpdateTypeNode::Event(EventType::Resize))
+                        .get(&UpdateTypeNode::Event(EventType::Resize))
                         .unwrap()
                         .iter()
                     {
-                        let node = self.id_nodes.get_mut(id).unwrap();
-                        let data = self.id_data.get_mut(id).unwrap();
-
-                        let mut ctx = EventUpdateContext::new(
+                        let mut ctx = Context::new_event_context(
                             *id,
-                            &data.position,
-                            &data.size,
-                            EventData::Resize(Vector2(width, height)),
+                            &self.class_id,
+                            &self.relations,
+                            contexts::EventData::Resize(Vector2(width, height)),
                         );
-                        node.event(&mut ctx);
-
-                        commands.insert(*id, ctx.commands);
+                        self.id_nodes.get_mut(&id).unwrap().event(&mut ctx);
+                        commands.push((*id, ctx.commands));
                     }
                 }
-                crossterm::event::Event::FocusGained => {}
-                crossterm::event::Event::FocusLost => {}
-                crossterm::event::Event::Mouse(mouse_event) => {}
-                crossterm::event::Event::Paste(_) => {}
             }
         }
 
-        for (id, commands) in commands {
-            self.handle_event_ctx_commands(id, &commands);
-        }
+        commands.iter().for_each(|(id, commands)| {
+            self.handle_commands(*id, &commands);
+        });
 
         Ok(())
     }
