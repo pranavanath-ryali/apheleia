@@ -1,11 +1,12 @@
 use apheleia_core::buffer::Buffer;
 
-use crate::contexts::{EventUpdateContext, InitialCallContext, RenderContext, UpdateContext};
+use crate::{contexts::Context, node::data::NodeData};
 
-pub trait NodeTrait {
-    fn initial_setup(&mut self, ctx: &mut InitialCallContext);
+pub trait NodeTrait
+{
+    fn initial_setup(&mut self, ctx: &mut Context, data: &NodeData);
 
-    fn event(&mut self, ctx: &mut EventUpdateContext);
-    fn update(&mut self, ctx: &mut UpdateContext);
-    fn render(&self, buf: &mut Buffer, ctx: &mut RenderContext);
+    fn event(&mut self, ctx: &mut Context);
+    fn update(&mut self, ctx: &mut Context);
+    fn render(&self, buf: &mut Buffer, ctx: &mut Context);
 }

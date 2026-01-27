@@ -3,10 +3,7 @@ use std::error::Error;
 use std::time::Duration;
 
 use crate::NodeId;
-use crate::contexts::{
-    EventUpdateCommands, EventUpdateContext, InitialCallContext, IntialCallCommands, RenderContext,
-    UpdateCommands, UpdateContext,
-};
+use crate::contexts::{Commands, Context};
 use crate::node::data::{DirtyRenderLevel, NodeData};
 use crate::node::node::NodeTrait;
 use crate::types::{EventData, EventType, UpdateTypeNode};
@@ -136,6 +133,29 @@ impl RootNode {
         }
     }
 
+    pub fn handle_commands(&mut self, id: NodeId, commands: &Vec<Commands>) {
+        for command in commands {
+            match command {
+                Commands::SetSize(size) => self.id_data.get_mut(&id).unwrap().size = Some(*size),
+                Commands::SetPosition(position) => {
+                    self.id_data.get_mut(&id).unwrap().position = *position;
+                    self.calculate_global_position_for_id(id);
+                }
+                Commands::RegisterForUpdate => self
+                    .id_update_type
+                    .get_mut(&UpdateTypeNode::ConstantUpdate)
+                    .unwrap()
+                    .push(id),
+                Commands::RegisterForEvent(event_type) => self
+                    .id_update_type
+                    .get_mut(&UpdateTypeNode::Event(*event_type))
+                    .unwrap()
+                    .push(id),
+                Commands::MarkRenderDirty(dirty_render_level) => self.dirty_ids.push(id),
+            }
+        }
+    }
+
     pub fn initial_setup(&mut self) {
         for id in self
             .relations
@@ -147,28 +167,32 @@ impl RootNode {
                 continue;
             }
 
-            let data = self.id_data.get_mut(id).unwrap();
-            let node = self.id_nodes.get_mut(id).unwrap();
+            let mut ctx = Context::new(*id, &self.class_id, &self.relations);
+            self.id_nodes
+                .get_mut(id)
+                .unwrap()
+                .initial_setup(&mut ctx, self.id_data.get(id).unwrap());
+            self.handle_commands(*id, &ctx.commands);
 
-            let mut ctx = InitialCallContext::new(&data.position, &data.size);
-            node.initial_setup(&mut ctx);
-
-            for command in ctx.get_commands().iter() {
-                match command {
-                    IntialCallCommands::SetSize(size) => data.size = Some(*size),
-                    IntialCallCommands::RegisterForUpdate => self
-                        .id_update_type
-                        .get_mut(&UpdateTypeNode::ConstantUpdate)
-                        .unwrap()
-                        .push(*id),
-                    IntialCallCommands::RegisterForEvent(event_type) => {
-                        self.id_update_type
-                            .get_mut(&UpdateTypeNode::Event(*event_type))
-                            .unwrap()
-                            .push(*id);
-                    }
-                }
-            }
+            // let mut ctx = InitialCallContext::new(&data.position, &data.size);
+            // node.initial_setup(&mut ctx);
+            //
+            // for command in ctx.get_commands().iter() {
+            //     match command {
+            //         IntialCallCommands::SetSize(size) => data.size = Some(*size),
+            //         IntialCallCommands::RegisterForUpdate => self
+            //             .id_update_type
+            //             .get_mut(&UpdateTypeNode::ConstantUpdate)
+            //             .unwrap()
+            //             .push(*id),
+            //         IntialCallCommands::RegisterForEvent(event_type) => {
+            //             self.id_update_type
+            //                 .get_mut(&UpdateTypeNode::Event(*event_type))
+            //                 .unwrap()
+            //                 .push(*id);
+            //         }
+            //     }
+            // }
         }
 
         for (id, _) in self.id_nodes.iter_mut() {
