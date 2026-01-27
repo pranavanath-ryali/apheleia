@@ -388,46 +388,16 @@ impl RootNode {
     }
 
     fn update(&mut self) {
-        let mut ctxs: Vec<(NodeId, UpdateContext)> = vec![];
-        for id in self
-            .id_update_type
-            .get(&UpdateTypeNode::ConstantUpdate)
-            .unwrap()
-            .iter()
-        {
-            let data = self.id_data.get(id).unwrap();
-            let mut ctx = UpdateContext::new(*id, *data.get_position(), data.get_size());
-
+        let mut commands: Vec<(NodeId, Box<Vec<Commands>>)> = vec![];
+        for id in self.id_update_type.get(&UpdateTypeNode::ConstantUpdate).unwrap().iter() {
+            let mut ctx = Context::new(*id, &self.class_id, &self.relations);
             self.id_nodes.get_mut(id).unwrap().update(&mut ctx);
-            ctxs.push((*id, ctx));
+            commands.push((*id, ctx.commands));
         }
 
-        for (id, ctx) in ctxs {
-            for command in ctx.get_commands().iter() {
-                match command {
-                    UpdateCommands::MarkRenderDirty(level) => {
-                        let data = self.id_data.get_mut(&id).unwrap();
-                        self.dirty_ids.push(id);
-                        data.dirty.render = *level;
-                    }
-                    UpdateCommands::SetSize(size) => {
-                        let data = self.id_data.get_mut(&id).unwrap();
-                        data.set_size(*size);
-
-                        self.dirty_ids.push(id);
-                        data.dirty.render = DirtyRenderLevel::SimpleDirty;
-                    }
-                    UpdateCommands::SetPosition(position) => {
-                        self.id_data.get_mut(&id).unwrap().set_position(*position);
-
-                        self.dirty_ids.push(id);
-                        self.id_data.get_mut(&id).unwrap().dirty.render =
-                            DirtyRenderLevel::SubtreeDirty;
-                        self.calculate_global_position_for_id(id);
-                    }
-                }
-            }
-        }
+        commands.iter().for_each(|(id, commands)| {
+            self.handle_commands(*id, &commands);
+        });
     }
 
     pub fn run(&mut self) -> Result<(), Box<dyn Error>> {
