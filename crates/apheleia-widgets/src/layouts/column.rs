@@ -6,6 +6,9 @@ pub struct ColumnLayout {
 impl NodeTrait for ColumnLayout {
     fn initial_setup(&mut self, ctx: &mut Context, data: &NodeData) {
         for id in ctx.get_children(ctx.get_id()) {
+            if let Some(layout) = &ctx.get_data_for_id(id).unwrap().layout {
+                
+            }
         }
     }
 
