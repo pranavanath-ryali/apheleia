@@ -6,25 +6,29 @@ use apheleia_ui::{
     node::data::NodeData,
     rootnode::{self, RootNode},
 };
-use apheleia_widgets::{
-    block::{Block, BorderStyle},
-    label::{Label, LabelAlignment, TextOverflow},
-};
+use apheleia_widgets::label::Label;
 
 fn main() {
     let mut root = RootNode::default();
 
-    root.add_node("background", "", Block::new(), NodeData::new(Vector2(5, 5)));
     root.add_node(
         "label",
-        "background",
-        Label::new("Hello World", None, Some(LabelAlignment::Left), Some(TextOverflow::Scoll(1, 10))),
-        NodeData {
-            position: Vector2(2, 2),
-            size: Some(Vector2(4, 1)),
-            ..Default::default()
-        },
+        "",
+        Label::new().with_label("Hello World").build(),
+        NodeData::new(Vector2(5, 5)),
     );
+
+    // root.add_node("background", "", Block::new(), NodeData::new(Vector2(5, 5)));
+    // root.add_node(
+    //     "label",
+    //     "background",
+    //     Label::new("Hello World", None, Some(LabelAlignment::Left), Some(TextOverflow::Scoll(1, 10))),
+    //     NodeData {
+    //         position: Vector2(2, 2),
+    //         size: Some(Vector2(4, 1)),
+    //         ..Default::default()
+    //     },
+    // );
     //
     // // let node = root
     // //     .add_node(
