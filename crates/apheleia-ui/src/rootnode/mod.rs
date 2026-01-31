@@ -98,7 +98,7 @@ impl RootNode {
                 Node::new(id, None),
                 Some(
                     self.class_id
-                        .get(&parent_class.to_string())
+                        .get(parent_class)
                         .expect("Given parent class doesn't exist"),
                 ),
             );
@@ -112,9 +112,9 @@ impl RootNode {
                 .unwrap()
                 .iter()
                 .for_each(|child_id| {
-                    let mut position = self.id_data.get(&child_id).unwrap().position;
+                    let mut position = self.id_data.get(child_id).unwrap().position;
                     self.relations
-                        .get_ancestor_ids(&child_id)
+                        .get_ancestor_ids(child_id)
                         .unwrap()
                         .iter()
                         .filter(|v| **v != 0_usize)
@@ -124,9 +124,9 @@ impl RootNode {
                             position.1 += pos.1;
                         });
 
-                    let data = self
+                    self
                         .id_data
-                        .get_mut(&child_id)
+                        .get_mut(child_id)
                         .unwrap()
                         .set_global_position(position);
                 });
