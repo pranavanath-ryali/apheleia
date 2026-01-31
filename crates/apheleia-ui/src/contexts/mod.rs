@@ -83,7 +83,7 @@ impl<'a> Context<'a> {
         self.id_data.get(&id)
     }
 
-    pub fn get_children(&self, id: NodeId) -> Option<Vec<NodeId>> {
+    pub fn get_children(&self, id: NodeId) -> Vec<NodeId> {
         // TODO: Fix cases where no. of children is 0. Then return None
         let mut children: Vec<NodeId> = vec![];
         self.relations
@@ -99,7 +99,7 @@ impl<'a> Context<'a> {
                 children.push(*i);
             });
         
-        Some(children)
+        children
     }
 
     pub fn add_command(&mut self, command: Commands) {
