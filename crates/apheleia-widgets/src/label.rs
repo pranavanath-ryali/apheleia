@@ -1,7 +1,7 @@
 use apheleia_core::{Color::Red, style::Style};
 use apheleia_ui::{
-    contexts::{self, InitialCallContext, RenderContext, UpdateCommands, UpdateContext},
-    node::{data::DirtyRenderLevel::SimpleDirty, node::NodeTrait},
+    contexts::{self, Commands, Context},
+    node::{data::{DirtyRenderLevel::SimpleDirty, NodeData}, node::NodeTrait},
 };
 
 pub enum TextOverflow {
@@ -29,17 +29,17 @@ pub struct Label {
     scroll_wait_count: u16,
 }
 impl NodeTrait for Label {
-    fn initial_setup(&mut self, ctx: &mut InitialCallContext) {
+    fn initial_setup(&mut self, ctx: &mut Context, _data: &NodeData) {
         match self.overflow {
             TextOverflow::Scoll(_, _) => {
-                ctx.add_command(contexts::IntialCallCommands::RegisterForUpdate);
+                ctx.add_command(Commands::RegisterForUpdate);
             }
             _ => {}
         }
     }
 
-    fn update(&mut self, ctx: &mut UpdateContext) {
-        if let Some(size) = ctx.get_size() {
+    fn update(&mut self, ctx: &mut Context, data: &NodeData) {
+        if let Some(size) = data.size {
             match &self.overflow {
                 TextOverflow::Scoll(ticks_per_char, ticks_for_wait) => {
                     if self.text.len() > size.0 as usize {
@@ -81,15 +81,15 @@ impl NodeTrait for Label {
                         self.i = 0;
                     }
 
-                    ctx.add_command(UpdateCommands::MarkRenderDirty(SimpleDirty));
+                    ctx.add_command(Commands::MarkRenderDirty(SimpleDirty));
                 }
                 _ => {}
             }
         }
     }
 
-    fn render(&self, buf: &mut apheleia_core::buffer::Buffer, ctx: &mut RenderContext) {
-        let size = &ctx.get_size();
+    fn render(&self, buf: &mut apheleia_core::buffer::Buffer, ctx: &Context, data: &NodeData) {
+        let size = data.size.unwrap();
 
         if self.text.len() <= size.0 as usize {
             match self.alignment {
@@ -138,7 +138,7 @@ impl NodeTrait for Label {
         }
     }
 
-    fn event(&mut self, ctx: &mut contexts::EventUpdateContext) {
+    fn event(&mut self, ctx: &mut Context, data: &NodeData) {
         todo!()
     }
 }
