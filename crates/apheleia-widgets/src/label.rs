@@ -1,7 +1,10 @@
 use apheleia_core::{Color::Red, style::Style};
 use apheleia_ui::{
     contexts::{self, Commands, Context},
-    node::{data::{DirtyRenderLevel::SimpleDirty, NodeData}, node::NodeTrait},
+    node::{
+        data::{DirtyRenderLevel::SimpleDirty, NodeData},
+        node::NodeTrait,
+    },
 };
 
 pub enum TextOverflow {
@@ -89,6 +92,7 @@ impl NodeTrait for Label {
     }
 
     fn render(&self, buf: &mut apheleia_core::buffer::Buffer, ctx: &Context, data: &NodeData) {
+        println!("YAY");
         let size = data.size.unwrap();
 
         if self.text.len() <= size.0 as usize {
@@ -144,23 +148,42 @@ impl NodeTrait for Label {
 }
 
 impl Label {
-    pub fn new(
-        text: &str,
-        style: Option<Style>,
-        alignment: Option<LabelAlignment>,
-        overflow: Option<TextOverflow>,
-    ) -> Box<Self> {
-        Box::new(Label {
-            overflow: overflow.unwrap_or_else(|| TextOverflow::Ellipses),
-            text: text.to_string(),
-            style: style,
-            alignment: alignment.unwrap_or_else(|| LabelAlignment::Left),
+    pub fn new() -> Self {
+        Label {
+            overflow: TextOverflow::Ellipses,
+            text: "Label Node".to_string(),
+            style: None,
+            alignment: LabelAlignment::Left,
 
             i: 0,
             counter: 0.,
             scroll_right_dir: false,
             should_scroll: true,
             scroll_wait_count: 0,
-        })
+        }
+    }
+
+    pub fn with_label(mut self, label: &str) -> Self {
+        self.text = label.to_string();
+        self
+    }
+
+    pub fn with_overflow(mut self, overflow: TextOverflow) -> Self {
+        self.overflow = overflow;
+        self
+    }
+
+    pub fn with_alignment(mut self, alignment: LabelAlignment) -> Self {
+        self.alignment = alignment;
+        self
+    }
+
+    pub fn with_style(mut self, style: Style) -> Self {
+        self.style = Some(style);
+        self
+    }
+
+    pub fn build(self) -> Box<Self> {
+        Box::new(self)
     }
 }
