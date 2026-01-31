@@ -8,5 +8,5 @@ pub trait NodeTrait
 
     fn event(&mut self, ctx: &mut Context);
     fn update(&mut self, ctx: &mut Context);
-    fn render(&self, buf: &mut Buffer, ctx: &mut Context);
+    fn render(&self, buf: &mut Buffer, ctx: &Context);
 }

@@ -6,7 +6,7 @@ use crate::{NodeId, contexts};
 use crate::contexts::{Commands, Context};
 use crate::node::data::{DirtyRenderLevel, NodeData};
 use crate::node::node::NodeTrait;
-use crate::types::{EventData, EventType, UpdateTypeNode};
+use crate::types::{EventType, UpdateTypeNode};
 use apheleia_core::types::vector::Vector2;
 use apheleia_core::{buffer::Buffer, renderer::Renderer, terminal};
 use crossterm::event::{Event, KeyModifiers};
@@ -151,7 +151,10 @@ impl RootNode {
                     .get_mut(&UpdateTypeNode::Event(*event_type))
                     .unwrap()
                     .push(id),
-                Commands::MarkRenderDirty(dirty_render_level) => self.dirty_ids.push(id),
+                Commands::MarkRenderDirty(dirty_render_level) => {
+                    self.dirty_ids.push(id);
+                    self.id_data.get_mut(&id).unwrap().dirty.render = *dirty_render_level;
+                },
             }
         }
     }
@@ -173,26 +176,6 @@ impl RootNode {
                 .unwrap()
                 .initial_setup(&mut ctx, self.id_data.get(id).unwrap());
             self.handle_commands(*id, &ctx.commands);
-
-            // let mut ctx = InitialCallContext::new(&data.position, &data.size);
-            // node.initial_setup(&mut ctx);
-            //
-            // for command in ctx.get_commands().iter() {
-            //     match command {
-            //         IntialCallCommands::SetSize(size) => data.size = Some(*size),
-            //         IntialCallCommands::RegisterForUpdate => self
-            //             .id_update_type
-            //             .get_mut(&UpdateTypeNode::ConstantUpdate)
-            //             .unwrap()
-            //             .push(*id),
-            //         IntialCallCommands::RegisterForEvent(event_type) => {
-            //             self.id_update_type
-            //                 .get_mut(&UpdateTypeNode::Event(*event_type))
-            //                 .unwrap()
-            //                 .push(*id);
-            //         }
-            //     }
-            // }
         }
 
         for (id, _) in self.id_nodes.iter_mut() {
@@ -231,18 +214,6 @@ impl RootNode {
             }
 
             self.render_node(id, false);
-
-            // let data = self.id_data.get_mut(id).unwrap();
-            // if let Some(size) = data.size {
-            //     let position = data
-            //         .global_positon
-            //         .unwrap_or_else(|| todo!("Implement calculate_global_position function"));
-            //
-            //     let mut node_buffer = Buffer::new(size.0, size.1);
-            //     self.id_nodes.get_mut(id).unwrap().render(&mut node_buffer);
-            //     self.buffer
-            //         .render_buffer(position.0, position.1, &mut node_buffer);
-            // }
         }
 
         self.renderer.flip(&mut self.buffer);
@@ -275,11 +246,11 @@ impl RootNode {
 
             let mut node_buffer = Buffer::new(size.0, size.1);
 
-            let mut ctx = RenderContext::new(*id, position, *size);
+            let mut ctx = Context::new(*id, &self.class_id, &self.relations);
             self.id_nodes
                 .get(id)
                 .unwrap()
-                .render(&mut node_buffer, &mut ctx);
+                .render(&mut node_buffer, &ctx);
 
             self.buffer
                 .render_buffer(position.0, position.1, &mut node_buffer);
@@ -303,28 +274,6 @@ impl RootNode {
                             .iter()
                         {
                             self.render_node(id, true);
-
-                            // let data = self.id_data.get_mut(child_id).unwrap();
-                            // if let Some(size) = data.get_size() {
-                            //     let position = data.get_global_position().unwrap();
-                            //
-                            //     for y in 0..size.1 {
-                            //         self.buffer.write_line(
-                            //             position.0,
-                            //             position.1 + y,
-                            //             &" ".repeat(size.0 as usize),
-                            //             None,
-                            //         );
-                            //     }
-                            //
-                            //     let mut node_buffer = Buffer::new(size.0, size.1);
-                            //     self.id_nodes
-                            //         .get_mut(child_id)
-                            //         .unwrap()
-                            //         .render(&mut node_buffer);
-                            //     self.buffer
-                            //         .render_buffer(position.0, position.1, &mut node_buffer);
-                            // }
                         }
                         self.id_data.get_mut(id).unwrap().dirty.render = DirtyRenderLevel::None;
                     }
@@ -342,6 +291,10 @@ impl RootNode {
                 Event::FocusGained => todo!(),
                 Event::FocusLost => todo!(),
                 Event::Key(key_event) => {
+                    if key_event.modifiers.contains(KeyModifiers::CONTROL) && key_event.code.is_char('c') {
+                        self.running = false;
+                    }
+
                     for id in self
                         .id_update_type
                         .get(&UpdateTypeNode::Event(EventType::Keys))
@@ -408,21 +361,6 @@ impl RootNode {
         self.running = true;
         while (self.running) {
             self.event();
-            self.buffer.write_line(
-                100,
-                0,
-                &format!(
-                    "{} {}",
-                    1,
-                    self.id_data
-                        .get(&1)
-                        .unwrap()
-                        .get_global_position()
-                        .unwrap()
-                        .0
-                ),
-                None,
-            );
             self.update();
             self.render();
         }
