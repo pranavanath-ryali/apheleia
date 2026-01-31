@@ -24,6 +24,11 @@ impl NodeData {
         }
     }
 
+    pub fn with_size(mut self, size: Vector2) -> Self {
+        self.size = Some(size);
+        self
+    }
+
     pub fn set_global_position(&mut self, position: Vector2) {
         self.global_positon = Some(position);
     }
