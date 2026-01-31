@@ -2,11 +2,11 @@ use std::collections::HashMap;
 use std::error::Error;
 use std::time::Duration;
 
-use crate::{NodeId, contexts};
 use crate::contexts::{Commands, Context, EventData};
 use crate::node::data::{DirtyRenderLevel, NodeData};
 use crate::node::node::NodeTrait;
 use crate::types::{EventType, UpdateTypeNode};
+use crate::{NodeId, contexts};
 use apheleia_core::types::vector::Vector2;
 use apheleia_core::{buffer::Buffer, renderer::Renderer, terminal};
 use crossterm::event::{Event, KeyModifiers};
@@ -124,8 +124,7 @@ impl RootNode {
                             position.1 += pos.1;
                         });
 
-                    self
-                        .id_data
+                    self.id_data
                         .get_mut(child_id)
                         .unwrap()
                         .set_global_position(position);
@@ -141,6 +140,13 @@ impl RootNode {
                     self.id_data.get_mut(&id).unwrap().position = *position;
                     self.calculate_global_position_for_id(id);
                 }
+                Commands::SetSizeForId(id, size) => {
+                    self.id_data.get_mut(id).unwrap().size = Some(*size)
+                }
+                Commands::SetPositionForId(id, position) => {
+                    self.id_data.get_mut(id).unwrap().position = *position;
+                    // TODO: Add way to rerender entire tree
+                },
                 Commands::RegisterForUpdate => self
                     .id_update_type
                     .get_mut(&UpdateTypeNode::ConstantUpdate)
@@ -154,7 +160,7 @@ impl RootNode {
                 Commands::MarkRenderDirty(dirty_render_level) => {
                     self.dirty_ids.push(id);
                     self.id_data.get_mut(&id).unwrap().dirty.render = *dirty_render_level;
-                },
+                }
             }
         }
     }
@@ -246,10 +252,11 @@ impl RootNode {
             let mut node_buffer = Buffer::new(size.0, size.1);
 
             let mut ctx = Context::new(*id, &self.class_id, &self.relations, &self.id_data);
-            self.id_nodes
-                .get(id)
-                .unwrap()
-                .render(&mut node_buffer, &ctx, &self.id_data.get(id).unwrap());
+            self.id_nodes.get(id).unwrap().render(
+                &mut node_buffer,
+                &ctx,
+                &self.id_data.get(id).unwrap(),
+            );
 
             self.buffer
                 .render_buffer(position.0, position.1, &mut node_buffer);
@@ -290,7 +297,9 @@ impl RootNode {
                 Event::FocusGained => todo!(),
                 Event::FocusLost => todo!(),
                 Event::Key(key_event) => {
-                    if key_event.modifiers.contains(KeyModifiers::CONTROL) && key_event.code.is_char('c') {
+                    if key_event.modifiers.contains(KeyModifiers::CONTROL)
+                        && key_event.code.is_char('c')
+                    {
                         self.running = false;
                     }
 
@@ -305,9 +314,12 @@ impl RootNode {
                             &self.class_id,
                             &self.relations,
                             EventData::Keys(key_event),
-                            &self.id_data
+                            &self.id_data,
                         );
-                        self.id_nodes.get_mut(&id).unwrap().event(&mut ctx, &self.id_data.get(id).unwrap());
+                        self.id_nodes
+                            .get_mut(&id)
+                            .unwrap()
+                            .event(&mut ctx, &self.id_data.get(id).unwrap());
                         commands.push((*id, ctx.commands));
                     }
                 }
@@ -325,9 +337,12 @@ impl RootNode {
                             &self.class_id,
                             &self.relations,
                             EventData::Resize(Vector2(width, height)),
-                            &self.id_data
+                            &self.id_data,
                         );
-                        self.id_nodes.get_mut(&id).unwrap().event(&mut ctx, &self.id_data.get(id).unwrap());
+                        self.id_nodes
+                            .get_mut(&id)
+                            .unwrap()
+                            .event(&mut ctx, &self.id_data.get(id).unwrap());
                         commands.push((*id, ctx.commands));
                     }
                 }
@@ -343,9 +358,17 @@ impl RootNode {
 
     fn update(&mut self) {
         let mut commands: Vec<(NodeId, Box<Vec<Commands>>)> = vec![];
-        for id in self.id_update_type.get(&UpdateTypeNode::ConstantUpdate).unwrap().iter() {
+        for id in self
+            .id_update_type
+            .get(&UpdateTypeNode::ConstantUpdate)
+            .unwrap()
+            .iter()
+        {
             let mut ctx = Context::new(*id, &self.class_id, &self.relations, &self.id_data);
-            self.id_nodes.get_mut(id).unwrap().update(&mut ctx, &self.id_data.get(id).unwrap());
+            self.id_nodes
+                .get_mut(id)
+                .unwrap()
+                .update(&mut ctx, &self.id_data.get(id).unwrap());
             commands.push((*id, ctx.commands));
         }
 

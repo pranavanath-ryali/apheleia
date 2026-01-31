@@ -15,6 +15,9 @@ pub enum Commands {
     SetSize(Vector2),
     SetPosition(Vector2),
 
+    SetSizeForId(NodeId, Vector2),
+    SetPositionForId(NodeId, Vector2),
+
     RegisterForUpdate,
     RegisterForEvent(EventType),
 
