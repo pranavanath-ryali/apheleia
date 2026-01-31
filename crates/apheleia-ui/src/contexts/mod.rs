@@ -28,19 +28,21 @@ pub struct Context<'a> {
     id: NodeId,
 
     event_data: Option<EventData>,
-
+    
+    id_data: &'a HashMap<NodeId, NodeData>,
     class_ids: &'a HashMap<String, NodeId>,
     relations: &'a Tree<NodeId, NodeId>,
 
     pub commands: Box<Vec<Commands>>,
 }
 impl<'a> Context<'a> {
-    pub fn new(id: NodeId, class_ids: &'a HashMap<String, NodeId>, relations: &'a Tree<NodeId, NodeId>) -> Self {
+    pub fn new(id: NodeId, class_ids: &'a HashMap<String, NodeId>, relations: &'a Tree<NodeId, NodeId>, id_data: &'a HashMap<NodeId, NodeData>) -> Self {
         Self {
             id,
 
             event_data: None,
             
+            id_data,
             class_ids,
             relations,
 
@@ -48,17 +50,22 @@ impl<'a> Context<'a> {
         }
     }
 
-    pub fn new_event_context(id: NodeId, class_ids: &'a HashMap<String, NodeId>, relations: &'a Tree<NodeId, NodeId>, event_data: EventData) -> Self {
+    pub fn new_event_context(id: NodeId, class_ids: &'a HashMap<String, NodeId>, relations: &'a Tree<NodeId, NodeId>, event_data: EventData, id_data: &'a HashMap<NodeId, NodeData>) -> Self {
         Self {
             id,
 
             event_data: Some(event_data),
             
+            id_data,
             class_ids,
             relations,
 
             commands: Box::new(vec![]),
         }
+    }
+
+    pub fn get_id(&self) -> NodeId {
+        self.id
     }
 
     pub fn get_event(&self) -> &Option<EventData> {
