@@ -79,6 +79,10 @@ impl<'a> Context<'a> {
         None
     }
 
+    pub fn get_data_for_id(&self, id: NodeId) -> Option<&NodeData> {
+        self.id_data.get(&id)
+    }
+
     pub fn get_children(&self, id: NodeId) -> Option<Vec<NodeId>> {
         // TODO: Fix cases where no. of children is 0. Then return None
         let mut children: Vec<NodeId> = vec![];
