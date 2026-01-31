@@ -18,7 +18,7 @@ fn main() {
             .with_label("Hello World")
             .with_overflow(TextOverflow::Scoll(5, 1))
             .build(),
-        NodeData::new(Vector2(5, 5)).with_size(Vector2(7, 1)),
+        NodeData::new(Vector2(5, 5), Some(Vector2(5, 1))),
     );
 
     // root.add_node("background", "", Block::new(), NodeData::new(Vector2(5, 5)));
