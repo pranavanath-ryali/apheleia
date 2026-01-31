@@ -6,7 +6,7 @@ use apheleia_ui::{
     node::data::NodeData,
     rootnode::{self, RootNode},
 };
-use apheleia_widgets::label::Label;
+use apheleia_widgets::label::{self, Label, TextOverflow};
 
 fn main() {
     let mut root = RootNode::default();
@@ -14,8 +14,11 @@ fn main() {
     root.add_node(
         "label",
         "",
-        Label::new().with_label("Hello World").build(),
-        NodeData::new(Vector2(5, 5)),
+        Label::new()
+            .with_label("Hello World")
+            .with_overflow(TextOverflow::Scoll(5, 1))
+            .build(),
+        NodeData::new(Vector2(5, 5)).with_size(Vector2(7, 1)),
     );
 
     // root.add_node("background", "", Block::new(), NodeData::new(Vector2(5, 5)));

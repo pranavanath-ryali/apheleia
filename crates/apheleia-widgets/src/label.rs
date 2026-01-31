@@ -92,7 +92,6 @@ impl NodeTrait for Label {
     }
 
     fn render(&self, buf: &mut apheleia_core::buffer::Buffer, ctx: &Context, data: &NodeData) {
-        println!("YAY");
         let size = data.size.unwrap();
 
         if self.text.len() <= size.0 as usize {

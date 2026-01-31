@@ -14,19 +14,14 @@ impl Default for NodeData {
     }
 }
 impl NodeData {
-    pub fn new(position: Vector2) -> Self {
+    pub fn new(position: Vector2, size: Option<Vector2>) -> Self {
         NodeData {
             global_positon: None,
             position,
-            size: None,
+            size,
 
             dirty: Dirty::default()
         }
-    }
-
-    pub fn with_size(mut self, size: Vector2) -> Self {
-        self.size = Some(size);
-        self
     }
 
     pub fn set_global_position(&mut self, position: Vector2) {
