@@ -72,9 +72,13 @@ impl NodeTrait for Block {
     fn update(&mut self, ctx: &mut Context, data: &NodeData) {}
 }
 impl Block {
-    pub fn new() -> Box<Self> {
-        Box::new(Block {
+    pub fn new() -> Self {
+        Self {
             border_style: BorderStyle::default(),
-        })
+        }
+    }
+
+    pub fn build(self) -> Box<Self> {
+        Box::new(self)
     }
 }

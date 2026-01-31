@@ -17,7 +17,7 @@ fn main() {
     root.add_node(
         "background",
         "",
-        Block::new(),
+        Block::new().build(),
         NodeData::new(Vector2(0, 0), Some(Vector2(50, 20))),
     );
     root.add_node(
