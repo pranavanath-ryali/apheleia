@@ -6,101 +6,40 @@ use apheleia_ui::{
     node::data::NodeData,
     rootnode::{self, RootNode},
 };
-use apheleia_widgets::label::{self, Label, TextOverflow};
+use apheleia_widgets::{
+    block::Block,
+    label::{self, Label, TextOverflow},
+};
 
 fn main() {
     let mut root = RootNode::default();
 
     root.add_node(
-        "label",
+        "background",
         "",
+        Block::new(),
+        NodeData::new(Vector2(0, 0), Some(Vector2(50, 20))),
+    );
+    root.add_node(
+        "label",
+        "background",
+        Label::new().with_label("My Label").build(),
+        NodeData::new(Vector2(1, 1), Some(Vector2(10, 1))),
+    );
+    root.add_node(
+        "label",
+        "background",
         Label::new()
             .with_label("Hello World")
-            .with_overflow(TextOverflow::Scoll(5, 1))
+            .with_overflow(TextOverflow::Ellipses)
+            .with_style(Style {
+                fg: apheleia_core::Color::Red,
+                bg: apheleia_core::Color::Grey,
+                flags: StyleFlags::UnderLined | StyleFlags::Italic,
+            })
             .build(),
-        NodeData::new(Vector2(5, 5), Some(Vector2(5, 1))),
+        NodeData::new(Vector2(1, 2), Some(Vector2(5, 1))),
     );
-
-    // root.add_node("background", "", Block::new(), NodeData::new(Vector2(5, 5)));
-    // root.add_node(
-    //     "label",
-    //     "background",
-    //     Label::new("Hello World", None, Some(LabelAlignment::Left), Some(TextOverflow::Scoll(1, 10))),
-    //     NodeData {
-    //         position: Vector2(2, 2),
-    //         size: Some(Vector2(4, 1)),
-    //         ..Default::default()
-    //     },
-    // );
-    //
-    // // let node = root
-    // //     .add_node(
-    // //         NodeWrapper {
-    // //             data: NodeData {
-    // //                 position: Vector2(0, 0),
-    // //                 size: Some(Vector2(99, 30)),
-    // //
-    // //                 ..Default::default()
-    // //             },
-    // //             node: Box::new(Block {
-    // //                 border_style: BorderStyle {
-    // //                     corners_style: Some(Style {
-    // //                         fg: apheleia_core::Color::Red,
-    // //                         ..Default::default()
-    // //                     }),
-    // //                     ..Default::default()
-    // //                 },
-    // //             }),
-    // //         },
-    // //         None,
-    // //     )
-    // //     .unwrap();
-    //
-    // root.add_node(
-    //     NodeWrapper {
-    //         data: NodeData {
-    //             position: Vector2(0, 5),
-    //             size: Some(Vector2(50, 1)),
-    //
-    //             ..Default::default()
-    //         },
-    //         node: Box::new(Label::new(
-    //             "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris finibus vestibulum justo in rhoncus. Fusce commodo tincidunt nulla non vulputate. Maecenas nisl turpis, faucibus et tincidunt ac, eleifend vitae ex. Praesent porttitor commodo lacus, eleifend sodales magna fermentum sed. Vestibulum ac ultricies est. Lorem ipsum dolor sit amet, consectetur adipiscing.",
-    //             Some(Style {
-    //                 flags: StyleFlags::Italic | StyleFlags::Bold,
-    //                 ..Default::default()
-    //             }),
-    //             None,
-    //             Some(TextOverflow::Ellipses),
-    //         )),
-    //     },
-    //     Some(node),
-    // )
-    // .unwrap();
-
-    // root.add_node(
-    //     NodeWrapper {
-    //         data: NodeData {
-    //             position: Vector2(0, 10),
-    //             size: Some(Vector2(20, 1)),
-    //
-    //             ..Default::default()
-    //         },
-    //         node: Box::new(Label::new(
-    //             "Label Alignment",
-    //             Some(Style {
-    //                 fg: apheleia_core::Color::Black,
-    //                 bg: apheleia_core::Color::Blue,
-    //                 flags: StyleFlags::Italic | StyleFlags::Bold,
-    //                 ..Default::default()
-    //             }),
-    //             Some(LabelAlignment::Center),
-    //             Some(TextOverflow::Scoll(1, 10)),
-    //         )),
-    //     },
-    //     Some(node),
-    // )
-    // .unwrap();
 
     root.initial_setup();
     root.run();
