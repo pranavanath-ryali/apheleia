@@ -3,35 +3,15 @@
 In Greek Mythology, __Apheleia__ was the spirit and personification of simplicity, "the good old days".
 
 # What is Apheleia
-Apheleia is a rust toolkit that aims to make the process of building reactive and beautiful looking TUIs as easy as possible.
+Apheleia aims to be an overkill rust toolkit to build reactive and beautiful looking TUIs with ease.
 
 # Roadmap
-- [X] Basic terminal rendering using crossterm
-- [X] Support for styling foreground, background and support for various terminal styles (like bold, italic, underlined, etc)
-- [X] A simple node based management system
-    - [X] Root Node
-    - [X] Node
-- [X] Parent child relations
-    - [X] Link parent child nodes
-    - [X] Relative positioning of children with respect to parent
-- [X] Event Loop
-    - [X] Nodes should register the events to listen to
-- [X] Update Loop
-    - [X] Nodes should register to update if necessary
-- [ ] Dirty Flag
-- [ ] Margins & Padding
-- [ ] Basic Widgets
-    - [ ] Labels
-        - [X] Scrolling Text if text exceeds the width of node
-        - [X] Ellipses at end...
-        - [ ] Multi Line rendering
-        - [X] Alignment
-            - [X] Left-Center-Right
-            - [ ] Justify
-    - [ ] Blocks
-        - [X] Basic implementation
-        - [X] Border styling
-    - [ ] Buttons (basically blocks + labels with center alignment)
-        - [ ] callback fn.
-        - [ ] Event by Mouse
-- [ ] Layout system
+- [ ] Optimization
+- [ ] Migrate to trait based context commands for improved extensibility
+- [ ] Implement systems that can be hooked to a specific node
+- [ ] Layout System
+    - [ ] Anchoring System
+        - [ ] Basic TopLeft, TopRight, ...
+        - [ ] Anchored With for relative positioning
+    - [ ] Margins and Padding
+    - [ ] Layout Nodes
