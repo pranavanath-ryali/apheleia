@@ -7,6 +7,7 @@ Apheleia aims to be an overkill rust toolkit to build reactive and beautiful loo
 
 # Roadmap
 - [ ] Optimization
+    - [ ] Reimplement Dirty System
 - [ ] Migrate to trait based context commands for improved extensibility
 - [ ] Implement systems that can be hooked to a specific node
 - [ ] Layout System
