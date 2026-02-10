@@ -8,7 +8,7 @@ impl NodeTrait for TestNode {
         ctx.add_command(Commands::RegisterForEvent(apheleia_ui::types::EventType::Keys));
     }
 
-    fn event(&mut self, ctx: &mut Context) {
+    fn event(&mut self, ctx: &mut Context, _: &NodeData) {
         match ctx.get_event().as_ref().unwrap() {
             EventData::Keys(event) => {
                 if event.code == KeyCode::Char('a') {
@@ -21,7 +21,7 @@ impl NodeTrait for TestNode {
         }
     }
 
-    fn render(&self, buf: &mut apheleia_core::buffer::Buffer, ctx: &Context) {
+    fn render(&self, buf: &mut apheleia_core::buffer::Buffer, ctx: &Context, _: &NodeData) {
         if self.0 {
             buf.write_line(0, 0, "B", None);
         } else {
@@ -29,7 +29,7 @@ impl NodeTrait for TestNode {
         }
     }
 
-    fn update(&mut self, ctx: &mut contexts::Context) {
+    fn update(&mut self, ctx: &mut contexts::Context, _: &NodeData) {
         todo!()
     }
 }
@@ -38,7 +38,7 @@ impl NodeTrait for TestNode {
 fn main() {
     let mut root = RootNode::default();
 
-    root.add_node("test_node", "", Box::new(TestNode(false)), NodeData::new(Vector2(20, 3)));
+    root.add_node("test_node", "", Box::new(TestNode(false)), NodeData::new(Vector2(20, 3), None));
 
     root.initial_setup();
     root.run();

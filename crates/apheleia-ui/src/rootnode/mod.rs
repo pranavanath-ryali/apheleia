@@ -6,12 +6,12 @@ use crate::contexts::{Commands, Context, EventData};
 use crate::node::data::{DirtyRenderLevel, NodeData};
 use crate::node::node::NodeTrait;
 use crate::types::{EventType, UpdateTypeNode};
-use crate::{NodeId, contexts};
+use crate::NodeId;
 use apheleia_core::types::vector::Vector2;
 use apheleia_core::{buffer::Buffer, renderer::Renderer, terminal};
 use crossterm::event::{Event, KeyModifiers};
 use crossterm::{
-    event::{KeyCode, poll, read},
+    event::{poll, read},
     terminal::{disable_raw_mode, enable_raw_mode},
 };
 use tree_ds::prelude::{Node, TraversalStrategy, Tree};
@@ -90,9 +90,9 @@ impl RootNode {
         self.id_nodes.insert(id, node);
         self.id_data.insert(id, data);
 
-        if parent_class == "" {
+        if parent_class.is_empty() {
             self.relations
-                .add_node(Node::new(id, None), Some(&(0 as usize)));
+                .add_node(Node::new(id, None), Some(&0));
         } else {
             self.relations.add_node(
                 Node::new(id, None),
@@ -168,7 +168,7 @@ impl RootNode {
     pub fn initial_setup(&mut self) {
         for id in self
             .relations
-            .traverse(&(0 as usize), TraversalStrategy::PreOrder)
+            .traverse(&0, TraversalStrategy::PreOrder)
             .unwrap()
             .iter()
         {
@@ -191,7 +191,7 @@ impl RootNode {
 
             let mut position = self.id_data.get(id).unwrap().position;
             self.relations
-                .get_ancestor_ids(&id)
+                .get_ancestor_ids(id)
                 .unwrap()
                 .iter()
                 .filter(|id| **id != 0)
@@ -201,17 +201,17 @@ impl RootNode {
                     position.1 += pos.1;
                 });
 
-            let data = self.id_data.get_mut(&id).unwrap();
+            let data = self.id_data.get_mut(id).unwrap();
             data.set_global_position(position);
         }
     }
 
     fn render_flip(&mut self) {
-        // TODO: Clear Buffer before all this stuff
+        self.renderer.clear(&mut self.buffer);
 
         for id in self
             .relations
-            .traverse(&(0 as usize), TraversalStrategy::PreOrder)
+            .traverse(&0, TraversalStrategy::PreOrder)
             .unwrap()
             .iter()
         {
@@ -222,7 +222,7 @@ impl RootNode {
             self.render_node(id, false);
         }
 
-        self.renderer.flip(&mut self.buffer);
+        self.renderer.update(&mut self.buffer);
     }
 
     fn render_node(&mut self, id: &NodeId, fill_empty: bool) {
@@ -251,11 +251,11 @@ impl RootNode {
 
             let mut node_buffer = Buffer::new(size.0, size.1);
 
-            let mut ctx = Context::new(*id, &self.class_id, &self.relations, &self.id_data);
+            let ctx = Context::new(*id, &self.class_id, &self.relations, &self.id_data);
             self.id_nodes.get(id).unwrap().render(
                 &mut node_buffer,
                 &ctx,
-                &self.id_data.get(id).unwrap(),
+                self.id_data.get(id).unwrap(),
             );
 
             self.buffer
@@ -274,7 +274,7 @@ impl RootNode {
                 }
                 DirtyRenderLevel::SubtreeDirty => {
                     if let Ok(children) = self.relations.get_subtree(id, None) {
-                        for child_id in children
+                        for _ in children
                             .traverse(id, TraversalStrategy::PreOrder)
                             .unwrap()
                             .iter()
@@ -317,9 +317,9 @@ impl RootNode {
                             &self.id_data,
                         );
                         self.id_nodes
-                            .get_mut(&id)
+                            .get_mut(id)
                             .unwrap()
-                            .event(&mut ctx, &self.id_data.get(id).unwrap());
+                            .event(&mut ctx, self.id_data.get(id).unwrap());
                         commands.push((*id, ctx.commands));
                     }
                 }
@@ -340,9 +340,9 @@ impl RootNode {
                             &self.id_data,
                         );
                         self.id_nodes
-                            .get_mut(&id)
+                            .get_mut(id)
                             .unwrap()
-                            .event(&mut ctx, &self.id_data.get(id).unwrap());
+                            .event(&mut ctx, self.id_data.get(id).unwrap());
                         commands.push((*id, ctx.commands));
                     }
                 }
@@ -350,7 +350,7 @@ impl RootNode {
         }
 
         commands.iter().for_each(|(id, commands)| {
-            self.handle_commands(*id, &commands);
+            self.handle_commands(*id, commands);
         });
 
         Ok(())
@@ -368,12 +368,12 @@ impl RootNode {
             self.id_nodes
                 .get_mut(id)
                 .unwrap()
-                .update(&mut ctx, &self.id_data.get(id).unwrap());
+                .update(&mut ctx, self.id_data.get(id).unwrap());
             commands.push((*id, ctx.commands));
         }
 
         commands.iter().for_each(|(id, commands)| {
-            self.handle_commands(*id, &commands);
+            self.handle_commands(*id, commands);
         });
     }
 
@@ -383,7 +383,7 @@ impl RootNode {
         self.render_flip();
 
         self.running = true;
-        while (self.running) {
+        while self.running {
             self.event();
             self.update();
             self.render();
