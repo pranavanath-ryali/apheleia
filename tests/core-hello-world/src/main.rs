@@ -23,7 +23,7 @@ fn main() {
             ..Default::default()
         }),
     );
-    renderer.flip(&mut buffer);
+    renderer.clear(&mut buffer);
 
     buffer.write_line(
         50,

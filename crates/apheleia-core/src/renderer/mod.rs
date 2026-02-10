@@ -7,7 +7,7 @@ use crossterm::{
 };
 
 use crate::{
-    buffer::{Buffer, Cell, Line},
+    buffer::{Buffer, Line},
     style::StyleFlags,
 };
 
@@ -62,17 +62,6 @@ impl Renderer {
         }
     }
 
-    fn queue_write_cell(&mut self, x: u16, y: u16, cell: &Cell) {
-        queue!(self.stdout, cursor::MoveTo(x, y));
-        self.queue_flags(&cell.style.flags);
-        queue!(
-            self.stdout,
-            SetForegroundColor(cell.style.fg),
-            SetBackgroundColor(cell.style.bg),
-            Print(cell.ch)
-        );
-    }
-
     fn queue_write(&mut self, line: &Line) {
         queue!(
             self.stdout,
@@ -87,16 +76,10 @@ impl Renderer {
         );
     }
 
-    pub fn flip(&mut self, buf: &mut Buffer) {
+    pub fn clear(&mut self, buf: &mut Buffer) {
         execute!(self.stdout, Clear(crossterm::terminal::ClearType::All));
-
-        for y in 0..(buf.height) {
-            for x in 0..(buf.width) {
-                self.queue_write_cell(x as u16, y as u16, &buf.get(x, y));
-            }
-        }
-
         self.stdout.flush();
+
         buf.clear_update_list();
     }
 
