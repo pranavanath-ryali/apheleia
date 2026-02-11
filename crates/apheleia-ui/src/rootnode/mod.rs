@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, VecDeque};
 use std::error::Error;
 use std::time::Duration;
 
@@ -14,7 +14,16 @@ use crossterm::{
     event::{poll, read},
     terminal::{disable_raw_mode, enable_raw_mode},
 };
+use indexmap::{IndexSet, indexset};
 use tree_ds::prelude::{Node, TraversalStrategy, Tree};
+
+pub enum Dirty {
+    Render_SimpleDirty,
+    Render_SubtreeDirty,
+
+    Update_SimpleDirty,
+    Update_SubtreeDirty,
+}
 
 pub struct RootNode {
     running: bool,
@@ -32,7 +41,8 @@ pub struct RootNode {
 
     id_update_type: HashMap<UpdateTypeNode, Vec<NodeId>>,
 
-    dirty_ids: Vec<NodeId>,
+    id_dirty_update: IndexSet<NodeId>,
+    id_dirty_render: IndexSet<NodeId>,
 
     buffer: Buffer,
     renderer: Renderer,
@@ -64,7 +74,8 @@ impl Default for RootNode {
             id_data: HashMap::new(),
             class_id: HashMap::new(),
 
-            dirty_ids: vec![],
+            id_dirty_update: indexset! {},
+            id_dirty_render: indexset! {},
 
             buffer: Buffer::new(size.0, size.1),
             renderer: Renderer::default(),
@@ -133,6 +144,7 @@ impl RootNode {
     }
 
     pub fn handle_commands(&mut self, id: NodeId, commands: &Vec<Commands>) {
+        // TODO: Reimplement how commands are handled
         for command in commands {
             match command {
                 Commands::SetSize(size) => self.id_data.get_mut(&id).unwrap().size = Some(*size),
@@ -221,7 +233,8 @@ impl RootNode {
 
             self.render_node(id, false);
         }
-
+        
+        self.id_dirty_render.clear();
         self.renderer.update(&mut self.buffer);
     }
 
@@ -265,28 +278,15 @@ impl RootNode {
     }
 
     fn render(&mut self) {
-        let ids = self.dirty_ids.clone();
-        self.dirty_ids.clear();
+        let ids = self.id_dirty_render.clone(); // I Don't really like the look of
+                                                                 // this clone function.
+                                                                 // TODO: Maybe find a better way
+                                                                 // for this?
         for id in ids.iter() {
-            match self.id_data.get(id).unwrap().dirty.render {
-                DirtyRenderLevel::SimpleDirty => {
-                    self.render_node(id, false);
-                }
-                DirtyRenderLevel::SubtreeDirty => {
-                    if let Ok(children) = self.relations.get_subtree(id, None) {
-                        for _ in children
-                            .traverse(id, TraversalStrategy::PreOrder)
-                            .unwrap()
-                            .iter()
-                        {
-                            self.render_node(id, true);
-                        }
-                        self.id_data.get_mut(id).unwrap().dirty.render = DirtyRenderLevel::None;
-                    }
-                }
-                _ => {}
-            }
+            self.render_node(id, false);
         }
+        
+        self.id_dirty_render.clear();
         self.renderer.update(&mut self.buffer);
     }
 
@@ -358,6 +358,17 @@ impl RootNode {
 
     fn update(&mut self) {
         let mut commands: Vec<(NodeId, Box<Vec<Commands>>)> = vec![];
+
+        for id in self.id_dirty_update.iter() {
+            let mut ctx = Context::new(*id, &self.class_id, &self.relations, &self.id_data);
+            self.id_nodes
+                .get_mut(id)
+                .unwrap()
+                .update(&mut ctx, self.id_data.get(id).unwrap());
+            commands.push((*id, ctx.commands));
+        }
+        self.id_dirty_update.clear();
+
         for id in self
             .id_update_type
             .get(&UpdateTypeNode::ConstantUpdate)
