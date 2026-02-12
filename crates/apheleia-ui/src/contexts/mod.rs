@@ -11,18 +11,6 @@ use crate::{
     types::EventType,
 };
 
-// pub enum Commands {
-//     SetSize(Vector2),
-//     SetPosition(Vector2),
-//
-//     SetSizeForId(NodeId, Vector2),
-//     SetPositionForId(NodeId, Vector2),
-//
-//     RegisterForUpdate,
-//     RegisterForEvent(EventType),
-//
-//     MarkRenderDirty(DirtyRenderLevel),
-// }
 pub enum EventData {
     Resize(Vector2),
     Keys(KeyEvent),
@@ -44,34 +32,6 @@ impl<'a> Context<'a> {
         Self { id, event_data: Some(event_data), rootnode_data, commands: vec![] }
     }
 
-    // pub fn new(id: NodeId, class_ids: &'a HashMap<String, NodeId>, relations: &'a Tree<NodeId, NodeId>, id_data: &'a HashMap<NodeId, NodeData>) -> Self {
-    //     Self {
-    //         id,
-    //
-    //         event_data: None,
-    //
-    //         id_data,
-    //         class_ids,
-    //         relations,
-    //
-    //         commands: vec![],
-    //     }
-    // }
-
-    // pub fn new_event_context(id: NodeId, class_ids: &'a HashMap<String, NodeId>, relations: &'a Tree<NodeId, NodeId>, event_data: EventData, id_data: &'a HashMap<NodeId, NodeData>) -> Self {
-    //     Self {
-    //         id,
-    //
-    //         event_data: Some(event_data),
-    //
-    //         id_data,
-    //         class_ids,
-    //         relations,
-    //
-    //         commands: vec![],
-    //     }
-    // }
-
     pub fn get_id(&self) -> NodeId {
         self.id
     }
@@ -81,20 +41,17 @@ impl<'a> Context<'a> {
     }
 
     pub fn get_class_by_id(&self, class: &str) -> Option<NodeId> {
-        if let Some(id) = self.class_ids.get(class) {
-            return Some(*id);
-        }
-        None
+        self.rootnode_data.class_id.get(class).copied()
     }
 
     pub fn get_data_for_id(&self, id: NodeId) -> Option<&NodeData> {
-        self.id_data.get(&id)
+        self.rootnode_data.id_data.get(&id)
     }
 
     pub fn get_children(&self, id: NodeId) -> Vec<NodeId> {
         // TODO: Fix cases where no. of children is 0. Then return None
         let mut children: Vec<NodeId> = vec![];
-        self.relations
+        self.rootnode_data.relations
             .get_subtree(&id, Some(1))
             .unwrap()
             .traverse(&id, tree_ds::prelude::TraversalStrategy::PreOrder).unwrap()
