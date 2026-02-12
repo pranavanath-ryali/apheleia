@@ -17,3 +17,13 @@ impl ContextCommand for Command_SetPositionForId {
         rootnode_data.id_data.get_mut(&self.0).unwrap().set_position(self.1);
     }
 }
+impl ContextCommand for Command_RegisterForUpdate {
+    fn execute(self: Box<Self>, id: NodeId, rootnode_data: &mut RootNodeData) {
+        rootnode_data.id_update_type.get_mut(&crate::types::UpdateTypeNode::ConstantUpdate).unwrap().push(id);
+    }
+}
+impl ContextCommand for Command_RegisterForEvent {
+    fn execute(self: Box<Self>, id: NodeId, rootnode_data: &mut RootNodeData) {
+        rootnode_data.id_update_type.get_mut(&crate::types::UpdateTypeNode::Event(self.0)).unwrap().push(id);
+    }
+}
