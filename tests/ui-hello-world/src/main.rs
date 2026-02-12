@@ -1,11 +1,23 @@
 use apheleia_core::types::vector::Vector2;
-use apheleia_ui::{KeyCode, contexts::{self, Context, EventData}, node::{data::{self, NodeData}, node::NodeTrait}, rootnode::RootNode};
+use apheleia_ui::{
+    KeyCode,
+    contexts::{
+        self, Context, EventData,
+        commands::{Command_RegisterForEvent, Command_SetSizeForId},
+    },
+    node::{
+        data::{self, NodeData},
+        node::NodeTrait,
+    },
+    rootnode::RootNode,
+    types::{self, EventType},
+};
 
 struct TestNode(bool);
 impl NodeTrait for TestNode {
     fn initial_setup(&mut self, ctx: &mut Context) {
-        ctx.add_command(Commands::SetSize(Vector2(5, 1)));
-        ctx.add_command(Commands::RegisterForEvent(apheleia_ui::types::EventType::Keys));
+        ctx.add_command(Box::new(Command_SetSizeForId(ctx.get_id(), Vector2(10, 1))));
+        ctx.add_command(Box::new(Command_RegisterForEvent(EventType::Keys)));
     }
 
     fn event(&mut self, ctx: &mut Context) {
@@ -14,10 +26,12 @@ impl NodeTrait for TestNode {
                 if event.code == KeyCode::Char('a') {
                     self.0 = true;
 
-                    ctx.add_command(Commands::MarkRenderDirty(apheleia_ui::node::data::DirtyRenderLevel::SimpleDirty));
+                    ctx.add_command(Commands::MarkRenderDirty(
+                        apheleia_ui::node::data::DirtyRenderLevel::SimpleDirty,
+                    ));
                 }
             }
-            _ => ()
+            _ => (),
         }
     }
 
@@ -34,11 +48,15 @@ impl NodeTrait for TestNode {
     }
 }
 
-
 fn main() {
     let mut root = RootNode::default();
 
-    root.add_node("test_node", "", Box::new(TestNode(false)), NodeData::new(Vector2(20, 3), None));
+    root.add_node(
+        "test_node",
+        "",
+        Box::new(TestNode(false)),
+        NodeData::new(Vector2(20, 3), None),
+    );
 
     root.initial_setup();
     root.run();
