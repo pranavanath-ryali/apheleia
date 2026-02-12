@@ -20,16 +20,26 @@ pub struct Context<'a> {
     event_data: Option<EventData>,
 
     rootnode_data: RootNodeData<'a>,
-    
+
     pub(crate) commands: Vec<Box<dyn ContextCommand>>,
 }
 impl<'a> Context<'a> {
     pub fn new(id: NodeId, rootnode_data: RootNodeData<'a>) -> Self {
-        Self { id, event_data: None, rootnode_data, commands: vec![] }
+        Self {
+            id,
+            event_data: None,
+            rootnode_data,
+            commands: vec![],
+        }
     }
 
     pub fn new_event(id: NodeId, event_data: EventData, rootnode_data: RootNodeData<'a>) -> Self {
-        Self { id, event_data: Some(event_data), rootnode_data, commands: vec![] }
+        Self {
+            id,
+            event_data: Some(event_data),
+            rootnode_data,
+            commands: vec![],
+        }
     }
 
     pub fn get_id(&self) -> NodeId {
@@ -51,10 +61,12 @@ impl<'a> Context<'a> {
     pub fn get_children(&self, id: NodeId) -> Vec<NodeId> {
         // TODO: Fix cases where no. of children is 0. Then return None
         let mut children: Vec<NodeId> = vec![];
-        self.rootnode_data.relations
+        self.rootnode_data
+            .relations
             .get_subtree(&id, Some(1))
             .unwrap()
-            .traverse(&id, tree_ds::prelude::TraversalStrategy::PreOrder).unwrap()
+            .traverse(&id, tree_ds::prelude::TraversalStrategy::PreOrder)
+            .unwrap()
             .iter()
             .for_each(|i| {
                 if *i == id {
@@ -63,7 +75,7 @@ impl<'a> Context<'a> {
 
                 children.push(*i);
             });
-        
+
         children
     }
 
@@ -71,7 +83,13 @@ impl<'a> Context<'a> {
         self.commands.push(command);
     }
 
-    pub(crate) fn run_commands(&self) {}
+    pub(crate) fn run_commands(&mut self) {
+        self.commands
+            .iter()
+            .for_each(|c| c.execute(self.id, &mut self.rootnode_data));
+        //     command.execute(self.id, &mut self.rootnode_data);
+        // }
+    }
 }
 
 pub trait ContextCommand {
