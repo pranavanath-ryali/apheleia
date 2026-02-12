@@ -266,7 +266,7 @@ impl RootNode {
 
             self.buffer
                 .render_buffer(position.0, position.1, &mut node_buffer);
-            self.id_data.get_mut(id).unwrap().dirty.render = DirtyRenderLevel::None;
+            self.id_dirty_render.shift_remove(id);
         }
     }
 

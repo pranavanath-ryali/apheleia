@@ -8,8 +8,6 @@ pub struct NodeData {
     pub size: Option<Vector2>,
 
     pub layout: Option<Layout>,
-
-    pub dirty: Dirty,
 }
 impl Default for NodeData {
     fn default() -> Self {
@@ -18,7 +16,6 @@ impl Default for NodeData {
             position: Vector2(0, 0),
             size: None,
             layout: None,
-            dirty: Dirty::default(),
         }
     }
 }
@@ -30,8 +27,6 @@ impl NodeData {
             size,
 
             layout: None,
-
-            dirty: Dirty::default(),
         }
     }
 
