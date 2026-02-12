@@ -2,11 +2,11 @@ use std::collections::HashMap;
 use std::error::Error;
 use std::time::Duration;
 
-use crate::contexts::{Commands, Context, EventData};
+use crate::NodeId;
+use crate::contexts::{Context, EventData};
 use crate::node::data::{DirtyRenderLevel, NodeData};
 use crate::node::node::NodeTrait;
 use crate::types::{EventType, UpdateTypeNode};
-use crate::NodeId;
 use apheleia_core::types::vector::Vector2;
 use apheleia_core::{buffer::Buffer, renderer::Renderer, terminal};
 use crossterm::event::{Event, KeyModifiers};
@@ -15,6 +15,13 @@ use crossterm::{
     terminal::{disable_raw_mode, enable_raw_mode},
 };
 use tree_ds::prelude::{Node, TraversalStrategy, Tree};
+
+pub struct RootNodeData<'a> {
+    pub relations: &'a mut Tree<NodeId, NodeId>,
+
+    pub id_data: &'a mut HashMap<NodeId, NodeData>,
+    pub class_id: &'a mut HashMap<String, NodeId>,
+}
 
 pub struct RootNode {
     running: bool,
@@ -91,8 +98,7 @@ impl RootNode {
         self.id_data.insert(id, data);
 
         if parent_class.is_empty() {
-            self.relations
-                .add_node(Node::new(id, None), Some(&0));
+            self.relations.add_node(Node::new(id, None), Some(&0));
         } else {
             self.relations.add_node(
                 Node::new(id, None),
@@ -132,39 +138,6 @@ impl RootNode {
         }
     }
 
-    pub fn handle_commands(&mut self, id: NodeId, commands: &Vec<Commands>) {
-        for command in commands {
-            match command {
-                Commands::SetSize(size) => self.id_data.get_mut(&id).unwrap().size = Some(*size),
-                Commands::SetPosition(position) => {
-                    self.id_data.get_mut(&id).unwrap().position = *position;
-                    self.calculate_global_position_for_id(id);
-                }
-                Commands::SetSizeForId(id, size) => {
-                    self.id_data.get_mut(id).unwrap().size = Some(*size)
-                }
-                Commands::SetPositionForId(id, position) => {
-                    self.id_data.get_mut(id).unwrap().position = *position;
-                    // TODO: Add way to rerender entire tree
-                },
-                Commands::RegisterForUpdate => self
-                    .id_update_type
-                    .get_mut(&UpdateTypeNode::ConstantUpdate)
-                    .unwrap()
-                    .push(id),
-                Commands::RegisterForEvent(event_type) => self
-                    .id_update_type
-                    .get_mut(&UpdateTypeNode::Event(*event_type))
-                    .unwrap()
-                    .push(id),
-                Commands::MarkRenderDirty(dirty_render_level) => {
-                    self.dirty_ids.push(id);
-                    self.id_data.get_mut(&id).unwrap().dirty.render = *dirty_render_level;
-                }
-            }
-        }
-    }
-
     pub fn initial_setup(&mut self) {
         for id in self
             .relations
@@ -176,12 +149,16 @@ impl RootNode {
                 continue;
             }
 
-            let mut ctx = Context::new(*id, &self.class_id, &self.relations, &self.id_data);
-            self.id_nodes
-                .get_mut(id)
-                .unwrap()
-                .initial_setup(&mut ctx, self.id_data.get(id).unwrap());
-            self.handle_commands(*id, &ctx.commands);
+            let mut ctx = Context::new(
+                *id,
+                RootNodeData {
+                    relations: &mut self.relations,
+                    id_data: &mut self.id_data,
+                    class_id: &mut self.class_id,
+                },
+            );
+            self.id_nodes.get_mut(id).unwrap().initial_setup(&mut ctx);
+            ctx.run_commands();
         }
 
         for (id, _) in self.id_nodes.iter_mut() {
@@ -251,12 +228,18 @@ impl RootNode {
 
             let mut node_buffer = Buffer::new(size.0, size.1);
 
-            let ctx = Context::new(*id, &self.class_id, &self.relations, &self.id_data);
-            self.id_nodes.get(id).unwrap().render(
-                &mut node_buffer,
-                &ctx,
-                self.id_data.get(id).unwrap(),
+            let ctx = Context::new(
+                *id,
+                RootNodeData {
+                    relations: &mut self.relations,
+                    id_data: &mut self.id_data,
+                    class_id: &mut self.class_id,
+                },
             );
+            self.id_nodes
+                .get(id)
+                .unwrap()
+                .render(&mut node_buffer, &ctx);
 
             self.buffer
                 .render_buffer(position.0, position.1, &mut node_buffer);
@@ -291,7 +274,6 @@ impl RootNode {
     }
 
     fn event(&mut self) -> Result<(), Box<dyn Error>> {
-        let mut commands: Vec<(NodeId, Box<Vec<Commands>>)> = vec![];
         if poll(Duration::from_nanos(1_000_000_000 / 15))? {
             match read()? {
                 Event::FocusGained => todo!(),
@@ -309,18 +291,17 @@ impl RootNode {
                         .unwrap()
                         .iter()
                     {
-                        let mut ctx = Context::new_event_context(
+                        let mut ctx = Context::new_event(
                             *id,
-                            &self.class_id,
-                            &self.relations,
                             EventData::Keys(key_event),
-                            &self.id_data,
+                            RootNodeData {
+                                relations: &mut self.relations,
+                                id_data: &mut self.id_data,
+                                class_id: &mut self.class_id,
+                            },
                         );
-                        self.id_nodes
-                            .get_mut(id)
-                            .unwrap()
-                            .event(&mut ctx, self.id_data.get(id).unwrap());
-                        commands.push((*id, ctx.commands));
+                        self.id_nodes.get_mut(id).unwrap().event(&mut ctx);
+                        ctx.run_commands();
                     }
                 }
                 Event::Mouse(mouse_event) => todo!(),
@@ -332,49 +313,46 @@ impl RootNode {
                         .unwrap()
                         .iter()
                     {
-                        let mut ctx = Context::new_event_context(
+                        let mut ctx = Context::new_event(
                             *id,
-                            &self.class_id,
-                            &self.relations,
                             EventData::Resize(Vector2(width, height)),
-                            &self.id_data,
+                            RootNodeData {
+                                relations: &mut self.relations,
+                                id_data: &mut self.id_data,
+                                class_id: &mut self.class_id,
+                            },
                         );
-                        self.id_nodes
-                            .get_mut(id)
-                            .unwrap()
-                            .event(&mut ctx, self.id_data.get(id).unwrap());
-                        commands.push((*id, ctx.commands));
+                        self.id_nodes.get_mut(id).unwrap().event(&mut ctx);
+                        ctx.run_commands();
                     }
                 }
             }
         }
 
-        commands.iter().for_each(|(id, commands)| {
-            self.handle_commands(*id, commands);
-        });
-
         Ok(())
     }
 
     fn update(&mut self) {
-        let mut commands: Vec<(NodeId, Box<Vec<Commands>>)> = vec![];
         for id in self
             .id_update_type
             .get(&UpdateTypeNode::ConstantUpdate)
             .unwrap()
             .iter()
         {
-            let mut ctx = Context::new(*id, &self.class_id, &self.relations, &self.id_data);
+            let mut ctx = Context::new(
+                *id,
+                RootNodeData {
+                    relations: &mut self.relations,
+                    id_data: &mut self.id_data,
+                    class_id: &mut self.class_id,
+                },
+            );
             self.id_nodes
                 .get_mut(id)
                 .unwrap()
-                .update(&mut ctx, self.id_data.get(id).unwrap());
-            commands.push((*id, ctx.commands));
+                .update(&mut ctx);
+            ctx.run_commands();
         }
-
-        commands.iter().for_each(|(id, commands)| {
-            self.handle_commands(*id, commands);
-        });
     }
 
     pub fn run(&mut self) -> Result<(), Box<dyn Error>> {

@@ -7,65 +7,70 @@ use tree_ds::prelude::Tree;
 use crate::{
     NodeId,
     node::data::{DirtyRenderLevel, NodeData},
-    rootnode::RootNode,
-    types::{EventType},
+    rootnode::{RootNode, RootNodeData},
+    types::EventType,
 };
 
-pub enum Commands {
-    SetSize(Vector2),
-    SetPosition(Vector2),
-
-    SetSizeForId(NodeId, Vector2),
-    SetPositionForId(NodeId, Vector2),
-
-    RegisterForUpdate,
-    RegisterForEvent(EventType),
-
-    MarkRenderDirty(DirtyRenderLevel),
-}
+// pub enum Commands {
+//     SetSize(Vector2),
+//     SetPosition(Vector2),
+//
+//     SetSizeForId(NodeId, Vector2),
+//     SetPositionForId(NodeId, Vector2),
+//
+//     RegisterForUpdate,
+//     RegisterForEvent(EventType),
+//
+//     MarkRenderDirty(DirtyRenderLevel),
+// }
 pub enum EventData {
     Resize(Vector2),
     Keys(KeyEvent),
 }
 pub struct Context<'a> {
     id: NodeId,
-
     event_data: Option<EventData>,
-    
-    id_data: &'a HashMap<NodeId, NodeData>,
-    class_ids: &'a HashMap<String, NodeId>,
-    relations: &'a Tree<NodeId, NodeId>,
 
-    pub commands: Box<Vec<Commands>>,
+    rootnode_data: RootNodeData<'a>,
+    
+    pub(crate) commands: Vec<Box<dyn ContextCommand>>,
 }
 impl<'a> Context<'a> {
-    pub fn new(id: NodeId, class_ids: &'a HashMap<String, NodeId>, relations: &'a Tree<NodeId, NodeId>, id_data: &'a HashMap<NodeId, NodeData>) -> Self {
-        Self {
-            id,
-
-            event_data: None,
-            
-            id_data,
-            class_ids,
-            relations,
-
-            commands: Box::new(vec![]),
-        }
+    pub fn new(id: NodeId, rootnode_data: RootNodeData<'a>) -> Self {
+        Self { id, event_data: None, rootnode_data, commands: vec![] }
     }
 
-    pub fn new_event_context(id: NodeId, class_ids: &'a HashMap<String, NodeId>, relations: &'a Tree<NodeId, NodeId>, event_data: EventData, id_data: &'a HashMap<NodeId, NodeData>) -> Self {
-        Self {
-            id,
-
-            event_data: Some(event_data),
-            
-            id_data,
-            class_ids,
-            relations,
-
-            commands: Box::new(vec![]),
-        }
+    pub fn new_event(id: NodeId, event_data: EventData, rootnode_data: RootNodeData<'a>) -> Self {
+        Self { id, event_data: Some(event_data), rootnode_data, commands: vec![] }
     }
+
+    // pub fn new(id: NodeId, class_ids: &'a HashMap<String, NodeId>, relations: &'a Tree<NodeId, NodeId>, id_data: &'a HashMap<NodeId, NodeData>) -> Self {
+    //     Self {
+    //         id,
+    //
+    //         event_data: None,
+    //
+    //         id_data,
+    //         class_ids,
+    //         relations,
+    //
+    //         commands: vec![],
+    //     }
+    // }
+
+    // pub fn new_event_context(id: NodeId, class_ids: &'a HashMap<String, NodeId>, relations: &'a Tree<NodeId, NodeId>, event_data: EventData, id_data: &'a HashMap<NodeId, NodeData>) -> Self {
+    //     Self {
+    //         id,
+    //
+    //         event_data: Some(event_data),
+    //
+    //         id_data,
+    //         class_ids,
+    //         relations,
+    //
+    //         commands: vec![],
+    //     }
+    // }
 
     pub fn get_id(&self) -> NodeId {
         self.id
@@ -105,7 +110,13 @@ impl<'a> Context<'a> {
         children
     }
 
-    pub fn add_command(&mut self, command: Commands) {
+    pub fn add_command(&mut self, command: Box<dyn ContextCommand>) {
         self.commands.push(command);
     }
+
+    pub(crate) fn run_commands(&self) {}
+}
+
+pub trait ContextCommand {
+    fn execute(self: Box<Self>, rootnode: &mut RootNode);
 }
