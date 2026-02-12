@@ -75,5 +75,7 @@ impl<'a> Context<'a> {
 }
 
 pub trait ContextCommand {
-    fn execute(self: Box<Self>, rootnode: &mut RootNode);
+    fn execute(self: Box<Self>, id: NodeId, rootnode_data: &mut RootNodeData);
 }
+
+pub mod commands;
