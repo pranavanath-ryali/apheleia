@@ -59,18 +59,6 @@ impl NodeData {
 
 #[derive(Clone, Copy)]
 pub enum DirtyRenderLevel {
-    None,
-
     SimpleDirty, // Rerender node alone. Leave already defined attributes unless specified
     SubtreeDirty, // Rerender entire subtree which includes the node and including all its children
-}
-pub struct Dirty {
-    pub render: DirtyRenderLevel,
-}
-impl Default for Dirty {
-    fn default() -> Self {
-        Dirty {
-            render: DirtyRenderLevel::None,
-        }
-    }
 }

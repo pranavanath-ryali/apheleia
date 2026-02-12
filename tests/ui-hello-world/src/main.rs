@@ -3,7 +3,7 @@ use apheleia_ui::{
     KeyCode,
     contexts::{
         self, Context, EventData,
-        commands::{Command_RegisterForEvent, Command_SetSizeForId},
+        commands::{Command_MarkRenderDirty, Command_RegisterForEvent, Command_SetSizeForId},
     },
     node::{
         data::{self, NodeData},
@@ -26,9 +26,10 @@ impl NodeTrait for TestNode {
                 if event.code == KeyCode::Char('a') {
                     self.0 = true;
 
-                    ctx.add_command(Commands::MarkRenderDirty(
-                        apheleia_ui::node::data::DirtyRenderLevel::SimpleDirty,
-                    ));
+                    ctx.add_command(Box::new(Command_MarkRenderDirty(
+                        ctx.get_id(),
+                        data::DirtyRenderLevel::SimpleDirty,
+                    )));
                 }
             }
             _ => (),
