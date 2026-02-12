@@ -22,6 +22,11 @@ pub struct RootNodeData<'a> {
 
     pub id_data: &'a mut HashMap<NodeId, NodeData>,
     pub class_id: &'a mut HashMap<String, NodeId>,
+
+    pub id_update_type: &'a mut HashMap<UpdateTypeNode, Vec<NodeId>>,
+
+    pub id_dirty_update: &'a mut IndexSet<NodeId>,
+    pub id_dirty_render: &'a mut IndexSet<NodeId>,
 }
 
 pub enum Dirty {
@@ -166,6 +171,9 @@ impl RootNode {
                     relations: &mut self.relations,
                     id_data: &mut self.id_data,
                     class_id: &mut self.class_id,
+                    id_update_type: &mut self.id_update_type,
+                    id_dirty_update: &mut self.id_dirty_update,
+                    id_dirty_render: &mut self.id_dirty_render,
                 },
             );
             self.id_nodes.get_mut(id).unwrap().initial_setup(&mut ctx);
@@ -246,6 +254,9 @@ impl RootNode {
                     relations: &mut self.relations,
                     id_data: &mut self.id_data,
                     class_id: &mut self.class_id,
+                    id_update_type: &mut self.id_update_type,
+                    id_dirty_update: &mut self.id_dirty_update,
+                    id_dirty_render: &mut self.id_dirty_render,
                 },
             );
             self.id_nodes
@@ -272,6 +283,23 @@ impl RootNode {
         self.renderer.update(&mut self.buffer);
     }
 
+    fn event_node(&mut self, id: NodeId, event_data: EventData) {
+        let mut ctx = Context::new_event(
+            id,
+            event_data,
+            RootNodeData {
+                relations: &mut self.relations,
+                id_data: &mut self.id_data,
+                class_id: &mut self.class_id,
+                id_update_type: &mut self.id_update_type,
+                id_dirty_update: &mut self.id_dirty_update,
+                id_dirty_render: &mut self.id_dirty_render,
+            },
+        );
+        self.id_nodes.get_mut(&id).unwrap().event(&mut ctx);
+        ctx.run_commands();
+    }
+
     fn event(&mut self) -> Result<(), Box<dyn Error>> {
         if poll(Duration::from_nanos(1_000_000_000 / 15))? {
             match read()? {
@@ -288,19 +316,9 @@ impl RootNode {
                         .id_update_type
                         .get(&UpdateTypeNode::Event(EventType::Keys))
                         .unwrap()
-                        .iter()
+                        .to_owned()
                     {
-                        let mut ctx = Context::new_event(
-                            *id,
-                            EventData::Keys(key_event),
-                            RootNodeData {
-                                relations: &mut self.relations,
-                                id_data: &mut self.id_data,
-                                class_id: &mut self.class_id,
-                            },
-                        );
-                        self.id_nodes.get_mut(id).unwrap().event(&mut ctx);
-                        ctx.run_commands();
+                        self.event_node(id, EventData::Keys(key_event));
                     }
                 }
                 Event::Mouse(mouse_event) => todo!(),
@@ -310,19 +328,11 @@ impl RootNode {
                         .id_update_type
                         .get(&UpdateTypeNode::Event(EventType::Resize))
                         .unwrap()
-                        .iter()
+                        .to_owned()
                     {
-                        let mut ctx = Context::new_event(
-                            *id,
-                            EventData::Resize(Vector2(width, height)),
-                            RootNodeData {
-                                relations: &mut self.relations,
-                                id_data: &mut self.id_data,
-                                class_id: &mut self.class_id,
-                            },
-                        );
-                        self.id_nodes.get_mut(id).unwrap().event(&mut ctx);
-                        ctx.run_commands();
+                        self.width = width;
+                        self.height = height;
+                        self.event_node(id, EventData::Resize(Vector2(width, height)));
                     }
                 }
             }
@@ -332,16 +342,19 @@ impl RootNode {
     }
 
     fn update(&mut self) {
-        for id in self.id_dirty_update.iter() {
+        for id in self.id_dirty_update.to_owned() {
             let mut ctx = Context::new(
-                *id,
+                id,
                 RootNodeData {
                     relations: &mut self.relations,
                     id_data: &mut self.id_data,
                     class_id: &mut self.class_id,
+                    id_update_type: &mut self.id_update_type,
+                    id_dirty_update: &mut self.id_dirty_update,
+                    id_dirty_render: &mut self.id_dirty_render,
                 },
             );
-            self.id_nodes.get_mut(id).unwrap().update(&mut ctx);
+            self.id_nodes.get_mut(&id).unwrap().update(&mut ctx);
             ctx.run_commands();
         }
         self.id_dirty_update.clear();
