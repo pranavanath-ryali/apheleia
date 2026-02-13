@@ -1,20 +1,8 @@
-use std::{collections::HashMap, mem};
+use crate::rootnode::RootNodeData;
+use crate::types::EventData;
+use crate::{NodeId, node::data::NodeData};
+use std::mem;
 
-use apheleia_core::types::vector::Vector2;
-use crossterm::event::{KeyCode, KeyEvent};
-use tree_ds::prelude::Tree;
-
-use crate::{
-    NodeId,
-    node::data::{DirtyRenderLevel, NodeData},
-    rootnode::{RootNode, RootNodeData},
-    types::EventType,
-};
-
-pub enum EventData {
-    Resize(Vector2),
-    Keys(KeyEvent),
-}
 pub struct Context<'a> {
     id: NodeId,
     event_data: Option<EventData>,

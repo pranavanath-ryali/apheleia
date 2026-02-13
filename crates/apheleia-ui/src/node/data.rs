@@ -1,13 +1,9 @@
 use apheleia_core::types::vector::Vector2;
 
-use crate::types::{Layout, TBLRValues};
-
 pub struct NodeData {
     pub global_positon: Option<Vector2>,
     pub position: Vector2,
     pub size: Option<Vector2>,
-
-    pub layout: Option<Layout>,
 }
 impl Default for NodeData {
     fn default() -> Self {
@@ -15,7 +11,6 @@ impl Default for NodeData {
             global_positon: None,
             position: Vector2(0, 0),
             size: None,
-            layout: None,
         }
     }
 }
@@ -25,8 +20,6 @@ impl NodeData {
             global_positon: None,
             position,
             size,
-
-            layout: None,
         }
     }
 
@@ -50,10 +43,4 @@ impl NodeData {
     pub fn get_size(&self) -> &Option<Vector2> {
         &self.size
     }
-}
-
-#[derive(Clone, Copy)]
-pub enum DirtyRenderLevel {
-    SimpleDirty, // Rerender node alone. Leave already defined attributes unless specified
-    SubtreeDirty, // Rerender entire subtree which includes the node and including all its children
 }

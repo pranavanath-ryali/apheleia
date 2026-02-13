@@ -1,9 +1,7 @@
+use crate::contexts::Context;
 use apheleia_core::buffer::Buffer;
 
-use crate::{contexts::Context, node::data::NodeData};
-
-pub trait NodeTrait
-{
+pub trait NodeTrait {
     fn initial_setup(&mut self, ctx: &mut Context);
 
     fn event(&mut self, ctx: &mut Context);

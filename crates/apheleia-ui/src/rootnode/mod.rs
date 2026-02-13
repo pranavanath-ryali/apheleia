@@ -1,13 +1,12 @@
-use std::collections::{HashMap, VecDeque};
+use std::collections::HashMap;
 use std::error::Error;
-use std::mem;
 use std::time::Duration;
 
 use crate::NodeId;
-use crate::contexts::{Context, EventData};
-use crate::node::data::{DirtyRenderLevel, NodeData};
+use crate::contexts::Context;
+use crate::node::data::NodeData;
 use crate::node::node::NodeTrait;
-use crate::types::{EventType, UpdateTypeNode};
+use crate::types::{EventData, EventType, UpdateTypeNode};
 use apheleia_core::types::vector::Vector2;
 use apheleia_core::{buffer::Buffer, renderer::Renderer, terminal};
 use crossterm::event::{Event, KeyModifiers};
@@ -24,18 +23,10 @@ pub struct RootNodeData<'a> {
     pub id_data: &'a mut HashMap<NodeId, NodeData>,
     pub class_id: &'a mut HashMap<String, NodeId>,
 
-    pub id_update_type: &'a mut HashMap<UpdateTypeNode, Vec<NodeId>>,
+    pub id_update_type: &'a mut HashMap<UpdateTypeNode, IndexSet<NodeId>>,
 
     pub id_dirty_update: &'a mut IndexSet<NodeId>,
     pub id_dirty_render: &'a mut IndexSet<NodeId>,
-}
-
-pub enum Dirty {
-    Render_SimpleDirty,
-    Render_SubtreeDirty,
-
-    Update_SimpleDirty,
-    Update_SubtreeDirty,
 }
 
 pub struct RootNode {
@@ -52,7 +43,7 @@ pub struct RootNode {
     id_data: HashMap<NodeId, NodeData>,
     class_id: HashMap<String, NodeId>,
 
-    id_update_type: HashMap<UpdateTypeNode, Vec<NodeId>>,
+    id_update_type: HashMap<UpdateTypeNode, IndexSet<NodeId>>,
 
     id_dirty_update: IndexSet<NodeId>,
     id_dirty_render: IndexSet<NodeId>,
@@ -67,10 +58,10 @@ impl Default for RootNode {
         let mut relations: Tree<NodeId, NodeId> = Tree::new(None);
         relations.add_node(Node::new(0, None), None);
 
-        let mut id_update_type: HashMap<UpdateTypeNode, Vec<NodeId>> = HashMap::new();
-        id_update_type.insert(UpdateTypeNode::ConstantUpdate, vec![]);
-        id_update_type.insert(UpdateTypeNode::Event(EventType::Keys), vec![]);
-        id_update_type.insert(UpdateTypeNode::Event(EventType::Resize), vec![]);
+        let mut id_update_type: HashMap<UpdateTypeNode, IndexSet<NodeId>> = HashMap::new();
+        id_update_type.insert(UpdateTypeNode::ConstantUpdate, indexset![]);
+        id_update_type.insert(UpdateTypeNode::Event(EventType::Keys), indexset![]);
+        id_update_type.insert(UpdateTypeNode::Event(EventType::Resize), indexset![]);
 
         Self {
             running: false,
@@ -203,87 +194,6 @@ impl RootNode {
         }
     }
 
-    fn render_flip(&mut self) {
-        self.renderer.clear(&mut self.buffer);
-
-        for id in self
-            .relations
-            .traverse(&0, TraversalStrategy::PreOrder)
-            .unwrap()
-            .iter()
-        {
-            if *id == 0_usize {
-                continue;
-            }
-
-            self.render_node(id, false);
-        }
-
-        self.id_dirty_render.clear();
-        self.renderer.update(&mut self.buffer);
-    }
-
-    fn render_node(&mut self, id: &NodeId, fill_empty: bool) {
-        if let Some(size) = self.id_data.get(id).unwrap().get_size() {
-            let position = self.id_data.get(id).unwrap().global_positon.unwrap();
-
-            for y in 0..size.1 {
-                self.buffer.write_line(
-                    position.0,
-                    position.1 + y,
-                    &" ".repeat(size.0 as usize),
-                    None,
-                );
-            }
-
-            if fill_empty {
-                for y in 0..size.1 {
-                    self.buffer.write_line(
-                        position.0,
-                        position.1 + y,
-                        &" ".repeat(size.0 as usize),
-                        None,
-                    );
-                }
-            }
-
-            let mut node_buffer = Buffer::new(size.0, size.1);
-
-            let ctx = Context::new(
-                *id,
-                RootNodeData {
-                    relations: &mut self.relations,
-                    id_data: &mut self.id_data,
-                    class_id: &mut self.class_id,
-                    id_update_type: &mut self.id_update_type,
-                    id_dirty_update: &mut self.id_dirty_update,
-                    id_dirty_render: &mut self.id_dirty_render,
-                },
-            );
-            self.id_nodes
-                .get(id)
-                .unwrap()
-                .render(&mut node_buffer, &ctx);
-
-            self.buffer
-                .render_buffer(position.0, position.1, &mut node_buffer);
-            self.id_dirty_render.shift_remove(id);
-        }
-    }
-
-    fn render(&mut self) {
-        let ids = self.id_dirty_render.clone(); // I Don't really like the look of
-        // this clone function.
-        // TODO: Maybe find a better way
-        // for this?
-        for id in ids.iter() {
-            self.render_node(id, false);
-        }
-
-        self.id_dirty_render.clear();
-        self.renderer.update(&mut self.buffer);
-    }
-
     fn event_node(&mut self, id: NodeId, event_data: EventData) {
         let mut ctx = Context::new_event(
             id,
@@ -359,6 +269,87 @@ impl RootNode {
             ctx.run_commands();
         }
         self.id_dirty_update.clear();
+    }
+
+    fn render_node(&mut self, id: &NodeId, fill_empty: bool) {
+        if let Some(size) = self.id_data.get(id).unwrap().get_size() {
+            let position = self.id_data.get(id).unwrap().global_positon.unwrap();
+
+            for y in 0..size.1 {
+                self.buffer.write_line(
+                    position.0,
+                    position.1 + y,
+                    &" ".repeat(size.0 as usize),
+                    None,
+                );
+            }
+
+            if fill_empty {
+                for y in 0..size.1 {
+                    self.buffer.write_line(
+                        position.0,
+                        position.1 + y,
+                        &" ".repeat(size.0 as usize),
+                        None,
+                    );
+                }
+            }
+
+            let mut node_buffer = Buffer::new(size.0, size.1);
+
+            let ctx = Context::new(
+                *id,
+                RootNodeData {
+                    relations: &mut self.relations,
+                    id_data: &mut self.id_data,
+                    class_id: &mut self.class_id,
+                    id_update_type: &mut self.id_update_type,
+                    id_dirty_update: &mut self.id_dirty_update,
+                    id_dirty_render: &mut self.id_dirty_render,
+                },
+            );
+            self.id_nodes
+                .get(id)
+                .unwrap()
+                .render(&mut node_buffer, &ctx);
+
+            self.buffer
+                .render_buffer(position.0, position.1, &mut node_buffer);
+            self.id_dirty_render.shift_remove(id);
+        }
+    }
+
+    fn render_flip(&mut self) {
+        self.renderer.clear(&mut self.buffer);
+
+        for id in self
+            .relations
+            .traverse(&0, TraversalStrategy::PreOrder)
+            .unwrap()
+            .iter()
+        {
+            if *id == 0_usize {
+                continue;
+            }
+
+            self.render_node(id, false);
+        }
+
+        self.id_dirty_render.clear();
+        self.renderer.update(&mut self.buffer);
+    }
+
+    fn render(&mut self) {
+        let ids = self.id_dirty_render.clone(); // I Don't really like the look of
+        // this clone function.
+        // TODO: Maybe find a better way
+        // for this?
+        for id in ids.iter() {
+            self.render_node(id, false);
+        }
+
+        self.id_dirty_render.clear();
+        self.renderer.update(&mut self.buffer);
     }
 
     pub fn run(&mut self) -> Result<(), Box<dyn Error>> {

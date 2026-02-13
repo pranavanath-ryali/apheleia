@@ -3,9 +3,8 @@ use apheleia_core::types::vector::Vector2;
 use crate::{
     NodeId,
     contexts::ContextCommand,
-    node::data::DirtyRenderLevel,
     rootnode::{self, RootNodeData},
-    types::EventType,
+    types::{DirtyRenderLevel, EventType},
 };
 
 pub struct Command_SetSizeForId(pub NodeId, pub Vector2);
@@ -40,7 +39,7 @@ impl ContextCommand for Command_RegisterForUpdate {
             .id_update_type
             .get_mut(&crate::types::UpdateTypeNode::ConstantUpdate)
             .unwrap()
-            .push(id);
+            .insert(id);
     }
 }
 impl ContextCommand for Command_RegisterForEvent {
@@ -49,7 +48,7 @@ impl ContextCommand for Command_RegisterForEvent {
             .id_update_type
             .get_mut(&crate::types::UpdateTypeNode::Event(self.0))
             .unwrap()
-            .push(id);
+            .insert(id);
     }
 }
 impl ContextCommand for Command_MarkRenderDirty {
