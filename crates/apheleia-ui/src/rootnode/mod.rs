@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::error::Error;
+use std::mem;
 use std::time::Duration;
 
 use crate::NodeId;
@@ -120,6 +121,7 @@ impl RootNode {
     }
 
     fn calculate_global_position_for_id(&mut self, id: NodeId) {
+        // TODO: This function is not being used?
         if let Ok(children) = self.relations.get_subtree(&id, None) {
             children
                 .traverse(&id, TraversalStrategy::PreOrder)
@@ -171,27 +173,16 @@ impl RootNode {
             self.id_nodes.get_mut(id).unwrap().initial_setup(&mut ctx);
             ctx.run_commands();
         }
-
-        for (id, _) in self.id_nodes.iter_mut() {
-            if *id == 0_usize {
+        
+        let ids = mem::take(&mut self.id_nodes);
+        for (id, _) in ids.iter() {
+            if id == &0_usize {
                 continue;
             }
 
-            let mut position = self.id_data.get(id).unwrap().position;
-            self.relations
-                .get_ancestor_ids(id)
-                .unwrap()
-                .iter()
-                .filter(|id| **id != 0)
-                .for_each(|id| {
-                    let pos = self.id_data.get(id).unwrap().get_position();
-                    position.0 += pos.0;
-                    position.1 += pos.1;
-                });
-
-            let data = self.id_data.get_mut(id).unwrap();
-            data.set_global_position(position);
+            self.calculate_global_position_for_id(*id);
         }
+        self.id_nodes = ids;
     }
 
     fn event_node(&mut self, id: NodeId, event_data: EventData) {
@@ -232,7 +223,7 @@ impl RootNode {
                         self.event_node(id, EventData::Keys(key_event));
                     }
                 }
-                Event::Mouse(mouse_event) => todo!(),
+                Event::Mouse(_) => todo!(),
                 Event::Paste(_) => todo!(),
                 Event::Resize(width, height) => {
                     for id in self
@@ -253,7 +244,8 @@ impl RootNode {
     }
 
     fn update(&mut self) {
-        for id in self.id_dirty_update.to_owned() {
+        let ids = mem::replace(&mut self.id_dirty_update, indexset![]);
+        for id in ids {
             let mut ctx = Context::new(
                 id,
                 RootNodeData {
@@ -268,7 +260,6 @@ impl RootNode {
             self.id_nodes.get_mut(&id).unwrap().update(&mut ctx);
             ctx.run_commands();
         }
-        self.id_dirty_update.clear();
     }
 
     fn render_node(&mut self, id: &NodeId, fill_empty: bool) {
@@ -340,15 +331,10 @@ impl RootNode {
     }
 
     fn render(&mut self) {
-        let ids = self.id_dirty_render.clone(); // I Don't really like the look of
-        // this clone function.
-        // TODO: Maybe find a better way
-        // for this?
-        for id in ids.iter() {
-            self.render_node(id, false);
+        let ids = mem::replace(&mut self.id_dirty_render, indexset![]);
+        for id in ids {
+            self.render_node(&id, false);
         }
-
-        self.id_dirty_render.clear();
         self.renderer.update(&mut self.buffer);
     }
 
