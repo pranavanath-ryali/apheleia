@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, mem};
 
 use apheleia_core::types::vector::Vector2;
 use crossterm::event::{KeyCode, KeyEvent};
@@ -84,11 +84,10 @@ impl<'a> Context<'a> {
     }
 
     pub(crate) fn run_commands(&mut self) {
-        self.commands
-            .iter()
-            .for_each(|c| c.execute(self.id, &mut self.rootnode_data));
-        //     command.execute(self.id, &mut self.rootnode_data);
-        // }
+        let commands = mem::take(&mut self.commands);
+        for command in commands {
+            command.execute(self.id, &mut self.rootnode_data);
+        }
     }
 }
 
