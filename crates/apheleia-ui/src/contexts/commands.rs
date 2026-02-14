@@ -1,4 +1,4 @@
-use apheleia_core::types::vector::Vector2;
+use apheleia_core::{buffer::Line, types::vector::Vector2};
 
 use crate::{
     NodeId,
@@ -15,6 +15,8 @@ pub struct Command_RegisterForEvent(pub EventType);
 
 pub struct Command_MarkRenderDirty(pub NodeId, pub DirtyRenderLevel);
 pub struct Command_MarkUpdateDirty(pub NodeId);
+
+pub struct Command_WriteLineToBuffer(pub Line);
 
 impl ContextCommand for Command_SetSizeForId {
     fn execute(self: Box<Self>, id: NodeId, rootnode_data: &mut RootNodeData) {
@@ -84,5 +86,17 @@ impl ContextCommand for Command_MarkRenderDirty {
 impl ContextCommand for Command_MarkUpdateDirty {
     fn execute(self: Box<Self>, id: NodeId, rootnode_data: &mut RootNodeData) {
         rootnode_data.id_dirty_update.insert(id);
+    }
+}
+
+impl ContextCommand for Command_WriteLineToBuffer {
+    fn execute(self: Box<Self>, id: NodeId, rootnode_data: &mut RootNodeData) {
+        let line = self.0;
+        rootnode_data.buffer.write_line(
+            line.position.0,
+            line.position.1,
+            &line.text,
+            Some(line.style),
+        );
     }
 }

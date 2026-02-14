@@ -29,6 +29,8 @@ pub struct RootNodeData<'a> {
 
     pub id_dirty_update: &'a mut IndexSet<NodeId>,
     pub id_dirty_render: &'a mut IndexSet<NodeId>,
+
+    pub buffer: &'a mut Buffer
 }
 
 pub struct RootNode {
@@ -141,6 +143,7 @@ impl RootNode {
                     id_update_type: &mut self.id_update_type,
                     id_dirty_update: &mut self.id_dirty_update,
                     id_dirty_render: &mut self.id_dirty_render,
+                    buffer: &mut self.buffer
                 },
             );
             self.id_nodes.get_mut(id).unwrap().initial_setup(&mut ctx);
@@ -170,6 +173,7 @@ impl RootNode {
                 id_update_type: &mut self.id_update_type,
                 id_dirty_update: &mut self.id_dirty_update,
                 id_dirty_render: &mut self.id_dirty_render,
+                buffer: &mut self.buffer
             },
         );
         self.id_nodes.get_mut(&id).unwrap().event(&mut ctx);
@@ -229,6 +233,7 @@ impl RootNode {
                     id_update_type: &mut self.id_update_type,
                     id_dirty_update: &mut self.id_dirty_update,
                     id_dirty_render: &mut self.id_dirty_render,
+                    buffer: &mut self.buffer
                 },
             );
             self.id_nodes.get_mut(&id).unwrap().update(&mut ctx);
@@ -262,7 +267,7 @@ impl RootNode {
 
             let mut node_buffer = Buffer::new(size.0, size.1);
 
-            let ctx = Context::new(
+            let mut ctx = Context::new(
                 *id,
                 RootNodeData {
                     relations: &mut self.relations,
@@ -271,12 +276,13 @@ impl RootNode {
                     id_update_type: &mut self.id_update_type,
                     id_dirty_update: &mut self.id_dirty_update,
                     id_dirty_render: &mut self.id_dirty_render,
+                    buffer: &mut self.buffer
                 },
             );
             self.id_nodes
                 .get(id)
                 .unwrap()
-                .render(&mut node_buffer, &ctx);
+                .render(&mut node_buffer, &mut ctx);
 
             self.buffer
                 .render_buffer(position.0, position.1, &mut node_buffer);
