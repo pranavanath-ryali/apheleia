@@ -2,6 +2,7 @@ pub mod rootnode;
 pub mod node;
 pub mod contexts;
 pub mod types;
+pub mod utils;
 
 pub type NodeId = usize;
 

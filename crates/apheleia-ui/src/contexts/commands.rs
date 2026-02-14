@@ -5,6 +5,7 @@ use crate::{
     contexts::ContextCommand,
     rootnode::{self, RootNodeData},
     types::{DirtyRenderLevel, EventType},
+    utils::calculate_global_position,
 };
 
 pub struct Command_SetSizeForId(pub NodeId, pub Vector2);
@@ -31,6 +32,14 @@ impl ContextCommand for Command_SetPositionForId {
             .get_mut(&self.0)
             .unwrap()
             .set_position(self.1);
+
+        let position =
+            calculate_global_position(self.0, &rootnode_data.relations, &rootnode_data.id_data);
+        rootnode_data
+            .id_data
+            .get_mut(&self.0)
+            .unwrap()
+            .set_global_position(position);
     }
 }
 impl ContextCommand for Command_RegisterForUpdate {

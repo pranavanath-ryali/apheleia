@@ -8,6 +8,7 @@ use crate::contexts::Context;
 use crate::node::data::NodeData;
 use crate::node::node::NodeTrait;
 use crate::types::{EventData, EventType, UpdateTypeNode};
+use crate::utils::calculate_global_position;
 use apheleia_core::types::vector::Vector2;
 use apheleia_core::{buffer::Buffer, renderer::Renderer, terminal};
 use crossterm::event::{Event, KeyModifiers};
@@ -120,34 +121,6 @@ impl RootNode {
         }
     }
 
-    fn calculate_global_position_for_id(&mut self, id: NodeId) {
-        // TODO: This function is not being used?
-        if let Ok(children) = self.relations.get_subtree(&id, None) {
-            children
-                .traverse(&id, TraversalStrategy::PreOrder)
-                .unwrap()
-                .iter()
-                .for_each(|child_id| {
-                    let mut position = self.id_data.get(child_id).unwrap().position;
-                    self.relations
-                        .get_ancestor_ids(child_id)
-                        .unwrap()
-                        .iter()
-                        .filter(|v| **v != 0_usize)
-                        .for_each(|id| {
-                            let pos = &self.id_data.get(id).unwrap().position;
-                            position.0 += pos.0;
-                            position.1 += pos.1;
-                        });
-
-                    self.id_data
-                        .get_mut(child_id)
-                        .unwrap()
-                        .set_global_position(position);
-                });
-        }
-    }
-
     pub fn initial_setup(&mut self) {
         for id in self
             .relations
@@ -180,7 +153,8 @@ impl RootNode {
                 continue;
             }
 
-            self.calculate_global_position_for_id(*id);
+            let global_position = calculate_global_position(*id, &self.relations, &self.id_data);
+            self.id_data.get_mut(id).unwrap().set_global_position(global_position);
         }
         self.id_nodes = ids;
     }
