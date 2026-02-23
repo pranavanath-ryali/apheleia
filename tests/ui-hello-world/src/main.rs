@@ -2,15 +2,14 @@ use apheleia_core::types::vector::Vector2;
 use apheleia_ui::{
     KeyCode,
     contexts::{
-        self, Context, EventData,
-        commands::{Command_MarkRenderDirty, Command_RegisterForEvent, Command_SetSizeForId},
+        Context, commands::{Command_MarkRenderDirty, Command_RegisterForEvent, Command_SetSizeForId}
     },
     node::{
         data::{self, NodeData},
         node::NodeTrait,
     },
     rootnode::RootNode,
-    types::{self, EventType},
+    types::{self, DirtyRenderLevel, EventData, EventType},
 };
 
 struct TestNode(bool);
@@ -28,7 +27,7 @@ impl NodeTrait for TestNode {
 
                     ctx.add_command(Box::new(Command_MarkRenderDirty(
                         ctx.get_id(),
-                        data::DirtyRenderLevel::SimpleDirty,
+                        DirtyRenderLevel::SimpleDirty,
                     )));
                 }
             }
@@ -36,7 +35,7 @@ impl NodeTrait for TestNode {
         }
     }
 
-    fn render(&self, buf: &mut apheleia_core::buffer::Buffer, ctx: &Context) {
+    fn render(&self, buf: &mut apheleia_core::buffer::Buffer, ctx: &mut Context) {
         if self.0 {
             buf.write_line(0, 0, "B", None);
         } else {
@@ -44,7 +43,7 @@ impl NodeTrait for TestNode {
         }
     }
 
-    fn update(&mut self, ctx: &mut contexts::Context) {
+    fn update(&mut self, ctx: &mut Context) {
         todo!()
     }
 }

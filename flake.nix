@@ -14,6 +14,7 @@
 				clippy
 				rust-analyzer
 				lldb
+				perf
 			];
 
 			nativeBuildInputs = with pkgs; [];

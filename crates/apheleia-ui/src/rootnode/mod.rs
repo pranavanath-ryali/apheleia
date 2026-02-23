@@ -239,8 +239,6 @@ impl RootNode {
             self.id_nodes.get_mut(&id).unwrap().update(&mut ctx);
             ctx.run_commands();
         }
-<<<<<<< Updated upstream
-=======
 
         for id in self.id_update_type.get(&UpdateTypeNode::ConstantUpdate).unwrap().to_owned().iter() {
             let mut ctx = Context::new(
@@ -258,7 +256,6 @@ impl RootNode {
             self.id_nodes.get_mut(&id).unwrap().update(&mut ctx);
             ctx.run_commands();
         }
->>>>>>> Stashed changes
     }
 
     fn render_node(&mut self, id: &NodeId, fill_empty: bool) {
