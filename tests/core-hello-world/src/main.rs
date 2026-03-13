@@ -1,12 +1,6 @@
 use std::io::stdout;
 
-use apheleia_core::{
-    Color,
-    buffer::Buffer,
-    renderer::Renderer,
-    style::{Style, StyleFlags},
-    terminal,
-};
+use apheleia_core::{buffer::Buffer, renderer::Renderer, terminal};
 
 fn main() {
     let size = terminal::size().unwrap();
@@ -26,6 +20,7 @@ fn main() {
         None,
     );
     buffer.write_line(0, 1, "<blink;b;i>Hello World", None);
+    buffer.write_line(0, 5, "Hello World", None);
 
     renderer.render(&mut buffer);
     renderer.quit();
