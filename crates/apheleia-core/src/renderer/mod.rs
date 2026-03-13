@@ -173,6 +173,9 @@ impl Renderer {
                 "fg" => {
                     _ = queue!(self.stdout, SetForegroundColor(get_color(value.as_str())));
                 }
+                "bg" => {
+                    _ = queue!(self.stdout, SetBackgroundColor(get_color(value.as_str())));
+                }
                 _ => {}
             }
         }

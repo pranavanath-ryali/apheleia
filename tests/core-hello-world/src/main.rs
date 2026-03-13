@@ -22,7 +22,7 @@ fn main() {
     buffer.write_line(
         0,
         0,
-        "<fg:magenta;>H<fg:darkgrey;>e<fg:cyan;>l<fg:yellow;>l<fg:green;>o",
+        "<fg:magenta;>H<fg:darkgrey;bg:cyan>e<fg:cyan;>l<fg:yellow;>l<fg:green;>o",
         None,
     );
 
