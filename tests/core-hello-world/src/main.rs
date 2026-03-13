@@ -22,9 +22,10 @@ fn main() {
     buffer.write_line(
         0,
         0,
-        "<fg:magenta;>H<fg:darkgrey;bg:cyan>e<fg:cyan;>l<fg:yellow;>l<fg:green;>o",
+        "<fg:magenta;>H<fg:darkgrey;bg:cyan>e<fg:cyan;r>l<fg:yellow;>l<fg:green;>o",
         None,
     );
+    buffer.write_line(0, 1, "Hello World", None);
 
     renderer.render(&mut buffer);
     renderer.quit();

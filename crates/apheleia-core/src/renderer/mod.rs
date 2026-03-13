@@ -3,7 +3,10 @@ use std::io::{Stdout, Write, stdout};
 use crossterm::{
     cursor::{self, MoveTo, Show},
     execute, queue,
-    style::{Attribute, Color, Print, SetAttribute, SetBackgroundColor, SetForegroundColor},
+    style::{
+        Attribute, Color, Print, SetAttribute, SetAttributes, SetBackgroundColor,
+        SetForegroundColor,
+    },
     terminal::Clear,
 };
 
@@ -176,6 +179,7 @@ impl Renderer {
                 "bg" => {
                     _ = queue!(self.stdout, SetBackgroundColor(get_color(value.as_str())));
                 }
+                "r" => _ = queue!(self.stdout, SetAttribute(Attribute::Reset)),
                 _ => {}
             }
         }
@@ -222,6 +226,7 @@ impl Renderer {
             if s.len() != 0 {
                 _ = queue!(self.stdout, MoveTo(current_pos.0, current_pos.1));
                 _ = queue!(self.stdout, Print(&s));
+                _ = queue!(self.stdout, SetAttribute(Attribute::Reset));
                 s.clear();
             }
         }
