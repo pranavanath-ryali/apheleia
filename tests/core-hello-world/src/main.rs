@@ -1,50 +1,30 @@
+use std::io::stdout;
+
 use apheleia_core::{
-    Color, buffer::Buffer, renderer::Renderer, style::{Style, StyleFlags}, terminal
+    Color,
+    buffer::Buffer,
+    renderer::Renderer,
+    style::{Style, StyleFlags},
+    terminal,
 };
 
 fn main() {
     let size = terminal::size().unwrap();
 
     let mut buffer = Buffer::new(size.0, size.1);
-
-    let mut buf = Buffer::new(21, 20);
-    let mut renderer = Renderer::default();
-
-    buf.write_line(0, 0, "++++++++++++++++++++++", None);
-
-    buffer.write_line(
-        10,
-        10,
-        "Hello World!",
-        Some(Style {
-            fg: Color::Red,
-            bg: Color::Blue,
-            flags: StyleFlags::Bold | StyleFlags::Italic,
-            ..Default::default()
-        }),
-    );
+    let mut renderer = Renderer {
+        width: size.0,
+        height: size.1,
+        stdout: stdout(),
+    };
     renderer.clear(&mut buffer);
 
-    buffer.write_line(
-        50,
-        20,
-        "WEEEEEEEEE",
-        Some(Style {
-            fg: Color::Blue,
-            flags: StyleFlags::Italic | StyleFlags::UnderCurled,
-            ..Default::default()
-        }),
-    );
-    buffer.write_line(
-        190,
-        30,
-        "WEEEEEEEEE",
-        Some(Style {
-            fg: Color::Blue,
-            flags: StyleFlags::Italic | StyleFlags::UnderCurled,
-            ..Default::default()
-        }),
-    );
-    buffer.render_buffer(size.0 - 10, 20, &mut buf);
-    renderer.update(&mut buffer);
+    buffer.write_line(0, 0, "Hello <this is a test>World", None);
+    buffer.write_line(0, 1, "Hello World", None);
+    buffer.write_line(0, 2, "Hello World", None);
+    buffer.write_line(0, 3, "Hello World", None);
+    buffer.write_line(0, 4, "Hello World", None);
+
+    renderer.render(&mut buffer);
+    renderer.quit();
 }
