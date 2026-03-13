@@ -180,7 +180,12 @@ impl Renderer {
                     _ = queue!(self.stdout, SetBackgroundColor(get_color(value.as_str())));
                 }
                 "r" => _ = queue!(self.stdout, SetAttribute(Attribute::Reset)),
-                _ => {}
+                _ => {
+                    let color = get_color(prop.as_str());
+                    if color != Color::Reset {
+                        _ = queue!(self.stdout, SetForegroundColor(color));
+                    }
+                }
             }
         }
     }

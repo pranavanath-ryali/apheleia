@@ -19,12 +19,7 @@ fn main() {
     };
     renderer.clear(&mut buffer);
 
-    buffer.write_line(
-        0,
-        0,
-        "<fg:magenta;>H<fg:darkgrey;bg:cyan>e<fg:cyan;r>l<fg:yellow;>l<fg:green;>o",
-        None,
-    );
+    buffer.write_line(0, 0, "<magenta>H<darkgrey>e<cyan>l<yellow>l<green>o", None);
     buffer.write_line(0, 1, "Hello World", None);
 
     renderer.render(&mut buffer);
