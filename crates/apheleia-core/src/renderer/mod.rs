@@ -182,8 +182,8 @@ impl Renderer {
                 "r" => _ = queue!(self.stdout, SetAttribute(Attribute::Reset)),
 
                 "normal" => _ = queue!(self.stdout, SetAttribute(Attribute::NormalIntensity)),
-                "italic" => _ = queue!(self.stdout, SetAttribute(Attribute::Italic)),
-                "bold" => _ = queue!(self.stdout, SetAttribute(Attribute::Bold)),
+                "italic" | "i" => _ = queue!(self.stdout, SetAttribute(Attribute::Italic)),
+                "bold" | "b" => _ = queue!(self.stdout, SetAttribute(Attribute::Bold)),
 
                 "dim" => _ = queue!(self.stdout, SetAttribute(Attribute::Dim)),
 

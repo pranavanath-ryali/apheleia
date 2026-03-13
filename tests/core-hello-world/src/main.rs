@@ -25,7 +25,7 @@ fn main() {
         "<magenta>H<italic;darkgrey>e<cyan>l<normal;darkgreen>l<dim;darkgreen>o",
         None,
     );
-    buffer.write_line(0, 1, "<blink;>Hello World", None);
+    buffer.write_line(0, 1, "<blink;b;i>Hello World", None);
 
     renderer.render(&mut buffer);
     renderer.quit();
