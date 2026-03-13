@@ -19,8 +19,13 @@ fn main() {
     };
     renderer.clear(&mut buffer);
 
-    buffer.write_line(0, 0, "<magenta>H<darkgrey>e<cyan>l<yellow>l<green>o", None);
-    buffer.write_line(0, 1, "Hello World", None);
+    buffer.write_line(
+        0,
+        0,
+        "<magenta>H<italic;darkgrey>e<cyan>l<normal;darkgreen>l<dim;darkgreen>o",
+        None,
+    );
+    buffer.write_line(0, 1, "<blink;>Hello World", None);
 
     renderer.render(&mut buffer);
     renderer.quit();

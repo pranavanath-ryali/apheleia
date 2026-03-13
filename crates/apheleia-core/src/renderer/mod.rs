@@ -180,6 +180,25 @@ impl Renderer {
                     _ = queue!(self.stdout, SetBackgroundColor(get_color(value.as_str())));
                 }
                 "r" => _ = queue!(self.stdout, SetAttribute(Attribute::Reset)),
+
+                "normal" => _ = queue!(self.stdout, SetAttribute(Attribute::NormalIntensity)),
+                "italic" => _ = queue!(self.stdout, SetAttribute(Attribute::Italic)),
+                "bold" => _ = queue!(self.stdout, SetAttribute(Attribute::Bold)),
+
+                "dim" => _ = queue!(self.stdout, SetAttribute(Attribute::Dim)),
+
+                "reverse" => _ = queue!(self.stdout, SetAttribute(Attribute::Reverse)),
+
+                "underlined" => _ = queue!(self.stdout, SetAttribute(Attribute::Underlined)),
+                "undercurled" => _ = queue!(self.stdout, SetAttribute(Attribute::Undercurled)),
+                "underdashed" => _ = queue!(self.stdout, SetAttribute(Attribute::Underdashed)),
+                "underdotted" => _ = queue!(self.stdout, SetAttribute(Attribute::Underdotted)),
+                "doubleunderlined" => {
+                    _ = queue!(self.stdout, SetAttribute(Attribute::DoubleUnderlined))
+                }
+
+                "blink" => _ = queue!(self.stdout, SetAttribute(Attribute::SlowBlink)),
+
                 _ => {
                     let color = get_color(prop.as_str());
                     if color != Color::Reset {
