@@ -30,7 +30,7 @@ pub struct RootNodeData<'a> {
     pub id_dirty_update: &'a mut IndexSet<NodeId>,
     pub id_dirty_render: &'a mut IndexSet<NodeId>,
 
-    pub buffer: &'a mut Buffer
+    pub buffer: &'a mut Buffer,
 }
 
 pub struct RootNode {
@@ -143,13 +143,13 @@ impl RootNode {
                     id_update_type: &mut self.id_update_type,
                     id_dirty_update: &mut self.id_dirty_update,
                     id_dirty_render: &mut self.id_dirty_render,
-                    buffer: &mut self.buffer
+                    buffer: &mut self.buffer,
                 },
             );
             self.id_nodes.get_mut(id).unwrap().initial_setup(&mut ctx);
             ctx.run_commands();
         }
-        
+
         let ids = mem::take(&mut self.id_nodes);
         for (id, _) in ids.iter() {
             if id == &0_usize {
@@ -157,7 +157,10 @@ impl RootNode {
             }
 
             let global_position = calculate_global_position(*id, &self.relations, &self.id_data);
-            self.id_data.get_mut(id).unwrap().set_global_position(global_position);
+            self.id_data
+                .get_mut(id)
+                .unwrap()
+                .set_global_position(global_position);
         }
         self.id_nodes = ids;
     }
@@ -173,7 +176,7 @@ impl RootNode {
                 id_update_type: &mut self.id_update_type,
                 id_dirty_update: &mut self.id_dirty_update,
                 id_dirty_render: &mut self.id_dirty_render,
-                buffer: &mut self.buffer
+                buffer: &mut self.buffer,
             },
         );
         self.id_nodes.get_mut(&id).unwrap().event(&mut ctx);
@@ -233,14 +236,20 @@ impl RootNode {
                     id_update_type: &mut self.id_update_type,
                     id_dirty_update: &mut self.id_dirty_update,
                     id_dirty_render: &mut self.id_dirty_render,
-                    buffer: &mut self.buffer
+                    buffer: &mut self.buffer,
                 },
             );
             self.id_nodes.get_mut(&id).unwrap().update(&mut ctx);
             ctx.run_commands();
         }
 
-        for id in self.id_update_type.get(&UpdateTypeNode::ConstantUpdate).unwrap().to_owned().iter() {
+        for id in self
+            .id_update_type
+            .get(&UpdateTypeNode::ConstantUpdate)
+            .unwrap()
+            .to_owned()
+            .iter()
+        {
             let mut ctx = Context::new(
                 *id,
                 RootNodeData {
@@ -250,7 +259,7 @@ impl RootNode {
                     id_update_type: &mut self.id_update_type,
                     id_dirty_update: &mut self.id_dirty_update,
                     id_dirty_render: &mut self.id_dirty_render,
-                    buffer: &mut self.buffer
+                    buffer: &mut self.buffer,
                 },
             );
             self.id_nodes.get_mut(&id).unwrap().update(&mut ctx);
@@ -293,7 +302,7 @@ impl RootNode {
                     id_update_type: &mut self.id_update_type,
                     id_dirty_update: &mut self.id_dirty_update,
                     id_dirty_render: &mut self.id_dirty_render,
-                    buffer: &mut self.buffer
+                    buffer: &mut self.buffer,
                 },
             );
             self.id_nodes

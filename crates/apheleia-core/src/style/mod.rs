@@ -1,7 +1,5 @@
 use bitflags::bitflags;
-use std::fmt::Display;
-
-use crossterm::style::{Attribute, Attributes, Color};
+use crossterm::style::Color;
 
 bitflags! {
     #[derive(Copy, Clone)]
