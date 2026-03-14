@@ -3,22 +3,22 @@ use apheleia_core::{buffer::Line, types::vector::Vector2};
 use crate::{
     NodeId,
     contexts::ContextCommand,
-    rootnode::{self, RootNodeData},
+    rootnode::RootNodeData,
     types::{DirtyRenderLevel, EventType},
     utils::calculate_global_position,
 };
 
-pub struct Command_SetSizeForId(pub NodeId, pub Vector2);
-pub struct Command_SetPositionForId(pub NodeId, pub Vector2);
-pub struct Command_RegisterForUpdate;
-pub struct Command_RegisterForEvent(pub EventType);
+pub struct SetSizeForId(pub NodeId, pub Vector2);
+pub struct SetPositionForId(pub NodeId, pub Vector2);
+pub struct RegisterForUpdate;
+pub struct RegisterForEvent(pub EventType);
 
-pub struct Command_MarkRenderDirty(pub NodeId, pub DirtyRenderLevel);
-pub struct Command_MarkUpdateDirty(pub NodeId);
+pub struct MarkRenderDirty(pub NodeId, pub DirtyRenderLevel);
+pub struct MarkUpdateDirty(pub NodeId);
 
-pub struct Command_WriteLineToBuffer(pub Line);
+pub struct WriteLineToBuffer(pub Line);
 
-impl ContextCommand for Command_SetSizeForId {
+impl ContextCommand for SetSizeForId {
     fn execute(self: Box<Self>, id: NodeId, rootnode_data: &mut RootNodeData) {
         rootnode_data
             .id_data
@@ -27,7 +27,7 @@ impl ContextCommand for Command_SetSizeForId {
             .set_size(self.1);
     }
 }
-impl ContextCommand for Command_SetPositionForId {
+impl ContextCommand for SetPositionForId {
     fn execute(self: Box<Self>, id: NodeId, rootnode_data: &mut RootNodeData) {
         rootnode_data
             .id_data
@@ -44,7 +44,7 @@ impl ContextCommand for Command_SetPositionForId {
             .set_global_position(position);
     }
 }
-impl ContextCommand for Command_RegisterForUpdate {
+impl ContextCommand for RegisterForUpdate {
     fn execute(self: Box<Self>, id: NodeId, rootnode_data: &mut RootNodeData) {
         rootnode_data
             .id_update_type
@@ -53,7 +53,7 @@ impl ContextCommand for Command_RegisterForUpdate {
             .insert(id);
     }
 }
-impl ContextCommand for Command_RegisterForEvent {
+impl ContextCommand for RegisterForEvent {
     fn execute(self: Box<Self>, id: NodeId, rootnode_data: &mut RootNodeData) {
         rootnode_data
             .id_update_type
@@ -62,7 +62,7 @@ impl ContextCommand for Command_RegisterForEvent {
             .insert(id);
     }
 }
-impl ContextCommand for Command_MarkRenderDirty {
+impl ContextCommand for MarkRenderDirty {
     fn execute(self: Box<Self>, id: NodeId, rootnode_data: &mut RootNodeData) {
         match self.1 {
             DirtyRenderLevel::SimpleDirty => {
@@ -83,13 +83,13 @@ impl ContextCommand for Command_MarkRenderDirty {
         }
     }
 }
-impl ContextCommand for Command_MarkUpdateDirty {
+impl ContextCommand for MarkUpdateDirty {
     fn execute(self: Box<Self>, id: NodeId, rootnode_data: &mut RootNodeData) {
         rootnode_data.id_dirty_update.insert(id);
     }
 }
 
-impl ContextCommand for Command_WriteLineToBuffer {
+impl ContextCommand for WriteLineToBuffer {
     fn execute(self: Box<Self>, id: NodeId, rootnode_data: &mut RootNodeData) {
         let line = self.0;
         rootnode_data.buffer.write_line(

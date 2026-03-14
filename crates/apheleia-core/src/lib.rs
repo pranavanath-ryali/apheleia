@@ -1,5 +1,4 @@
 pub mod buffer;
-pub mod markup;
 pub mod renderer;
 pub mod style;
 pub mod types;

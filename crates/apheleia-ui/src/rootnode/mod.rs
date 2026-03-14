@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::error::Error;
+use std::io::stdout;
 use std::mem;
 use std::time::Duration;
 
@@ -60,7 +61,7 @@ impl Default for RootNode {
         let size = terminal::size().unwrap();
 
         let mut relations: Tree<NodeId, NodeId> = Tree::new(None);
-        relations.add_node(Node::new(0, None), None);
+        _ = relations.add_node(Node::new(0, None), None);
 
         let mut id_update_type: HashMap<UpdateTypeNode, IndexSet<NodeId>> = HashMap::new();
         id_update_type.insert(UpdateTypeNode::ConstantUpdate, indexset![]);
@@ -86,7 +87,11 @@ impl Default for RootNode {
             id_dirty_render: indexset! {},
 
             buffer: Buffer::new(size.0, size.1),
-            renderer: Renderer::default(),
+            renderer: Renderer {
+                width: size.0,
+                height: size.1,
+                stdout: stdout(),
+            },
         }
     }
 }
@@ -110,9 +115,9 @@ impl RootNode {
         self.id_data.insert(id, data);
 
         if parent_class.is_empty() {
-            self.relations.add_node(Node::new(id, None), Some(&0));
+            _ = self.relations.add_node(Node::new(id, None), Some(&0));
         } else {
-            self.relations.add_node(
+            _ = self.relations.add_node(
                 Node::new(id, None),
                 Some(
                     self.class_id
@@ -333,7 +338,7 @@ impl RootNode {
         }
 
         self.id_dirty_render.clear();
-        self.renderer.update(&mut self.buffer);
+        self.renderer.render(&mut self.buffer);
     }
 
     fn render(&mut self) {
@@ -341,22 +346,22 @@ impl RootNode {
         for id in ids {
             self.render_node(&id, false);
         }
-        self.renderer.update(&mut self.buffer);
+        self.renderer.render(&mut self.buffer);
     }
 
     pub fn run(&mut self) -> Result<(), Box<dyn Error>> {
-        enable_raw_mode();
+        _ = enable_raw_mode();
 
         self.render_flip();
 
         self.running = true;
         while self.running {
-            self.event();
+            _ = self.event();
             self.update();
             self.render();
         }
 
-        disable_raw_mode();
+        _ = disable_raw_mode();
         Ok(())
     }
 }

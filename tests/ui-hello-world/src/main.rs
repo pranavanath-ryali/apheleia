@@ -2,7 +2,8 @@ use apheleia_core::types::vector::Vector2;
 use apheleia_ui::{
     KeyCode,
     contexts::{
-        Context, commands::{Command_MarkRenderDirty, Command_RegisterForEvent, Command_SetSizeForId}
+        Context,
+        commands::{MarkRenderDirty, RegisterForEvent, SetSizeForId},
     },
     node::{
         data::{self, NodeData},
@@ -15,8 +16,8 @@ use apheleia_ui::{
 struct TestNode(bool);
 impl NodeTrait for TestNode {
     fn initial_setup(&mut self, ctx: &mut Context) {
-        ctx.add_command(Box::new(Command_SetSizeForId(ctx.get_id(), Vector2(10, 1))));
-        ctx.add_command(Box::new(Command_RegisterForEvent(EventType::Keys)));
+        ctx.add_command(Box::new(SetSizeForId(ctx.get_id(), Vector2(10, 1))));
+        ctx.add_command(Box::new(RegisterForEvent(EventType::Keys)));
     }
 
     fn event(&mut self, ctx: &mut Context) {
@@ -25,7 +26,7 @@ impl NodeTrait for TestNode {
                 if event.code == KeyCode::Char('a') {
                     self.0 = true;
 
-                    ctx.add_command(Box::new(Command_MarkRenderDirty(
+                    ctx.add_command(Box::new(MarkRenderDirty(
                         ctx.get_id(),
                         DirtyRenderLevel::SimpleDirty,
                     )));
