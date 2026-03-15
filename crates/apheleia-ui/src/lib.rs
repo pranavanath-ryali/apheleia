@@ -3,7 +3,6 @@ pub mod contexts;
 pub mod node;
 pub mod rootnode;
 pub mod types;
-pub mod utils;
 
 pub type NodeId = usize;
 
@@ -16,19 +15,8 @@ use crate::node::node::NodeTrait;
 
 pub struct EmptyNode;
 impl NodeTrait for EmptyNode {
-    fn initial_setup(&mut self, ctx: &mut contexts::Context) {
-        todo!()
-    }
-
-    fn event(&mut self, ctx: &mut contexts::Context) {
-        todo!()
-    }
-
-    fn update(&mut self, ctx: &mut contexts::Context) {
-        todo!()
-    }
-
-    fn render(&self, buf: &mut apheleia_core::buffer::Buffer, ctx: &mut contexts::Context) {
-        todo!()
-    }
+    fn initial_setup(&mut self, _ctx: &mut contexts::Context) {}
+    fn event(&mut self, _ctx: &mut contexts::Context) {}
+    fn update(&mut self, _ctx: &mut contexts::Context) {}
+    fn render(&self, _buf: &mut apheleia_core::buffer::Buffer, _ctx: &mut contexts::Context) {}
 }
