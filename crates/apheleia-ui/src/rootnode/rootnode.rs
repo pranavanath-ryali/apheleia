@@ -1,7 +1,10 @@
-use std::{io::stdout, rc::Rc};
+use std::{error::Error, io::stdout, rc::Rc, time::Duration};
 
 use apheleia_core::{buffer::Buffer, renderer::Renderer, types::vector::Vector2};
-use crossterm::terminal::{self, enable_raw_mode};
+use crossterm::{
+    event::{poll, read},
+    terminal::{self, enable_raw_mode},
+};
 use tree_ds::prelude::{Node, Tree};
 
 use crate::{
@@ -107,7 +110,20 @@ impl RootNodeDup {
             data.set_global_position(global_position);
         }
     }
-    fn event(&mut self) {}
+    fn event(&mut self) -> Result<(), Box<dyn Error>> {
+        // TODO: Implement event function
+        if poll(Duration::from_nanos(1_000_000_000 / 15))? {
+            match read()? {
+                crossterm::event::Event::FocusGained => todo!(),
+                crossterm::event::Event::FocusLost => todo!(),
+                crossterm::event::Event::Key(key_event) => todo!(),
+                crossterm::event::Event::Mouse(mouse_event) => todo!(),
+                crossterm::event::Event::Paste(_) => todo!(),
+                crossterm::event::Event::Resize(_, _) => todo!(),
+            }
+        }
+        Ok(())
+    }
     fn update(&mut self) {}
     fn render_flip(&mut self) {}
     fn render(&mut self) {}
