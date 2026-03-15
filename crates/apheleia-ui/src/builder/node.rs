@@ -1,7 +1,7 @@
-use std::{cell::RefCell, mem, rc::Rc};
+use std::{cell::RefCell, mem, process::id, rc::Rc};
 
 use apheleia_core::types::vector::Vector2;
-use tree_ds::prelude::Tree;
+use tree_ds::prelude::{Node, Tree};
 
 use crate::{
     EmptyNode, NodeId,
@@ -15,7 +15,7 @@ pub struct NodeBuilder<'a> {
 
     id: NodeId,
     class: String,
-    parent_class: String,
+    parent_id: NodeId,
     node_box: Box<dyn NodeTrait>,
     data: NodeData,
 }
@@ -32,7 +32,7 @@ impl<'a> NodeBuilder<'a> {
 
             id,
             class: class.to_string(),
-            parent_class: "".to_string(),
+            parent_id: 0,
             node_box: Box::new(EmptyNode),
             data: NodeData::default(),
         }
@@ -49,7 +49,11 @@ impl<'a> NodeBuilder<'a> {
     }
 
     pub fn set_parent(&mut self, parent: &str) -> &mut Self {
-        self.parent_class = parent.to_string();
+        if let Some(parent_id) = self.node_storage.borrow().get_id(parent) {
+            self.parent_id = *parent_id;
+        } else {
+            panic!("Node of class '{}' doesn't exist.", { parent });
+        }
         self
     }
 
@@ -60,6 +64,18 @@ impl<'a> NodeBuilder<'a> {
 
     pub fn build(&mut self) {
         let node = mem::replace(&mut self.node_box, Box::new(EmptyNode));
+        println!("MADE ID {}", self.id);
+        //             _ = self.relations.add_node(
+        //                 Node::new(id, None),
+        //                 Some(
+        //                     self.class_id
+        //                         .get(parent_class)
+        //                         .expect("Given parent class doesn't exist"),
+        //                 ),
+        //             );
+        _ = self
+            .relations
+            .add_node(Node::new(self.id, None), Some(&self.parent_id));
         self.node_storage
             .borrow_mut()
             .add_node(self.id, &self.class, node, self.data);

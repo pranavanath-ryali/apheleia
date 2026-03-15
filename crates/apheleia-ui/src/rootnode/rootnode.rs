@@ -17,7 +17,7 @@ use crate::{
     },
 };
 
-pub struct RootNodeDup {
+pub struct RootNode {
     width: u16,
     height: u16,
     running: bool,
@@ -32,14 +32,14 @@ pub struct RootNodeDup {
     buffer: RefCell<Buffer>,
     renderer: Renderer,
 }
-impl Default for RootNodeDup {
+impl Default for RootNode {
     fn default() -> Self {
         let (width, height) = terminal::size().unwrap();
 
         let mut relations: Tree<NodeId, NodeId> = Tree::new(None);
         _ = relations.add_node(Node::new(0, None), None);
 
-        RootNodeDup {
+        RootNode {
             node_count: 0,
             running: false,
             width,
@@ -59,7 +59,7 @@ impl Default for RootNodeDup {
         }
     }
 }
-impl RootNodeDup {
+impl RootNode {
     fn get_id(&mut self) -> NodeId {
         self.node_count += 1;
         self.node_count
@@ -82,6 +82,7 @@ impl RootNodeDup {
                 position.0 += pos.0;
                 position.1 += pos.1;
             });
+        println!("Calculated global position {} {}", position.0, position.1);
         position
     }
 
@@ -111,15 +112,13 @@ impl RootNodeDup {
                 .unwrap()
                 .initial_setup(&mut ctx);
             ctx.run_commands();
-        }
-
-        for (id, data) in self.node_storage.borrow_mut().iter_id_data_mut() {
-            if id == &0_usize {
-                continue;
-            }
 
             let global_position = self.calculate_global_position(*id);
-            data.set_global_position(global_position);
+            self.node_storage
+                .borrow_mut()
+                .get_data_mut(*id)
+                .unwrap()
+                .set_global_position(global_position);
         }
     }
     fn event(&mut self) -> Result<(), Box<dyn Error>> {
@@ -153,6 +152,7 @@ impl RootNodeDup {
     }
 
     pub fn create_node(&mut self, class: &str) -> NodeBuilder {
+        println!("EL");
         NodeBuilder::new(
             self.get_id(),
             class,

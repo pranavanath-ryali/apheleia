@@ -15,8 +15,6 @@ pub struct RegisterForEvent(pub EventType);
 pub struct MarkRenderDirty(pub NodeId, pub DirtyRenderLevel);
 pub struct MarkUpdateDirty(pub NodeId);
 
-pub struct WriteLineToBuffer(pub Line);
-
 impl ContextCommand for SetSizeForId {
     fn execute(self: Box<Self>, _id: NodeId, rootnode_data: &mut RootNodeData) {
         rootnode_data
@@ -86,14 +84,5 @@ impl ContextCommand for MarkRenderDirty {
 impl ContextCommand for MarkUpdateDirty {
     fn execute(self: Box<Self>, id: NodeId, rootnode_data: &mut RootNodeData) {
         rootnode_data.dirty_tracker.borrow_mut().add_update(id);
-    }
-}
-
-impl ContextCommand for WriteLineToBuffer {
-    fn execute(self: Box<Self>, _id: NodeId, rootnode_data: &mut RootNodeData) {
-        let line = self.0;
-        rootnode_data
-            .buffer
-            .write_line(line.position.0, line.position.1, &line.text, None);
     }
 }

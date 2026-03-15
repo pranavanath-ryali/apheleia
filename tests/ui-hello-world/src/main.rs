@@ -5,12 +5,9 @@ use apheleia_ui::{
         Context,
         commands::{MarkRenderDirty, RegisterForEvent, SetSizeForId},
     },
-    node::{
-        data::{self, NodeData},
-        node::NodeTrait,
-    },
-    rootnode::RootNode,
-    types::{self, DirtyRenderLevel, EventData, EventType},
+    node::{data::NodeData, node::NodeTrait},
+    rootnode::rootnode::RootNode,
+    types::{DirtyRenderLevel, EventData, EventType},
 };
 
 struct TestNode(bool);
@@ -44,7 +41,7 @@ impl NodeTrait for TestNode {
         }
     }
 
-    fn update(&mut self, ctx: &mut Context) {
+    fn update(&mut self, _ctx: &mut Context) {
         todo!()
     }
 }
@@ -52,13 +49,21 @@ impl NodeTrait for TestNode {
 fn main() {
     let mut root = RootNode::default();
 
-    root.add_node(
-        "test_node",
-        "",
-        Box::new(TestNode(false)),
-        NodeData::new(Vector2(20, 3), None),
-    );
+    root.create_node("parent_node")
+        .set_position(Vector2(5, 5))
+        .build();
 
-    root.initial_setup();
+    root.create_node("child_node")
+        .set_parent("parent_node")
+        .set_position(Vector2(10, 10))
+        .build();
+
+    // root.add_node(
+    //     "test_node",
+    //     "",
+    //     Box::new(TestNode(false)),
+    //     NodeData::new(Vector2(20, 3), None),
+    // );
+
     root.run();
 }
