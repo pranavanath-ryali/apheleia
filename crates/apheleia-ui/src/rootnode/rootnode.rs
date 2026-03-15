@@ -1,13 +1,14 @@
 use std::{io::stdout, rc::Rc};
 
-use apheleia_core::{buffer::Buffer, renderer::Renderer};
+use apheleia_core::{buffer::Buffer, renderer::Renderer, types::vector::Vector2};
 use crossterm::terminal::{self, enable_raw_mode};
 use tree_ds::prelude::{Node, Tree};
 
 use crate::{
     NodeId,
     contexts::Context,
-    rootnode::{data::RootNodeData, node_storage::NodeStorage},
+    rootnode::{data::RootNodeData, dirty_tracker::DirtyTracker, node_storage::NodeStorage},
+    utils::calculate_global_position,
 };
 
 pub struct RootNodeDup {
@@ -19,6 +20,7 @@ pub struct RootNodeDup {
 
     relations: Tree<NodeId, NodeId>,
     node_storage: Rc<NodeStorage>,
+    dirty_tracker: Rc<DirtyTracker>,
 
     buffer: Buffer,
     renderer: Renderer,
@@ -38,6 +40,7 @@ impl Default for RootNodeDup {
 
             relations,
             node_storage: Rc::new(NodeStorage::default()),
+            dirty_tracker: Rc::new(DirtyTracker::default()),
 
             buffer: Buffer::new(width, height),
             renderer: Renderer {
@@ -52,6 +55,21 @@ impl RootNodeDup {
     fn get_id(&mut self) -> NodeId {
         self.node_count += 1;
         self.node_count
+    }
+
+    fn calculate_global_position(&self, id: NodeId) -> Vector2 {
+        let mut position = self.node_storage.get_data(id).unwrap().position;
+        self.relations
+            .get_ancestor_ids(&id)
+            .unwrap()
+            .iter()
+            .filter(|id| **id != 0_usize)
+            .for_each(|node_id| {
+                let pos = self.node_storage.get_data(*node_id).unwrap().position;
+                position.0 += pos.0;
+                position.1 += pos.1;
+            });
+        position
     }
 
     fn initial_setup(&mut self) {
@@ -70,6 +88,7 @@ impl RootNodeDup {
                 RootNodeData {
                     relations: &mut self.relations,
                     node_storage: self.node_storage.clone(),
+                    dirty_tracker: self.dirty_tracker.clone(),
                 },
             );
             self.node_storage
@@ -77,6 +96,15 @@ impl RootNodeDup {
                 .unwrap()
                 .initial_setup(&mut ctx);
             ctx.run_commands();
+        }
+
+        for (id, data) in self.node_storage.iter_id_data_mut() {
+            if id == &0_usize {
+                continue;
+            }
+
+            let global_position = self.calculate_global_position(*id);
+            data.set_global_position(global_position);
         }
     }
     fn event(&mut self) {}
