@@ -1,5 +1,6 @@
 use std::{cell::RefCell, rc::Rc};
 
+use apheleia_core::buffer::Buffer;
 use tree_ds::prelude::Tree;
 
 use crate::{
@@ -14,4 +15,6 @@ pub struct RootNodeData<'a> {
     pub node_storage: Rc<RefCell<NodeStorage>>,
     pub dirty_tracker: Rc<RefCell<DirtyTracker>>,
     pub update_tracker: Rc<RefCell<UpdateTracker>>,
+
+    pub buffer: &'a mut Buffer,
 }

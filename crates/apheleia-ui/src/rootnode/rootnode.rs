@@ -103,6 +103,8 @@ impl RootNodeDup {
                     node_storage: self.node_storage.clone(),
                     dirty_tracker: self.dirty_tracker.clone(),
                     update_tracker: self.update_tracker.clone(),
+
+                    buffer: &mut self.buffer,
                 },
             );
             self.node_storage
