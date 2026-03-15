@@ -7,7 +7,7 @@ pub enum EventType {
     Keys,
 }
 
-#[derive(Hash, PartialEq, Eq)]
+#[derive(Hash, PartialEq, Eq, Clone, Copy)]
 pub enum UpdateTypeNode {
     ConstantUpdate,
     Event(EventType),
@@ -20,6 +20,6 @@ pub enum EventData {
 
 #[derive(Clone, Copy)]
 pub enum DirtyRenderLevel {
-    SimpleDirty, // Rerender node alone. Leave already defined attributes unless specified
+    SimpleDirty,  // Rerender node alone. Leave already defined attributes unless specified
     SubtreeDirty, // Rerender entire subtree which includes the node and including all its children
 }

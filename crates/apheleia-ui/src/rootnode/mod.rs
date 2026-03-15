@@ -9,7 +9,6 @@ use crate::contexts::Context;
 use crate::node::data::NodeData;
 use crate::node::node::NodeTrait;
 use crate::types::{EventData, EventType, UpdateTypeNode};
-use crate::utils::calculate_global_position;
 use apheleia_core::types::vector::Vector2;
 use apheleia_core::{buffer::Buffer, renderer::Renderer, terminal};
 use crossterm::event::{Event, KeyModifiers};
@@ -24,6 +23,7 @@ pub mod data;
 pub mod dirty_tracker;
 pub mod node_storage;
 pub mod rootnode;
+pub mod update_tracker;
 
 // pub struct RootNodeData<'a> {
 //     pub relations: &'a mut Tree<NodeId, NodeId>,

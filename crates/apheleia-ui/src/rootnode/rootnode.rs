@@ -11,8 +11,10 @@ use crate::{
     NodeId,
     builder::node::NodeBuilder,
     contexts::Context,
-    rootnode::{data::RootNodeData, dirty_tracker::DirtyTracker, node_storage::NodeStorage},
-    utils::calculate_global_position,
+    rootnode::{
+        data::RootNodeData, dirty_tracker::DirtyTracker, node_storage::NodeStorage,
+        update_tracker::UpdateTracker,
+    },
 };
 
 pub struct RootNodeDup {
@@ -25,6 +27,7 @@ pub struct RootNodeDup {
     relations: Tree<NodeId, NodeId>,
     node_storage: Rc<RefCell<NodeStorage>>,
     dirty_tracker: Rc<RefCell<DirtyTracker>>,
+    update_tracker: Rc<RefCell<UpdateTracker>>,
 
     buffer: Buffer,
     renderer: Renderer,
@@ -45,6 +48,7 @@ impl Default for RootNodeDup {
             relations,
             node_storage: Rc::new(RefCell::new(NodeStorage::default())),
             dirty_tracker: Rc::new(RefCell::new(DirtyTracker::default())),
+            update_tracker: Rc::new(RefCell::new(UpdateTracker::default())),
 
             buffer: Buffer::new(width, height),
             renderer: Renderer {
@@ -132,19 +136,18 @@ impl RootNodeDup {
         Ok(())
     }
     fn update(&mut self) {}
-    fn render_flip(&mut self) {}
-    fn render(&mut self) {}
+    fn render(&mut self, flip: bool) {}
     pub fn run(&mut self) {
         _ = enable_raw_mode();
 
         self.initial_setup();
-        self.render_flip();
+        self.render(true);
 
         self.running = true;
         while self.running {
             self.event();
             self.update();
-            self.render();
+            self.render(false);
         }
     }
 
