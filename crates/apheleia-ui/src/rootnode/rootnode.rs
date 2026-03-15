@@ -44,7 +44,7 @@ impl Default for RootNodeDup {
 
             relations,
             node_storage: Rc::new(RefCell::new(NodeStorage::default())),
-            dirty_tracker: Rc::new(DirtyTracker::default()),
+            dirty_tracker: Rc::new(RefCell::new(DirtyTracker::default())),
 
             buffer: Buffer::new(width, height),
             renderer: Renderer {
