@@ -1,5 +1,6 @@
 use apheleia_core::types::vector::Vector2;
 
+#[derive(Clone, Copy)]
 pub struct NodeData {
     pub global_positon: Option<Vector2>,
     pub position: Vector2,

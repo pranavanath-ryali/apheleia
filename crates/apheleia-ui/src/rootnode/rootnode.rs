@@ -148,7 +148,12 @@ impl RootNodeDup {
         }
     }
 
-    pub fn create_node(&mut self) -> NodeBuilder {
-        NodeBuilder::new(self.get_id(), self.node_storage.clone())
+    pub fn create_node(&mut self, class: &str) -> NodeBuilder {
+        NodeBuilder::new(
+            self.get_id(),
+            class,
+            &mut self.relations,
+            self.node_storage.clone(),
+        )
     }
 }
