@@ -33,7 +33,7 @@ impl<'a> NodeBuilder<'a> {
             id,
             class: class.to_string(),
             parent_class: "".to_string(),
-            node_box: todo!(),
+            node_box: Box::new(EmptyNode),
             data: NodeData::default(),
         }
     }
