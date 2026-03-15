@@ -9,6 +9,7 @@ use tree_ds::prelude::{Node, Tree};
 
 use crate::{
     NodeId,
+    builder::node::NodeBuilder,
     contexts::Context,
     rootnode::{data::RootNodeData, dirty_tracker::DirtyTracker, node_storage::NodeStorage},
     utils::calculate_global_position,
@@ -145,5 +146,9 @@ impl RootNodeDup {
             self.update();
             self.render();
         }
+    }
+
+    pub fn create_node(&mut self) -> NodeBuilder {
+        NodeBuilder::new(self.get_id(), self.node_storage.clone())
     }
 }
