@@ -10,3 +10,38 @@ pub struct NodeStorage {
     id_data: HashMap<NodeId, NodeData>,
     class_id: HashMap<String, NodeId>,
 }
+impl Default for NodeStorage {
+    fn default() -> Self {
+        NodeStorage {
+            id_nodes: HashMap::new(),
+            id_data: HashMap::new(),
+            class_id: HashMap::new(),
+        }
+    }
+}
+
+impl NodeStorage {
+    pub fn add_node(&mut self, id: NodeId, class: &str, node: Box<dyn NodeTrait>, data: NodeData) {
+        self.id_nodes.insert(id, node);
+        self.id_data.insert(id, data);
+        self.class_id.insert(class.to_string(), id);
+    }
+
+    pub fn get_node(&self, id: NodeId) -> Option<&Box<dyn NodeTrait>> {
+        self.id_nodes.get(&id)
+    }
+    pub fn get_node_mut(&mut self, id: NodeId) -> Option<&mut Box<dyn NodeTrait>> {
+        self.id_nodes.get_mut(&id)
+    }
+
+    pub fn get_data(&self, id: NodeId) -> Option<&NodeData> {
+        self.id_data.get(&id)
+    }
+    pub fn get_data_mut(&mut self, id: NodeId) -> Option<&mut NodeData> {
+        self.id_data.get_mut(&id)
+    }
+
+    pub fn get_id(&self, class: &str) -> Option<&NodeId> {
+        self.class_id.get(class)
+    }
+}
