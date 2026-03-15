@@ -51,4 +51,15 @@ impl NodeStorage {
     pub fn iter_id_data_mut(&mut self) -> std::collections::hash_map::IterMut<'_, usize, NodeData> {
         self.id_data.iter_mut()
     }
+
+    pub fn iter_id_node(
+        &self,
+    ) -> std::collections::hash_map::Iter<'_, usize, Box<dyn NodeTrait + 'static>> {
+        self.id_nodes.iter()
+    }
+    pub fn iter_id_node_mut(
+        &mut self,
+    ) -> std::collections::hash_map::IterMut<'_, usize, Box<dyn NodeTrait + 'static>> {
+        self.id_nodes.iter_mut()
+    }
 }

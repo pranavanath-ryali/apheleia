@@ -1,4 +1,4 @@
-use std::{error::Error, io::stdout, rc::Rc, time::Duration};
+use std::{cell::RefCell, error::Error, io::stdout, rc::Rc, time::Duration};
 
 use apheleia_core::{buffer::Buffer, renderer::Renderer, types::vector::Vector2};
 use crossterm::{
@@ -22,8 +22,8 @@ pub struct RootNodeDup {
     node_count: NodeId,
 
     relations: Tree<NodeId, NodeId>,
-    node_storage: Rc<NodeStorage>,
-    dirty_tracker: Rc<DirtyTracker>,
+    node_storage: Rc<RefCell<NodeStorage>>,
+    dirty_tracker: Rc<RefCell<DirtyTracker>>,
 
     buffer: Buffer,
     renderer: Renderer,
@@ -42,7 +42,7 @@ impl Default for RootNodeDup {
             height,
 
             relations,
-            node_storage: Rc::new(NodeStorage::default()),
+            node_storage: Rc::new(RefCell::new(NodeStorage::default())),
             dirty_tracker: Rc::new(DirtyTracker::default()),
 
             buffer: Buffer::new(width, height),
@@ -61,14 +61,19 @@ impl RootNodeDup {
     }
 
     fn calculate_global_position(&self, id: NodeId) -> Vector2 {
-        let mut position = self.node_storage.get_data(id).unwrap().position;
+        let mut position = self.node_storage.borrow().get_data(id).unwrap().position;
         self.relations
             .get_ancestor_ids(&id)
             .unwrap()
             .iter()
             .filter(|id| **id != 0_usize)
             .for_each(|node_id| {
-                let pos = self.node_storage.get_data(*node_id).unwrap().position;
+                let pos = self
+                    .node_storage
+                    .borrow()
+                    .get_data(*node_id)
+                    .unwrap()
+                    .position;
                 position.0 += pos.0;
                 position.1 += pos.1;
             });
@@ -95,13 +100,14 @@ impl RootNodeDup {
                 },
             );
             self.node_storage
+                .borrow()
                 .get_node_mut(*id)
                 .unwrap()
                 .initial_setup(&mut ctx);
             ctx.run_commands();
         }
 
-        for (id, data) in self.node_storage.iter_id_data_mut() {
+        for (id, data) in self.node_storage.borrow_mut().iter_id_data_mut() {
             if id == &0_usize {
                 continue;
             }

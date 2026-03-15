@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::{cell::RefCell, rc::Rc};
 
 use tree_ds::prelude::Tree;
 
@@ -9,6 +9,6 @@ use crate::{
 
 pub struct RootNodeData<'a> {
     pub relations: &'a mut Tree<NodeId, NodeId>,
-    pub node_storage: Rc<NodeStorage>,
-    pub dirty_tracker: Rc<DirtyTracker>,
+    pub node_storage: Rc<RefCell<NodeStorage>>,
+    pub dirty_tracker: Rc<RefCell<DirtyTracker>>,
 }
