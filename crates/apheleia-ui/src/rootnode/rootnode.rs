@@ -1,10 +1,14 @@
-use std::{error::Error, io::stdout, rc::Rc};
+use std::{io::stdout, rc::Rc};
 
 use apheleia_core::{buffer::Buffer, renderer::Renderer};
 use crossterm::terminal::{self, enable_raw_mode};
 use tree_ds::prelude::{Node, Tree};
 
-use crate::{NodeId, rootnode::node_storage::NodeStorage};
+use crate::{
+    NodeId,
+    contexts::Context,
+    rootnode::{data::RootNodeData, node_storage::NodeStorage},
+};
 
 pub struct RootNodeDup {
     width: u16,
@@ -50,7 +54,31 @@ impl RootNodeDup {
         self.node_count
     }
 
-    fn initial_setup(&mut self) {}
+    fn initial_setup(&mut self) {
+        for id in self
+            .relations
+            .traverse(&0, tree_ds::prelude::TraversalStrategy::PreOrder)
+            .unwrap()
+            .iter()
+        {
+            if *id == 0_usize {
+                continue;
+            }
+
+            let mut ctx = Context::new(
+                *id,
+                RootNodeData {
+                    relations: &mut self.relations,
+                    node_storage: self.node_storage.clone(),
+                },
+            );
+            self.node_storage
+                .get_node_mut(*id)
+                .unwrap()
+                .initial_setup(&mut ctx);
+            ctx.run_commands();
+        }
+    }
     fn event(&mut self) {}
     fn update(&mut self) {}
     fn render_flip(&mut self) {}

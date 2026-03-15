@@ -20,22 +20,23 @@ use crossterm::{
 use indexmap::{IndexSet, indexset};
 use tree_ds::prelude::{Node, TraversalStrategy, Tree};
 
+pub mod data;
 pub mod node_storage;
 pub mod rootnode;
 
-pub struct RootNodeData<'a> {
-    pub relations: &'a mut Tree<NodeId, NodeId>,
+// pub struct RootNodeData<'a> {
+//     pub relations: &'a mut Tree<NodeId, NodeId>,
 
-    pub id_data: &'a mut HashMap<NodeId, NodeData>,
-    pub class_id: &'a mut HashMap<String, NodeId>,
+//     pub id_data: &'a mut HashMap<NodeId, NodeData>,
+//     pub class_id: &'a mut HashMap<String, NodeId>,
 
-    pub id_update_type: &'a mut HashMap<UpdateTypeNode, IndexSet<NodeId>>,
+//     pub id_update_type: &'a mut HashMap<UpdateTypeNode, IndexSet<NodeId>>,
 
-    pub id_dirty_update: &'a mut IndexSet<NodeId>,
-    pub id_dirty_render: &'a mut IndexSet<NodeId>,
+//     pub id_dirty_update: &'a mut IndexSet<NodeId>,
+//     pub id_dirty_render: &'a mut IndexSet<NodeId>,
 
-    pub buffer: &'a mut Buffer,
-}
+//     pub buffer: &'a mut Buffer,
+// }
 
 pub struct RootNode {
     running: bool,
