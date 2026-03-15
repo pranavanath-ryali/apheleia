@@ -29,7 +29,7 @@ pub struct RootNodeDup {
     dirty_tracker: Rc<RefCell<DirtyTracker>>,
     update_tracker: Rc<RefCell<UpdateTracker>>,
 
-    buffer: Buffer,
+    buffer: RefCell<Buffer>,
     renderer: Renderer,
 }
 impl Default for RootNodeDup {
@@ -50,7 +50,7 @@ impl Default for RootNodeDup {
             dirty_tracker: Rc::new(RefCell::new(DirtyTracker::default())),
             update_tracker: Rc::new(RefCell::new(UpdateTracker::default())),
 
-            buffer: Buffer::new(width, height),
+            buffer: RefCell::new(Buffer::new(width, height)),
             renderer: Renderer {
                 width,
                 height,
@@ -103,12 +103,10 @@ impl RootNodeDup {
                     node_storage: self.node_storage.clone(),
                     dirty_tracker: self.dirty_tracker.clone(),
                     update_tracker: self.update_tracker.clone(),
-
-                    buffer: &mut self.buffer,
                 },
             );
             self.node_storage
-                .borrow()
+                .borrow_mut()
                 .get_node_mut(*id)
                 .unwrap()
                 .initial_setup(&mut ctx);
