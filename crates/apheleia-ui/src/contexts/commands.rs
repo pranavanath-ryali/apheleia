@@ -1,11 +1,10 @@
 use apheleia_core::{buffer::Line, types::vector::Vector2};
-use crossterm::event::Event;
 
 use crate::{
     NodeId,
     contexts::ContextCommand,
     rootnode::data::RootNodeData,
-    types::{self, DirtyRenderLevel, EventType, UpdateTypeNode},
+    types::{DirtyRenderLevel, EventType, UpdateTypeNode},
 };
 
 pub struct SetSizeForId(pub NodeId, pub Vector2);

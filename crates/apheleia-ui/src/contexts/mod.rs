@@ -1,6 +1,4 @@
-use crate::rootnode::RootNodeData;
-use crate::types::EventData;
-use crate::{NodeId, node::data::NodeData};
+use crate::{NodeId, node::data::NodeData, rootnode::data::RootNodeData, types::EventData};
 use std::mem;
 
 pub struct Context<'a> {
@@ -38,12 +36,12 @@ impl<'a> Context<'a> {
         &self.event_data
     }
 
-    pub fn get_class_by_id(&self, class: &str) -> Option<NodeId> {
-        self.rootnode_data.class_id.get(class).copied()
-    }
-
-    pub fn get_data_for_id(&self, id: NodeId) -> Option<&NodeData> {
-        self.rootnode_data.id_data.get(&id)
+    pub fn get_data_for_id(&self, id: NodeId) -> Option<NodeData> {
+        if let Some(data) = self.rootnode_data.node_storage.borrow().get_data(id) {
+            Some(data.clone()) // :(
+        } else {
+            None
+        }
     }
 
     pub fn get_children(&self, id: NodeId) -> Vec<NodeId> {
