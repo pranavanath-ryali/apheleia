@@ -56,6 +56,7 @@ fn main() {
     root.create_node("child_node")
         .set_parent("parent_node")
         .set_position(Vector2(10, 10))
+        .node(Box::new(TestNode(false)))
         .build();
 
     // root.add_node(
