@@ -20,6 +20,9 @@ use crossterm::{
 use indexmap::{IndexSet, indexset};
 use tree_ds::prelude::{Node, TraversalStrategy, Tree};
 
+pub mod node_storage;
+pub mod rootnode;
+
 pub struct RootNodeData<'a> {
     pub relations: &'a mut Tree<NodeId, NodeId>,
 
