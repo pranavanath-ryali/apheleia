@@ -21,6 +21,7 @@ use indexmap::{IndexSet, indexset};
 use tree_ds::prelude::{Node, TraversalStrategy, Tree};
 
 pub mod data;
+pub mod dirty_tracker;
 pub mod node_storage;
 pub mod rootnode;
 
