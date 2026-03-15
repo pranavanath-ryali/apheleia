@@ -102,6 +102,7 @@ impl RootNodeDup {
                     relations: &mut self.relations,
                     node_storage: self.node_storage.clone(),
                     dirty_tracker: self.dirty_tracker.clone(),
+                    update_tracker: self.update_tracker.clone(),
                 },
             );
             self.node_storage
