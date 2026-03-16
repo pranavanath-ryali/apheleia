@@ -133,7 +133,7 @@ impl RootNode {
                     event_type = Some(EventType::Keys);
                     event_data = EventData::Keys(key_event);
                 }
-                crossterm::event::Event::Mouse(mouse_event) => todo!(),
+                crossterm::event::Event::Mouse(_) => todo!(),
                 crossterm::event::Event::Paste(_) => todo!(),
                 crossterm::event::Event::Resize(_, _) => todo!(),
             }
