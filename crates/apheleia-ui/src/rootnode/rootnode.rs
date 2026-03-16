@@ -135,7 +135,52 @@ impl RootNode {
         }
         Ok(())
     }
-    fn update(&mut self) {}
+    fn update(&mut self) {
+        // Update Nodes marked dirty
+        for id in self.dirty_tracker.borrow().iter_update() {
+            let mut ctx = Context::new(
+                *id,
+                RootNodeData {
+                    relations: &mut self.relations,
+                    node_storage: self.node_storage.clone(),
+                    dirty_tracker: self.dirty_tracker.clone(),
+                    update_tracker: self.update_tracker.clone(),
+                },
+            );
+            self.node_storage
+                .borrow_mut()
+                .get_node_mut(*id)
+                .unwrap()
+                .update(&mut ctx);
+            ctx.run_commands();
+        }
+        self.dirty_tracker.borrow_mut().clear_update();
+
+        // Update Nodes registered for constant update
+        if let Some(ids) = self
+            .update_tracker
+            .borrow()
+            .iter(crate::types::UpdateTypeNode::ConstantUpdate)
+        {
+            for id in ids {
+                let mut ctx = Context::new(
+                    *id,
+                    RootNodeData {
+                        relations: &mut self.relations,
+                        node_storage: self.node_storage.clone(),
+                        dirty_tracker: self.dirty_tracker.clone(),
+                        update_tracker: self.update_tracker.clone(),
+                    },
+                );
+                self.node_storage
+                    .borrow_mut()
+                    .get_node_mut(*id)
+                    .unwrap()
+                    .update(&mut ctx);
+                ctx.run_commands();
+            }
+        }
+    }
     fn render(&mut self, flip: bool) {}
     pub fn run(&mut self) {
         _ = enable_raw_mode();
@@ -145,7 +190,7 @@ impl RootNode {
 
         self.running = true;
         while self.running {
-            self.event();
+            _ = self.event();
             self.update();
             self.render(false);
         }
