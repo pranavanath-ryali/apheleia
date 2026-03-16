@@ -3,7 +3,7 @@ use apheleia_ui::{
     KeyCode,
     contexts::{
         Context,
-        commands::{MarkRenderDirty, RegisterForEvent, SetSizeForId},
+        commands::{MarkRenderDirty, RegisterForEvent, RegisterForUpdate, SetSizeForId},
     },
     node::{data::NodeData, node::NodeTrait},
     rootnode::rootnode::RootNode,
@@ -14,7 +14,7 @@ struct TestNode(bool);
 impl NodeTrait for TestNode {
     fn initial_setup(&mut self, ctx: &mut Context) {
         ctx.add_command(Box::new(SetSizeForId(ctx.get_id(), Vector2(10, 1))));
-        ctx.add_command(Box::new(RegisterForEvent(EventType::Keys)));
+        ctx.add_command(Box::new(RegisterForUpdate));
     }
 
     fn event(&mut self, ctx: &mut Context) {
@@ -42,7 +42,7 @@ impl NodeTrait for TestNode {
     }
 
     fn update(&mut self, _ctx: &mut Context) {
-        todo!()
+        println!("Hello");
     }
 }
 
