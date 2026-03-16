@@ -2,7 +2,7 @@ use std::{cell::RefCell, error::Error, io::stdout, mem, rc::Rc, time::Duration};
 
 use apheleia_core::{buffer::Buffer, renderer::Renderer, types::vector::Vector2};
 use crossterm::{
-    event::{poll, read},
+    event::{KeyCode, KeyModifiers, poll, read},
     terminal::{self, enable_raw_mode},
 };
 use tree_ds::prelude::{Node, Tree};
@@ -99,6 +99,12 @@ impl RootNode {
 
             let mut ctx = Context::new(
                 *id,
+                self.node_storage
+                    .clone()
+                    .borrow()
+                    .get_data(*id)
+                    .unwrap()
+                    .clone(),
                 RootNodeData {
                     relations: &mut self.relations,
                     node_storage: self.node_storage.clone(),
@@ -130,6 +136,12 @@ impl RootNode {
                 crossterm::event::Event::FocusGained => todo!(),
                 crossterm::event::Event::FocusLost => todo!(),
                 crossterm::event::Event::Key(key_event) => {
+                    if key_event.modifiers == KeyModifiers::CONTROL
+                        && key_event.code == KeyCode::Char('c')
+                    {
+                        self.running = false;
+                    }
+
                     event_type = Some(EventType::Keys);
                     event_data = EventData::Keys(key_event);
                 }
@@ -148,6 +160,12 @@ impl RootNode {
                 for id in ids {
                     let mut ctx = Context::new_event(
                         *id,
+                        self.node_storage
+                            .clone()
+                            .borrow()
+                            .get_data(*id)
+                            .unwrap()
+                            .clone(),
                         mem::take(&mut event_data),
                         RootNodeData {
                             relations: &mut self.relations,
@@ -172,6 +190,12 @@ impl RootNode {
         for id in self.dirty_tracker.borrow().iter_update() {
             let mut ctx = Context::new(
                 *id,
+                self.node_storage
+                    .clone()
+                    .borrow()
+                    .get_data(*id)
+                    .unwrap()
+                    .clone(),
                 RootNodeData {
                     relations: &mut self.relations,
                     node_storage: self.node_storage.clone(),
@@ -197,6 +221,12 @@ impl RootNode {
             for id in ids {
                 let mut ctx = Context::new(
                     *id,
+                    self.node_storage
+                        .clone()
+                        .borrow()
+                        .get_data(*id)
+                        .unwrap()
+                        .clone(),
                     RootNodeData {
                         relations: &mut self.relations,
                         node_storage: self.node_storage.clone(),
@@ -233,6 +263,12 @@ impl RootNode {
             let mut node_buffer = Buffer::new(size.0, size.1);
             let mut ctx = Context::new(
                 id,
+                self.node_storage
+                    .clone()
+                    .borrow()
+                    .get_data(id)
+                    .unwrap()
+                    .clone(),
                 RootNodeData {
                     relations: &mut self.relations,
                     node_storage: self.node_storage.clone(),

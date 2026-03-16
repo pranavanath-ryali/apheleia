@@ -3,7 +3,9 @@ use apheleia_ui::{
     KeyCode,
     contexts::{
         Context,
-        commands::{MarkRenderDirty, RegisterForEvent, SetPositionForId, SetSizeForId},
+        commands::{
+            MarkRenderDirty, RegisterForEvent, RegisterForUpdate, SetPositionForId, SetSizeForId,
+        },
     },
     node::node::NodeTrait,
     rootnode::rootnode::RootNode,
@@ -15,6 +17,7 @@ impl NodeTrait for TestNode {
     fn initial_setup(&mut self, ctx: &mut Context) {
         ctx.add_command(Box::new(SetSizeForId(ctx.get_id(), Vector2(10, 1))));
         ctx.add_command(Box::new(RegisterForEvent(EventType::Keys)));
+        ctx.add_command(Box::new(RegisterForUpdate));
     }
 
     fn event(&mut self, ctx: &mut Context) {
@@ -27,7 +30,6 @@ impl NodeTrait for TestNode {
                         ctx.get_id(),
                         DirtyRenderLevel::SimpleDirty,
                     )));
-                    ctx.add_command(Box::new(SetPositionForId(ctx.get_id(), Vector2(5, 5))));
                 }
             }
             _ => (),
@@ -42,7 +44,17 @@ impl NodeTrait for TestNode {
         }
     }
 
-    fn update(&mut self, _ctx: &mut Context) {}
+    fn update(&mut self, ctx: &mut Context) {
+        let position = ctx.get_position();
+        ctx.add_command(Box::new(SetPositionForId(
+            ctx.get_id(),
+            Vector2(position.0 + 1, position.1 + 1),
+        )));
+        ctx.add_command(Box::new(MarkRenderDirty(
+            ctx.get_id(),
+            DirtyRenderLevel::SimpleDirty,
+        )));
+    }
 }
 
 fn main() {

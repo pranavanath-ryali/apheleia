@@ -1,8 +1,16 @@
-use crate::{NodeId, node::data::NodeData, rootnode::data::RootNodeData, types::EventData};
-use std::mem;
+use apheleia_core::types::vector::Vector2;
+
+use crate::{
+    NodeId,
+    node::data::NodeData,
+    rootnode::data::{self, RootNodeData},
+    types::EventData,
+};
+use std::{fs::OpenOptions, mem};
 
 pub struct Context<'a> {
     id: NodeId,
+    data: NodeData,
     event_data: Option<EventData>,
 
     rootnode_data: RootNodeData<'a>,
@@ -10,18 +18,25 @@ pub struct Context<'a> {
     pub(crate) commands: Vec<Box<dyn ContextCommand>>,
 }
 impl<'a> Context<'a> {
-    pub fn new(id: NodeId, rootnode_data: RootNodeData<'a>) -> Self {
+    pub fn new(id: NodeId, data: NodeData, rootnode_data: RootNodeData<'a>) -> Self {
         Self {
             id,
+            data,
             event_data: None,
             rootnode_data,
             commands: vec![],
         }
     }
 
-    pub fn new_event(id: NodeId, event_data: EventData, rootnode_data: RootNodeData<'a>) -> Self {
+    pub fn new_event(
+        id: NodeId,
+        data: NodeData,
+        event_data: EventData,
+        rootnode_data: RootNodeData<'a>,
+    ) -> Self {
         Self {
             id,
+            data,
             event_data: Some(event_data),
             rootnode_data,
             commands: vec![],
@@ -36,13 +51,17 @@ impl<'a> Context<'a> {
         &self.event_data
     }
 
-    pub fn get_data_for_id(&self, id: NodeId) -> Option<NodeData> {
-        if let Some(data) = self.rootnode_data.node_storage.borrow().get_data(id) {
-            Some(data.clone()) // :(
-        } else {
-            None
-        }
+    pub fn get_position(&self) -> &Vector2 {
+        self.data.get_position()
     }
+
+    // pub fn get_data_for_id(&self, id: NodeId) -> Option<&NodeData> {
+    //     if let Some(data) = self.rootnode_data.node_storage.borrow().get_data(id) {
+    //         // Some(data) // :(
+    //     } else {
+    //         None
+    //     }
+    // }
 
     pub fn get_children(&self, id: NodeId) -> Vec<NodeId> {
         // TODO: Fix cases where no. of children is 0. Then return None
