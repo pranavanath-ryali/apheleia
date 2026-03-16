@@ -82,7 +82,6 @@ impl RootNode {
                 position.0 += pos.0;
                 position.1 += pos.1;
             });
-        println!("Calculated global position {} {}", position.0, position.1);
         position
     }
 
@@ -181,7 +180,67 @@ impl RootNode {
             }
         }
     }
-    fn render(&mut self, flip: bool) {}
+    fn render_node(&mut self, id: NodeId) {
+        let size = self
+            .node_storage
+            .borrow()
+            .get_data(id)
+            .unwrap()
+            .get_size()
+            .clone();
+        if let Some(size) = size {
+            let position = self
+                .node_storage
+                .borrow_mut()
+                .get_data(id)
+                .unwrap()
+                .get_global_position()
+                .unwrap_or(Vector2(0, 0));
+
+            let mut node_buffer = Buffer::new(size.0, size.1);
+            let mut ctx = Context::new(
+                id,
+                RootNodeData {
+                    relations: &mut self.relations,
+                    node_storage: self.node_storage.clone(),
+                    dirty_tracker: self.dirty_tracker.clone(),
+                    update_tracker: self.update_tracker.clone(),
+                },
+            );
+            self.node_storage
+                .borrow_mut()
+                .get_node_mut(id)
+                .unwrap()
+                .render(&mut node_buffer, &mut ctx);
+
+            self.buffer
+                .borrow_mut()
+                .render_buffer(position.0, position.1, &mut node_buffer);
+        }
+    }
+    fn render(&mut self, flip: bool) {
+        if flip {
+            self.renderer.clear(&mut self.buffer.borrow_mut());
+            for id in self
+                .relations
+                .traverse(&0, tree_ds::prelude::TraversalStrategy::PreOrder)
+                .unwrap()
+                .iter()
+            {
+                if *id == 0_usize {
+                    continue;
+                }
+                self.render_node(*id);
+            }
+        } else {
+            let tracker = self.dirty_tracker.clone();
+            for id in tracker.borrow().iter_render() {
+                self.render_node(*id);
+            }
+        }
+        self.renderer.render(&mut self.buffer.borrow_mut());
+        self.dirty_tracker.borrow_mut().clear_render();
+    }
     pub fn run(&mut self) {
         _ = enable_raw_mode();
 
@@ -197,7 +256,6 @@ impl RootNode {
     }
 
     pub fn create_node(&mut self, class: &str) -> NodeBuilder {
-        println!("EL");
         NodeBuilder::new(
             self.get_id(),
             class,

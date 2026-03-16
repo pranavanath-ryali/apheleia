@@ -35,27 +35,25 @@ impl NodeTrait for TestNode {
 
     fn render(&self, buf: &mut apheleia_core::buffer::Buffer, ctx: &mut Context) {
         if self.0 {
-            buf.write_line(0, 0, "B", None);
+            buf.write_line(5, 5, "B", None);
         } else {
             buf.write_line(0, 0, "AAAAAA", None);
         }
     }
 
-    fn update(&mut self, _ctx: &mut Context) {
-        println!("Hello");
-    }
+    fn update(&mut self, _ctx: &mut Context) {}
 }
 
 fn main() {
     let mut root = RootNode::default();
 
     root.create_node("parent_node")
-        .set_position(Vector2(5, 5))
+        .set_position(Vector2(1, 0))
         .build();
 
     root.create_node("child_node")
         .set_parent("parent_node")
-        .set_position(Vector2(10, 10))
+        .set_position(Vector2(1, 0))
         .node(Box::new(TestNode(false)))
         .build();
 
