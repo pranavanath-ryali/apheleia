@@ -288,7 +288,7 @@ impl RootNode {
         }
     }
 
-    pub fn create_node(&mut self, class: &str) -> NodeBuilder {
+    pub fn create_node<'a>(&'a mut self, class: &str) -> NodeBuilder<'a> {
         NodeBuilder::new(
             self.get_id(),
             class,
