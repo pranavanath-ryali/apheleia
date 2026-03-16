@@ -3,9 +3,9 @@ use apheleia_ui::{
     KeyCode,
     contexts::{
         Context,
-        commands::{MarkRenderDirty, RegisterForEvent, RegisterForUpdate, SetSizeForId},
+        commands::{MarkRenderDirty, RegisterForEvent, SetPositionForId, SetSizeForId},
     },
-    node::{data::NodeData, node::NodeTrait},
+    node::node::NodeTrait,
     rootnode::rootnode::RootNode,
     types::{DirtyRenderLevel, EventData, EventType},
 };
@@ -27,13 +27,14 @@ impl NodeTrait for TestNode {
                         ctx.get_id(),
                         DirtyRenderLevel::SimpleDirty,
                     )));
+                    ctx.add_command(Box::new(SetPositionForId(ctx.get_id(), Vector2(5, 5))));
                 }
             }
             _ => (),
         }
     }
 
-    fn render(&self, buf: &mut apheleia_core::buffer::Buffer, ctx: &mut Context) {
+    fn render(&self, buf: &mut apheleia_core::buffer::Buffer, _ctx: &mut Context) {
         if self.0 {
             buf.write_line(0, 0, "Boearsnteiarnsteinarsetnarsnt", None);
         } else {
@@ -56,13 +57,6 @@ fn main() {
         .set_position(Vector2(1, 0))
         .node(Box::new(TestNode(false)))
         .build();
-
-    // root.add_node(
-    //     "test_node",
-    //     "",
-    //     Box::new(TestNode(false)),
-    //     NodeData::new(Vector2(20, 3), None),
-    // );
 
     root.run();
 }
