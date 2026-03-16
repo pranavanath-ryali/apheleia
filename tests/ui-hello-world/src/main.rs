@@ -14,7 +14,7 @@ struct TestNode(bool);
 impl NodeTrait for TestNode {
     fn initial_setup(&mut self, ctx: &mut Context) {
         ctx.add_command(Box::new(SetSizeForId(ctx.get_id(), Vector2(10, 1))));
-        ctx.add_command(Box::new(RegisterForUpdate));
+        ctx.add_command(Box::new(RegisterForEvent(EventType::Keys)));
     }
 
     fn event(&mut self, ctx: &mut Context) {
@@ -35,7 +35,7 @@ impl NodeTrait for TestNode {
 
     fn render(&self, buf: &mut apheleia_core::buffer::Buffer, ctx: &mut Context) {
         if self.0 {
-            buf.write_line(5, 5, "B", None);
+            buf.write_line(0, 0, "Boearsnteiarnsteinarsetnarsnt", None);
         } else {
             buf.write_line(0, 0, "AAAAAA", None);
         }

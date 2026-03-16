@@ -16,6 +16,12 @@ pub enum UpdateTypeNode {
 pub enum EventData {
     Resize(Vector2),
     Keys(KeyEvent),
+    None,
+}
+impl Default for EventData {
+    fn default() -> Self {
+        EventData::None
+    }
 }
 
 #[derive(Clone, Copy)]

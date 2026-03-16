@@ -1,4 +1,4 @@
-use std::{cell::RefCell, error::Error, io::stdout, rc::Rc, time::Duration};
+use std::{cell::RefCell, error::Error, io::stdout, mem, rc::Rc, time::Duration};
 
 use apheleia_core::{buffer::Buffer, renderer::Renderer, types::vector::Vector2};
 use crossterm::{
@@ -15,6 +15,7 @@ use crate::{
         data::RootNodeData, dirty_tracker::DirtyTracker, node_storage::NodeStorage,
         update_tracker::UpdateTracker,
     },
+    types::{EventData, EventType},
 };
 
 pub struct RootNode {
@@ -122,14 +123,46 @@ impl RootNode {
     }
     fn event(&mut self) -> Result<(), Box<dyn Error>> {
         // TODO: Implement event function
+        let mut event_type: Option<EventType> = None;
+        let mut event_data: EventData = EventData::None;
         if poll(Duration::from_nanos(1_000_000_000 / 15))? {
             match read()? {
                 crossterm::event::Event::FocusGained => todo!(),
                 crossterm::event::Event::FocusLost => todo!(),
-                crossterm::event::Event::Key(key_event) => todo!(),
+                crossterm::event::Event::Key(key_event) => {
+                    event_type = Some(EventType::Keys);
+                    event_data = EventData::Keys(key_event);
+                }
                 crossterm::event::Event::Mouse(mouse_event) => todo!(),
                 crossterm::event::Event::Paste(_) => todo!(),
                 crossterm::event::Event::Resize(_, _) => todo!(),
+            }
+        }
+
+        if let Some(event_type) = event_type {
+            if let Some(ids) = self
+                .update_tracker
+                .borrow()
+                .iter(crate::types::UpdateTypeNode::Event(event_type))
+            {
+                for id in ids {
+                    let mut ctx = Context::new_event(
+                        *id,
+                        mem::take(&mut event_data),
+                        RootNodeData {
+                            relations: &mut self.relations,
+                            node_storage: self.node_storage.clone(),
+                            dirty_tracker: self.dirty_tracker.clone(),
+                            update_tracker: self.update_tracker.clone(),
+                        },
+                    );
+                    self.node_storage
+                        .borrow_mut()
+                        .get_node_mut(*id)
+                        .unwrap()
+                        .event(&mut ctx);
+                    ctx.run_commands();
+                }
             }
         }
         Ok(())
