@@ -1,4 +1,4 @@
-use apheleia_core::{buffer::Line, types::vector::Vector2};
+use apheleia_core::types::vector::Vector2;
 
 use crate::{
     NodeId,
@@ -28,20 +28,43 @@ impl ContextCommand for SetSizeForId {
 impl ContextCommand for SetPositionForId {
     fn execute(self: Box<Self>, id: NodeId, rootnode_data: &mut RootNodeData) {
         // TODO
-        // rootnode_data
-        //     .node_storage
-        //     .borrow_mut()
-        //     .get_data_mut(self.0)
-        //     .unwrap()
-        //     .set_position(self.1);
+        rootnode_data
+            .node_storage
+            .borrow_mut()
+            .get_data_mut(self.0)
+            .unwrap()
+            .set_position(self.1);
 
-        // let position =
-        //     calculate_global_position(self.0, &rootnode_data.relations, &rootnode_data.id_data);
-        // rootnode_data
-        //     .id_data
-        //     .get_mut(&self.0)
-        //     .unwrap()
-        //     .set_global_position(position);
+        let mut position = rootnode_data
+            .node_storage
+            .borrow()
+            .get_data(id)
+            .unwrap()
+            .position;
+
+        rootnode_data
+            .relations
+            .get_ancestor_ids(&id)
+            .unwrap()
+            .iter()
+            .filter(|id| **id != 0_usize)
+            .for_each(|node_id| {
+                let pos = rootnode_data
+                    .node_storage
+                    .borrow()
+                    .get_data(*node_id)
+                    .unwrap()
+                    .position;
+                position.0 += pos.0;
+                position.1 += pos.1;
+            });
+
+        rootnode_data
+            .node_storage
+            .borrow_mut()
+            .get_data_mut(self.0)
+            .unwrap()
+            .set_global_position(position);
     }
 }
 impl ContextCommand for RegisterForUpdate {
