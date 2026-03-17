@@ -19,6 +19,7 @@ use crate::{
 };
 
 pub struct RootNode {
+    fps: u16,
     width: u16,
     height: u16,
     running: bool,
@@ -41,6 +42,7 @@ impl Default for RootNode {
         _ = relations.add_node(Node::new(0, None), None);
 
         RootNode {
+            fps: 15,
             node_count: 0,
             running: false,
             width,
@@ -131,7 +133,7 @@ impl RootNode {
         // TODO: Implement event function
         let mut event_type: Option<EventType> = None;
         let mut event_data: EventData = EventData::None;
-        if poll(Duration::from_nanos(1_000_000_000 / 15))? {
+        if poll(Duration::from_nanos(1_000_000_000 / self.fps as u64))? {
             match read()? {
                 crossterm::event::Event::FocusGained => todo!(),
                 crossterm::event::Event::FocusLost => todo!(),
