@@ -64,15 +64,6 @@ impl<'a> NodeBuilder<'a> {
 
     pub fn build(&mut self) {
         let node = mem::replace(&mut self.node_box, Box::new(EmptyNode));
-        println!("MADE ID {}", self.id);
-        //             _ = self.relations.add_node(
-        //                 Node::new(id, None),
-        //                 Some(
-        //                     self.class_id
-        //                         .get(parent_class)
-        //                         .expect("Given parent class doesn't exist"),
-        //                 ),
-        //             );
         _ = self
             .relations
             .add_node(Node::new(self.id, None), Some(&self.parent_id));
