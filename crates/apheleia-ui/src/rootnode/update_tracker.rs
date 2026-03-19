@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use indexmap::{IndexSet, indexset};
 
-use crate::{NodeId, types::UpdateTypeNode};
+use crate::types::{NodeId, UpdateTypeNode};
 
 pub struct UpdateTracker {
     id_update: HashMap<UpdateTypeNode, IndexSet<NodeId>>,

@@ -4,13 +4,14 @@ use apheleia_core::types::vector::Vector2;
 use tree_ds::prelude::{Node, Tree};
 
 use crate::{
-    EmptyNode, NodeId,
-    node::{data::NodeData, node::NodeTrait},
-    rootnode::{id_generator::NodeIdGenerator, node_storage::NodeStorage},
+    id_generator::IdGenerator,
+    node::{EmptyNode, data::NodeData, node::NodeTrait},
+    rootnode::node_storage::NodeStorage,
+    types::NodeId,
 };
 
 pub struct NodeBuilder<'a> {
-    id_generator: Rc<RefCell<NodeIdGenerator>>,
+    id_generator: Rc<RefCell<IdGenerator<NodeId>>>,
     relations: &'a mut Tree<NodeId, NodeId>,
     node_storage: Rc<RefCell<NodeStorage>>,
 
@@ -24,7 +25,7 @@ impl<'a> NodeBuilder<'a> {
     pub fn new(
         id: NodeId,
         class: &str,
-        id_generator: Rc<RefCell<NodeIdGenerator>>,
+        id_generator: Rc<RefCell<IdGenerator<NodeId>>>,
         relations: &'a mut Tree<NodeId, NodeId>,
         node_storage: Rc<RefCell<NodeStorage>>,
     ) -> Self {

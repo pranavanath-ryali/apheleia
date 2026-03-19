@@ -1,6 +1,6 @@
 use indexmap::IndexSet;
 
-use crate::NodeId;
+use crate::types::NodeId;
 
 pub struct DirtyTracker {
     dirty_updates: IndexSet<NodeId>,

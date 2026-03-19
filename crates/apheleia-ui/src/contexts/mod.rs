@@ -1,10 +1,9 @@
 use apheleia_core::types::vector::Vector2;
 
 use crate::{
-    NodeId,
     node::data::NodeData,
-    rootnode::data::{self, RootNodeData},
-    types::EventData,
+    rootnode::data::RootNodeData,
+    types::{EventData, NodeId},
 };
 use std::mem;
 

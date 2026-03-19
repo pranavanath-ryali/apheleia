@@ -2,10 +2,10 @@ use std::{cell::RefCell, rc::Rc};
 use tree_ds::prelude::Tree;
 
 use crate::{
-    NodeId,
     rootnode::{
         dirty_tracker::DirtyTracker, node_storage::NodeStorage, update_tracker::UpdateTracker,
     },
+    types::NodeId,
 };
 
 pub struct RootNodeData<'a> {

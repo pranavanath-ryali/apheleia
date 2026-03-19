@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
 use crate::{
-    NodeId,
     node::{data::NodeData, node::NodeTrait},
+    types::NodeId,
 };
 
 pub struct NodeStorage {

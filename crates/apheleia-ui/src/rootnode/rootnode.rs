@@ -8,7 +8,6 @@ use crossterm::{
 use tree_ds::prelude::{Node, Tree};
 
 use crate::{
-    NodeId,
     builder::node::NodeBuilder,
     contexts::Context,
     id_generator::{IdGenerator, IdGeneratorTrait},
@@ -16,7 +15,7 @@ use crate::{
         data::RootNodeData, dirty_tracker::DirtyTracker, node_storage::NodeStorage,
         update_tracker::UpdateTracker,
     },
-    types::{EventData, EventType},
+    types::{EventData, EventType, NodeId},
 };
 
 pub struct RootNode {
