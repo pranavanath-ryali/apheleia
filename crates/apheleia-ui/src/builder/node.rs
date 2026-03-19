@@ -1,4 +1,4 @@
-use std::{cell::RefCell, mem, rc::Rc};
+use std::{cell::RefCell, mem, rc::Rc, vec};
 
 use apheleia_core::types::vector::Vector2;
 use tree_ds::prelude::{Node, Tree};
@@ -6,10 +6,11 @@ use tree_ds::prelude::{Node, Tree};
 use crate::{
     EmptyNode, NodeId,
     node::{data::NodeData, node::NodeTrait},
-    rootnode::node_storage::NodeStorage,
+    rootnode::{id_generator::NodeIdGenerator, node_storage::NodeStorage},
 };
 
 pub struct NodeBuilder<'a> {
+    id_generator: Rc<RefCell<NodeIdGenerator>>,
     relations: &'a mut Tree<NodeId, NodeId>,
     node_storage: Rc<RefCell<NodeStorage>>,
 
@@ -18,17 +19,17 @@ pub struct NodeBuilder<'a> {
     parent_id: NodeId,
     node_box: Box<dyn NodeTrait>,
     data: NodeData,
-
-    parent: Option<Box<Self>>,
 }
 impl<'a> NodeBuilder<'a> {
     pub fn new(
         id: NodeId,
         class: &str,
+        id_generator: Rc<RefCell<NodeIdGenerator>>,
         relations: &'a mut Tree<NodeId, NodeId>,
         node_storage: Rc<RefCell<NodeStorage>>,
     ) -> Self {
         NodeBuilder {
+            id_generator,
             relations,
             node_storage,
 
@@ -37,8 +38,6 @@ impl<'a> NodeBuilder<'a> {
             parent_id: 0,
             node_box: Box::new(EmptyNode),
             data: NodeData::default(),
-
-            parent: None,
         }
     }
 

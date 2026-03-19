@@ -24,7 +24,7 @@ pub struct RootNode {
     height: u16,
     running: bool,
 
-    id_generator: NodeIdGenerator,
+    id_generator: Rc<RefCell<NodeIdGenerator>>,
 
     relations: Tree<NodeId, NodeId>,
     node_storage: Rc<RefCell<NodeStorage>>,
@@ -47,7 +47,7 @@ impl Default for RootNode {
             width,
             height,
 
-            id_generator: NodeIdGenerator::default(),
+            id_generator: Rc::new(RefCell::new(NodeIdGenerator::default())),
 
             relations,
             node_storage: Rc::new(RefCell::new(NodeStorage::default())),
@@ -324,8 +324,9 @@ impl RootNode {
 
     pub fn create_node<'a>(&'a mut self, class: &str) -> NodeBuilder<'a> {
         NodeBuilder::new(
-            self.id_generator.next(),
+            self.id_generator.borrow_mut().next(),
             class,
+            self.id_generator.clone(),
             &mut self.relations,
             self.node_storage.clone(),
         )
