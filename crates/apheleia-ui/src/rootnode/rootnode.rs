@@ -11,9 +11,10 @@ use crate::{
     NodeId,
     builder::node::NodeBuilder,
     contexts::Context,
+    id_generator::{IdGenerator, IdGeneratorTrait},
     rootnode::{
-        data::RootNodeData, dirty_tracker::DirtyTracker, id_generator::NodeIdGenerator,
-        node_storage::NodeStorage, update_tracker::UpdateTracker,
+        data::RootNodeData, dirty_tracker::DirtyTracker, node_storage::NodeStorage,
+        update_tracker::UpdateTracker,
     },
     types::{EventData, EventType},
 };
@@ -24,7 +25,7 @@ pub struct RootNode {
     height: u16,
     running: bool,
 
-    id_generator: Rc<RefCell<NodeIdGenerator>>,
+    nodeid_gen: Rc<RefCell<IdGenerator<NodeId>>>,
 
     relations: Tree<NodeId, NodeId>,
     node_storage: Rc<RefCell<NodeStorage>>,
@@ -47,7 +48,7 @@ impl Default for RootNode {
             width,
             height,
 
-            id_generator: Rc::new(RefCell::new(NodeIdGenerator::default())),
+            nodeid_gen: Rc::new(RefCell::new(IdGenerator::<NodeId>::new(0))),
 
             relations,
             node_storage: Rc::new(RefCell::new(NodeStorage::default())),
@@ -324,9 +325,9 @@ impl RootNode {
 
     pub fn create_node<'a>(&'a mut self, class: &str) -> NodeBuilder<'a> {
         NodeBuilder::new(
-            self.id_generator.borrow_mut().next(),
+            self.nodeid_gen.borrow_mut().next(),
             class,
-            self.id_generator.clone(),
+            self.nodeid_gen.clone(),
             &mut self.relations,
             self.node_storage.clone(),
         )
