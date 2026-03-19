@@ -12,8 +12,8 @@ use crate::{
     builder::node::NodeBuilder,
     contexts::Context,
     rootnode::{
-        data::RootNodeData, dirty_tracker::DirtyTracker, node_storage::NodeStorage,
-        update_tracker::UpdateTracker,
+        data::RootNodeData, dirty_tracker::DirtyTracker, id_generator::NodeIdGenerator,
+        node_storage::NodeStorage, update_tracker::UpdateTracker,
     },
     types::{EventData, EventType},
 };
@@ -24,7 +24,7 @@ pub struct RootNode {
     height: u16,
     running: bool,
 
-    node_count: NodeId,
+    id_generator: NodeIdGenerator,
 
     relations: Tree<NodeId, NodeId>,
     node_storage: Rc<RefCell<NodeStorage>>,
@@ -43,10 +43,11 @@ impl Default for RootNode {
 
         RootNode {
             fps: 15,
-            node_count: 0,
             running: false,
             width,
             height,
+
+            id_generator: NodeIdGenerator::default(),
 
             relations,
             node_storage: Rc::new(RefCell::new(NodeStorage::default())),
@@ -63,11 +64,6 @@ impl Default for RootNode {
     }
 }
 impl RootNode {
-    fn get_id(&mut self) -> NodeId {
-        self.node_count += 1;
-        self.node_count
-    }
-
     fn calculate_global_position(&self, id: NodeId) -> Vector2 {
         let mut position = self.node_storage.borrow().get_data(id).unwrap().position;
         self.relations
@@ -328,7 +324,7 @@ impl RootNode {
 
     pub fn create_node<'a>(&'a mut self, class: &str) -> NodeBuilder<'a> {
         NodeBuilder::new(
-            self.get_id(),
+            self.id_generator.next(),
             class,
             &mut self.relations,
             self.node_storage.clone(),

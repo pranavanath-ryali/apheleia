@@ -18,6 +18,8 @@ pub struct NodeBuilder<'a> {
     parent_id: NodeId,
     node_box: Box<dyn NodeTrait>,
     data: NodeData,
+
+    parent: Option<Box<Self>>,
 }
 impl<'a> NodeBuilder<'a> {
     pub fn new(
@@ -35,6 +37,8 @@ impl<'a> NodeBuilder<'a> {
             parent_id: 0,
             node_box: Box::new(EmptyNode),
             data: NodeData::default(),
+
+            parent: None,
         }
     }
 
