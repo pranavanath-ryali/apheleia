@@ -5,7 +5,7 @@ use apheleia_core::{buffer::Buffer, renderer::Renderer, terminal};
 fn main() {
     let size = terminal::size().unwrap();
 
-    let mut buffer = Buffer::new(size.0 - 10, size.1);
+    let mut buffer = Buffer::new(100, size.1);
     let mut renderer = Renderer {
         width: size.0,
         height: size.1,

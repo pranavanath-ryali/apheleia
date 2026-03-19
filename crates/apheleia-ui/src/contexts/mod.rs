@@ -6,7 +6,7 @@ use crate::{
     rootnode::data::{self, RootNodeData},
     types::EventData,
 };
-use std::{fs::OpenOptions, mem};
+use std::mem;
 
 pub struct Context<'a> {
     id: NodeId,
