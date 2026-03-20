@@ -5,9 +5,9 @@ use apheleia_ui::{
         Context,
         commands::{MarkRenderDirty, RegisterForEvent, RegisterForUpdate, SetSize},
     },
-    extensions::{Extension, ExtensionStore},
+    extensions::Extension,
     node::NodeTrait,
-    rootnode::rootnode::RootNode,
+    rootnode::RootNode,
     types::{DirtyRenderLevel, EventData, EventType},
 };
 
