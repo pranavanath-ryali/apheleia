@@ -8,3 +8,7 @@ apheleia-core = { path = "../apheleia-core", version = "0.1.0" }
 crossterm = "0.29.0"
 indexmap = "2.2.2"
 tree-ds = "0.2.0"
+
+log = "0.4"
+fern = "0.7"
+chrono = "0.4"

@@ -8,10 +8,11 @@ use apheleia_ui::{
     extensions::Extension,
     node::NodeTrait,
     rootnode::RootNode,
+    setup_logger,
     types::{DirtyRenderLevel, EventData, EventType},
 };
 
-struct TestNode(bool);
+struct TestNode(bool, String);
 impl NodeTrait for TestNode {
     fn initial_setup(&mut self, ctx: &mut Context) {
         ctx.add_command(Box::new(SetSize(Vector2(10, 1))));
@@ -20,21 +21,22 @@ impl NodeTrait for TestNode {
     }
 
     fn event(&mut self, ctx: &mut Context) {
-        if let EventData::Keys(event) = ctx.get_event().as_ref().unwrap() {
-            if event.code == KeyCode::Char('a') {
-                self.0 = true;
+        let EventData::Keys(event) = ctx.get_event().as_ref().unwrap() else {
+            return;
+        };
+        if event.code == KeyCode::Char('a') {
+            self.0 = true;
 
-                ctx.add_command(Box::new(MarkRenderDirty(
-                    ctx.get_id(),
-                    DirtyRenderLevel::SimpleDirty,
-                )));
-            }
+            ctx.add_command(Box::new(MarkRenderDirty(
+                ctx.get_id(),
+                DirtyRenderLevel::SimpleDirty,
+            )));
         }
     }
 
-    fn render(&self, buf: &mut apheleia_core::buffer::Buffer, _ctx: &mut Context) {
+    fn render(&self, buf: &mut apheleia_core::buffer::Buffer, ctx: &mut Context) {
         if self.0 {
-            buf.write_line(0, 0, "Boearsnteiarnsteinarsetnarsnt", None);
+            buf.write_line(0, 0, self.1.as_str(), None);
         } else {
             buf.write_line(0, 0, "AAAAAA", None);
         }
@@ -58,6 +60,9 @@ impl Extension for TestExt {
 }
 
 fn main() {
+    // if cfg!(debug_assertions) {
+    _ = setup_logger();
+    // }
     let mut root = RootNode::default();
 
     root.create_node("parent_node")
@@ -65,10 +70,14 @@ fn main() {
         .build();
 
     root.create_node("child_node")
-        .set_parent("parent_node")
         .set_position(Vector2(1, 5))
-        .node(Box::new(TestNode(false)))
+        .node(Box::new(TestNode(false, "Hello   ".to_string())))
         .extension(Box::new(TestExt { test: false }))
+        .build();
+    root.create_node("child")
+        .set_parent("parent_node")
+        .set_position(Vector2(2, 10))
+        .node(Box::new(TestNode(false, "ORISNIERSNT".to_string())))
         .build();
 
     root.run();
