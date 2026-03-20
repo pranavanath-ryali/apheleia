@@ -5,6 +5,7 @@ use apheleia_ui::{
         Context,
         commands::{MarkRenderDirty, RegisterForEvent, RegisterForUpdate, SetSize},
     },
+    extensions::ExtensionStore,
     node::node::NodeTrait,
     rootnode::rootnode::RootNode,
     types::{DirtyRenderLevel, EventData, EventType},
@@ -49,6 +50,8 @@ impl NodeTrait for TestNode {
 
 fn main() {
     let mut root = RootNode::default();
+
+    let mut store = ExtensionStore::default();
 
     root.create_node("parent_node")
         .set_position(Vector2(1, 0))

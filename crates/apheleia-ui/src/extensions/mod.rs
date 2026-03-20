@@ -12,6 +12,7 @@ pub trait Extension: Any {
     fn as_any(&self) -> &dyn Any;
 }
 
+#[derive(Default)]
 pub struct ExtensionStore {
     id_generator: IdGenerator<ExtensionId>,
     nodeid_extid: HashMap<NodeId, HashMap<TypeId, ExtensionId>>,

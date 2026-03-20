@@ -6,6 +6,11 @@ pub trait IdGeneratorTrait<T> {
 pub struct IdGenerator<T> {
     pub count: T,
 }
+impl Default for IdGenerator<usize> {
+    fn default() -> Self {
+        IdGenerator { count: 0 }
+    }
+}
 impl IdGeneratorTrait<usize> for IdGenerator<usize> {
     fn new(start: usize) -> Self {
         IdGenerator { count: start }
