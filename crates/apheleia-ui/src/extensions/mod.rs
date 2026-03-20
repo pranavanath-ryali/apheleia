@@ -15,6 +15,7 @@ pub trait Extension: Any {
 #[derive(Default)]
 pub struct ExtensionStore {
     id_generator: IdGenerator<ExtensionId>,
+
     nodeid_extid: HashMap<NodeId, HashMap<TypeId, ExtensionId>>,
     extensions_storage: HashMap<ExtensionId, Box<dyn Any>>,
 }
