@@ -6,7 +6,7 @@ use tree_ds::prelude::{Node, Tree};
 use crate::{
     extensions::{Extension, ExtensionStore},
     id_generator::IdGenerator,
-    node::{EmptyNode, NodeTrait, data::NodeData, node_storage::NodeStorage},
+    node::{EmptyNode, NodeTrait, data::NodeData, storage::NodeStorage},
     types::NodeId,
 };
 

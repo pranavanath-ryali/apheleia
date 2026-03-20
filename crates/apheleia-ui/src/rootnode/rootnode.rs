@@ -12,7 +12,7 @@ use crate::{
     contexts::Context,
     extensions::ExtensionStore,
     id_generator::{IdGenerator, IdGeneratorTrait},
-    node::node_storage::NodeStorage,
+    node::storage::NodeStorage,
     rootnode::{data::RootNodeData, dirty_tracker::DirtyTracker, update_tracker::UpdateTracker},
     types::{EventData, EventType, NodeId},
 };

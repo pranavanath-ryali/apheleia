@@ -3,7 +3,7 @@ use apheleia_core::buffer::Buffer;
 use crate::contexts::{self, Context};
 
 pub mod data;
-pub mod node_storage;
+pub mod storage;
 
 pub trait NodeTrait {
     fn initial_setup(&mut self, ctx: &mut Context);

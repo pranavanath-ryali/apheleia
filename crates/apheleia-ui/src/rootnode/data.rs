@@ -2,7 +2,7 @@ use std::{cell::RefCell, rc::Rc};
 use tree_ds::prelude::Tree;
 
 use crate::{
-    node::node_storage::NodeStorage,
+    node::storage::NodeStorage,
     rootnode::{dirty_tracker::DirtyTracker, update_tracker::UpdateTracker},
     types::NodeId,
 };
