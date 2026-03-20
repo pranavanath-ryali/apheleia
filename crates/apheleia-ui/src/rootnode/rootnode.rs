@@ -97,12 +97,6 @@ impl RootNode {
 
             let mut ctx = Context::new(
                 *id,
-                self.node_storage
-                    .clone()
-                    .borrow()
-                    .get_data(*id)
-                    .unwrap()
-                    .clone(),
                 RootNodeData {
                     relations: &mut self.relations,
                     node_storage: self.node_storage.clone(),
@@ -149,36 +143,29 @@ impl RootNode {
             }
         }
 
-        if let Some(event_type) = event_type {
-            if let Some(ids) = self
+        if let Some(event_type) = event_type
+            && let Some(ids) = self
                 .update_tracker
                 .borrow()
                 .iter(crate::types::UpdateTypeNode::Event(event_type))
-            {
-                for id in ids {
-                    let mut ctx = Context::new_event(
-                        *id,
-                        self.node_storage
-                            .clone()
-                            .borrow()
-                            .get_data(*id)
-                            .unwrap()
-                            .clone(),
-                        mem::take(&mut event_data),
-                        RootNodeData {
-                            relations: &mut self.relations,
-                            node_storage: self.node_storage.clone(),
-                            dirty_tracker: self.dirty_tracker.clone(),
-                            update_tracker: self.update_tracker.clone(),
-                        },
-                    );
-                    self.node_storage
-                        .borrow_mut()
-                        .get_node_mut(*id)
-                        .unwrap()
-                        .event(&mut ctx);
-                    ctx.run_commands();
-                }
+        {
+            for id in ids {
+                let mut ctx = Context::new_event(
+                    *id,
+                    mem::take(&mut event_data),
+                    RootNodeData {
+                        relations: &mut self.relations,
+                        node_storage: self.node_storage.clone(),
+                        dirty_tracker: self.dirty_tracker.clone(),
+                        update_tracker: self.update_tracker.clone(),
+                    },
+                );
+                self.node_storage
+                    .borrow_mut()
+                    .get_node_mut(*id)
+                    .unwrap()
+                    .event(&mut ctx);
+                ctx.run_commands();
             }
         }
         Ok(())
@@ -188,12 +175,6 @@ impl RootNode {
         for id in self.dirty_tracker.borrow().iter_update() {
             let mut ctx = Context::new(
                 *id,
-                self.node_storage
-                    .clone()
-                    .borrow()
-                    .get_data(*id)
-                    .unwrap()
-                    .clone(),
                 RootNodeData {
                     relations: &mut self.relations,
                     node_storage: self.node_storage.clone(),
@@ -219,12 +200,6 @@ impl RootNode {
             for id in ids {
                 let mut ctx = Context::new(
                     *id,
-                    self.node_storage
-                        .clone()
-                        .borrow()
-                        .get_data(*id)
-                        .unwrap()
-                        .clone(),
                     RootNodeData {
                         relations: &mut self.relations,
                         node_storage: self.node_storage.clone(),
@@ -242,13 +217,7 @@ impl RootNode {
         }
     }
     fn render_node(&mut self, id: NodeId) {
-        let size = self
-            .node_storage
-            .borrow()
-            .get_data(id)
-            .unwrap()
-            .get_size()
-            .clone();
+        let size = self.node_storage.borrow().get_data(id).unwrap().get_size();
         if let Some(size) = size {
             let position = self
                 .node_storage
@@ -261,12 +230,6 @@ impl RootNode {
             let mut node_buffer = Buffer::new(size.0, size.1);
             let mut ctx = Context::new(
                 id,
-                self.node_storage
-                    .clone()
-                    .borrow()
-                    .get_data(id)
-                    .unwrap()
-                    .clone(),
                 RootNodeData {
                     relations: &mut self.relations,
                     node_storage: self.node_storage.clone(),

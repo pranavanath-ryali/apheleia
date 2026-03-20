@@ -5,21 +5,12 @@ use crate::{
     types::NodeId,
 };
 
+#[derive(Default)]
 pub struct NodeStorage {
     id_nodes: HashMap<NodeId, Box<dyn NodeTrait>>,
     id_data: HashMap<NodeId, NodeData>,
     class_id: HashMap<String, NodeId>,
 }
-impl Default for NodeStorage {
-    fn default() -> Self {
-        NodeStorage {
-            id_nodes: HashMap::new(),
-            id_data: HashMap::new(),
-            class_id: HashMap::new(),
-        }
-    }
-}
-
 impl NodeStorage {
     pub fn add_node(&mut self, id: NodeId, class: &str, node: Box<dyn NodeTrait>, data: NodeData) {
         self.id_nodes.insert(id, node);

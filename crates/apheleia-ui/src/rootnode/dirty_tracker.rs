@@ -2,17 +2,10 @@ use indexmap::IndexSet;
 
 use crate::types::NodeId;
 
+#[derive(Default)]
 pub struct DirtyTracker {
     dirty_updates: IndexSet<NodeId>,
     dirty_renders: IndexSet<NodeId>,
-}
-impl Default for DirtyTracker {
-    fn default() -> Self {
-        DirtyTracker {
-            dirty_updates: IndexSet::default(),
-            dirty_renders: IndexSet::default(),
-        }
-    }
 }
 
 impl DirtyTracker {

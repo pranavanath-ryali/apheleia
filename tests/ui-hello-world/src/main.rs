@@ -3,9 +3,7 @@ use apheleia_ui::{
     KeyCode,
     contexts::{
         Context,
-        commands::{
-            MarkRenderDirty, RegisterForEvent, RegisterForUpdate, SetPositionForId, SetSizeForId,
-        },
+        commands::{MarkRenderDirty, RegisterForEvent, RegisterForUpdate, SetSize},
     },
     node::node::NodeTrait,
     rootnode::rootnode::RootNode,
@@ -15,24 +13,21 @@ use apheleia_ui::{
 struct TestNode(bool);
 impl NodeTrait for TestNode {
     fn initial_setup(&mut self, ctx: &mut Context) {
-        ctx.add_command(Box::new(SetSizeForId(ctx.get_id(), Vector2(10, 1))));
+        ctx.add_command(Box::new(SetSize(Vector2(10, 1))));
         ctx.add_command(Box::new(RegisterForEvent(EventType::Keys)));
         ctx.add_command(Box::new(RegisterForUpdate));
     }
 
     fn event(&mut self, ctx: &mut Context) {
-        match ctx.get_event().as_ref().unwrap() {
-            EventData::Keys(event) => {
-                if event.code == KeyCode::Char('a') {
-                    self.0 = true;
+        if let EventData::Keys(event) = ctx.get_event().as_ref().unwrap() {
+            if event.code == KeyCode::Char('a') {
+                self.0 = true;
 
-                    ctx.add_command(Box::new(MarkRenderDirty(
-                        ctx.get_id(),
-                        DirtyRenderLevel::SimpleDirty,
-                    )));
-                }
+                ctx.add_command(Box::new(MarkRenderDirty(
+                    ctx.get_id(),
+                    DirtyRenderLevel::SimpleDirty,
+                )));
             }
-            _ => (),
         }
     }
 
@@ -45,11 +40,6 @@ impl NodeTrait for TestNode {
     }
 
     fn update(&mut self, ctx: &mut Context) {
-        let position = ctx.get_position();
-        ctx.add_command(Box::new(SetPositionForId(
-            ctx.get_id(),
-            Vector2(position.0 + 1, position.1 + 1),
-        )));
         ctx.add_command(Box::new(MarkRenderDirty(
             ctx.get_id(),
             DirtyRenderLevel::SimpleDirty,
@@ -66,7 +56,7 @@ fn main() {
 
     root.create_node("child_node")
         .set_parent("parent_node")
-        .set_position(Vector2(1, 0))
+        .set_position(Vector2(1, 5))
         .node(Box::new(TestNode(false)))
         .build();
 

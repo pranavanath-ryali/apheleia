@@ -1,7 +1,6 @@
 use apheleia_core::types::vector::Vector2;
 
 use crate::{
-    node::data::NodeData,
     rootnode::data::RootNodeData,
     types::{EventData, NodeId},
 };
@@ -9,7 +8,6 @@ use std::mem;
 
 pub struct Context<'a> {
     id: NodeId,
-    data: NodeData,
     event_data: Option<EventData>,
 
     rootnode_data: RootNodeData<'a>,
@@ -17,25 +15,18 @@ pub struct Context<'a> {
     pub(crate) commands: Vec<Box<dyn ContextCommand>>,
 }
 impl<'a> Context<'a> {
-    pub fn new(id: NodeId, data: NodeData, rootnode_data: RootNodeData<'a>) -> Self {
+    pub fn new(id: NodeId, rootnode_data: RootNodeData<'a>) -> Self {
         Self {
             id,
-            data,
             event_data: None,
             rootnode_data,
             commands: vec![],
         }
     }
 
-    pub fn new_event(
-        id: NodeId,
-        data: NodeData,
-        event_data: EventData,
-        rootnode_data: RootNodeData<'a>,
-    ) -> Self {
+    pub fn new_event(id: NodeId, event_data: EventData, rootnode_data: RootNodeData<'a>) -> Self {
         Self {
             id,
-            data,
             event_data: Some(event_data),
             rootnode_data,
             commands: vec![],
@@ -50,8 +41,13 @@ impl<'a> Context<'a> {
         &self.event_data
     }
 
-    pub fn get_position(&self) -> &Vector2 {
-        self.data.get_position()
+    pub fn get_position(&self) -> Vector2 {
+        self.rootnode_data
+            .node_storage
+            .borrow()
+            .get_data(self.id)
+            .unwrap()
+            .get_position()
     }
 
     // pub fn get_data_for_id(&self, id: NodeId) -> Option<&NodeData> {

@@ -27,21 +27,21 @@ impl NodeData {
     pub fn set_global_position(&mut self, position: Vector2) {
         self.global_positon = Some(position);
     }
-    pub fn get_global_position(&self) -> &Option<Vector2> {
-        &self.global_positon
+    pub fn get_global_position(&self) -> Option<Vector2> {
+        self.global_positon
     }
 
     pub fn set_position(&mut self, position: Vector2) {
         self.position = position;
     }
-    pub fn get_position(&self) -> &Vector2 {
-        &self.position
+    pub fn get_position(&self) -> Vector2 {
+        self.position
     }
 
     pub fn set_size(&mut self, size: Vector2) {
         self.size = Some(size);
     }
-    pub fn get_size(&self) -> &Option<Vector2> {
-        &self.size
+    pub fn get_size(&self) -> Option<Vector2> {
+        self.size
     }
 }
