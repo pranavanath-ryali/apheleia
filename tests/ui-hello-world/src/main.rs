@@ -60,18 +60,6 @@ impl Extension for TestExt {
 fn main() {
     let mut root = RootNode::default();
 
-    let mut store = ExtensionStore::default();
-    let id = store.get_id();
-    store.add_extension(id, Box::new(TestExt { test: false }));
-    _ = store.bind_extension::<TestExt>(0, id);
-
-    let ext = store.get_extension::<TestExt>(0);
-    println!("Test Value: {}", ext.test);
-
-    let mut ext = store.get_extension_mut::<TestExt>(0);
-    ext.test = true;
-    println!("Test Value: {}", ext.test);
-
     root.create_node("parent_node")
         .set_position(Vector2(1, 0))
         .build();
@@ -80,7 +68,8 @@ fn main() {
         .set_parent("parent_node")
         .set_position(Vector2(1, 5))
         .node(Box::new(TestNode(false)))
+        .extension(Box::new(TestExt { test: false }))
         .build();
 
-    // root.run();
+    root.run();
 }

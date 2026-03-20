@@ -4,6 +4,7 @@ use apheleia_core::types::vector::Vector2;
 use tree_ds::prelude::{Node, Tree};
 
 use crate::{
+    extensions::{Extension, ExtensionStore},
     id_generator::IdGenerator,
     node::{EmptyNode, data::NodeData, node::NodeTrait},
     rootnode::node_storage::NodeStorage,
@@ -14,6 +15,7 @@ pub struct NodeBuilder<'a> {
     id_generator: Rc<RefCell<IdGenerator<NodeId>>>,
     relations: &'a mut Tree<NodeId, NodeId>,
     node_storage: Rc<RefCell<NodeStorage>>,
+    extension_store: Rc<RefCell<ExtensionStore>>,
 
     id: NodeId,
     class: String,
@@ -28,11 +30,13 @@ impl<'a> NodeBuilder<'a> {
         id_generator: Rc<RefCell<IdGenerator<NodeId>>>,
         relations: &'a mut Tree<NodeId, NodeId>,
         node_storage: Rc<RefCell<NodeStorage>>,
+        extension_store: Rc<RefCell<ExtensionStore>>,
     ) -> Self {
         NodeBuilder {
             id_generator,
             relations,
             node_storage,
+            extension_store,
 
             id,
             class: class.to_string(),
@@ -63,6 +67,16 @@ impl<'a> NodeBuilder<'a> {
 
     pub fn node(&mut self, node: Box<dyn NodeTrait>) -> &mut Self {
         self.node_box = node;
+        self
+    }
+
+    pub fn extension<T: Extension>(&mut self, extension: Box<T>) -> &mut Self {
+        {
+            let mut store = self.extension_store.borrow_mut();
+            let ext_id = store.get_id();
+            store.add_extension(ext_id, extension);
+            _ = store.bind_extension::<T>(self.id, ext_id);
+        }
         self
     }
 

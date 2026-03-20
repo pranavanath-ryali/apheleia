@@ -10,6 +10,7 @@ use tree_ds::prelude::{Node, Tree};
 use crate::{
     builder::node::NodeBuilder,
     contexts::Context,
+    extensions::ExtensionStore,
     id_generator::{IdGenerator, IdGeneratorTrait},
     rootnode::{
         data::RootNodeData, dirty_tracker::DirtyTracker, node_storage::NodeStorage,
@@ -28,6 +29,7 @@ pub struct RootNode {
 
     relations: Tree<NodeId, NodeId>,
     node_storage: Rc<RefCell<NodeStorage>>,
+    extension_store: Rc<RefCell<ExtensionStore>>,
     dirty_tracker: Rc<RefCell<DirtyTracker>>,
     update_tracker: Rc<RefCell<UpdateTracker>>,
 
@@ -51,6 +53,7 @@ impl Default for RootNode {
 
             relations,
             node_storage: Rc::new(RefCell::new(NodeStorage::default())),
+            extension_store: Rc::new(RefCell::new(ExtensionStore::default())),
             dirty_tracker: Rc::new(RefCell::new(DirtyTracker::default())),
             update_tracker: Rc::new(RefCell::new(UpdateTracker::default())),
 
@@ -292,6 +295,7 @@ impl RootNode {
             self.nodeid_gen.clone(),
             &mut self.relations,
             self.node_storage.clone(),
+            self.extension_store.clone(),
         )
     }
 }
