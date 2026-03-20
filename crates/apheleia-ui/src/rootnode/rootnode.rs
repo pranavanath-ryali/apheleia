@@ -12,10 +12,8 @@ use crate::{
     contexts::Context,
     extensions::ExtensionStore,
     id_generator::{IdGenerator, IdGeneratorTrait},
-    rootnode::{
-        data::RootNodeData, dirty_tracker::DirtyTracker, node_storage::NodeStorage,
-        update_tracker::UpdateTracker,
-    },
+    node::node_storage::NodeStorage,
+    rootnode::{data::RootNodeData, dirty_tracker::DirtyTracker, update_tracker::UpdateTracker},
     types::{EventData, EventType, NodeId},
 };
 

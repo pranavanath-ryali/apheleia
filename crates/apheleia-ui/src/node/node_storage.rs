@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use crate::{
-    node::{data::NodeData, node::NodeTrait},
+    node::{NodeTrait, data::NodeData},
     types::NodeId,
 };
 

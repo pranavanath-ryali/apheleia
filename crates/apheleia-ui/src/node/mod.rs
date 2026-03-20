@@ -1,7 +1,17 @@
-use crate::{contexts, node::node::NodeTrait};
+use apheleia_core::buffer::Buffer;
+
+use crate::contexts::{self, Context};
 
 pub mod data;
-pub mod node;
+pub mod node_storage;
+
+pub trait NodeTrait {
+    fn initial_setup(&mut self, ctx: &mut Context);
+
+    fn event(&mut self, ctx: &mut Context);
+    fn update(&mut self, ctx: &mut Context);
+    fn render(&self, buf: &mut Buffer, ctx: &mut Context);
+}
 
 pub struct EmptyNode;
 impl NodeTrait for EmptyNode {

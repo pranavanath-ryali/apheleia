@@ -2,9 +2,8 @@ use std::{cell::RefCell, rc::Rc};
 use tree_ds::prelude::Tree;
 
 use crate::{
-    rootnode::{
-        dirty_tracker::DirtyTracker, node_storage::NodeStorage, update_tracker::UpdateTracker,
-    },
+    node::node_storage::NodeStorage,
+    rootnode::{dirty_tracker::DirtyTracker, update_tracker::UpdateTracker},
     types::NodeId,
 };
 

@@ -6,7 +6,7 @@ use apheleia_ui::{
         commands::{MarkRenderDirty, RegisterForEvent, RegisterForUpdate, SetSize},
     },
     extensions::{Extension, ExtensionStore},
-    node::node::NodeTrait,
+    node::NodeTrait,
     rootnode::rootnode::RootNode,
     types::{DirtyRenderLevel, EventData, EventType},
 };
