@@ -9,6 +9,7 @@ use crossterm::{
     event::{KeyCode, KeyModifiers, poll, read},
     terminal::{self, enable_raw_mode},
 };
+use log::{info, warn};
 use tree_ds::prelude::{Node, Tree};
 
 use crate::{
@@ -44,6 +45,8 @@ impl Default for RootNode {
 
         let mut relations: Tree<NodeId, NodeId> = Tree::new(None);
         _ = relations.add_node(Node::new(0, None), None);
+
+        info!("RootNode initialization started");
 
         RootNode {
             fps: 15,
@@ -90,6 +93,8 @@ impl RootNode {
     }
 
     fn initial_setup(&mut self) {
+        info!("RootNode inital_setup started");
+
         for id in self
             .relations
             .traverse(&0, tree_ds::prelude::TraversalStrategy::PreOrder)
@@ -123,10 +128,13 @@ impl RootNode {
                 .unwrap()
                 .set_global_position(global_position);
         }
+
+        info!("RootNode intial_setup ended");
     }
     fn event(&mut self) -> Result<(), Box<dyn Error>> {
+        info!("RootNode event started");
         // TODO: Implement event function
-        let mut event_type: Option<EventType> = None;
+        let mut event_type: EventType = EventType::None;
         let mut event_data: EventData = EventData::None;
         if poll(Duration::from_nanos(1_000_000_000 / self.fps as u64))? {
             match read()? {
@@ -139,7 +147,7 @@ impl RootNode {
                         self.running = false;
                     }
 
-                    event_type = Some(EventType::Keys);
+                    event_type = EventType::Keys;
                     event_data = EventData::Keys(key_event);
                 }
                 crossterm::event::Event::Mouse(_) => todo!(),
@@ -147,17 +155,20 @@ impl RootNode {
                 crossterm::event::Event::Resize(_, _) => todo!(),
             }
         }
+        info!("RootNode Event triggered: {:?}", event_type);
 
-        if let Some(event_type) = event_type
+        if event_type != EventType::None
             && let Some(ids) = self
                 .update_tracker
                 .borrow()
                 .iter(crate::types::UpdateTypeNode::Event(event_type))
         {
+            info!("RootNode Event data: {:?}", event_data);
             for id in ids {
+                warn!("RootNode Event for nodeid: {}", id);
                 let mut ctx = Context::new_event(
                     *id,
-                    mem::take(&mut event_data),
+                    &event_data,
                     RootNodeData {
                         relations: &mut self.relations,
                         node_storage: self.node_storage.clone(),
@@ -171,8 +182,10 @@ impl RootNode {
                     .unwrap()
                     .event(&mut ctx);
                 ctx.run_commands();
+                info!("RootNode Event for nodeid done!");
             }
         }
+        info!("RootNode event ended");
         Ok(())
     }
     fn update(&mut self) {
@@ -224,6 +237,7 @@ impl RootNode {
     fn render_node(&mut self, id: NodeId) {
         let size = self.node_storage.borrow().get_data(id).unwrap().get_size();
         if let Some(size) = size {
+            info!("RootNode Render node begins: {}", id);
             let position = self
                 .node_storage
                 .borrow_mut()
@@ -251,6 +265,7 @@ impl RootNode {
             self.buffer
                 .borrow_mut()
                 .render_buffer(position.0, position.1, &mut node_buffer);
+            info!("RootNode Render node ends: {}", id);
         }
     }
     fn render(&mut self, flip: bool) {
@@ -270,6 +285,7 @@ impl RootNode {
         } else {
             let tracker = self.dirty_tracker.clone();
             for id in tracker.borrow().iter_render() {
+                info!("Apparently id {} is marked dirty", id);
                 self.render_node(*id);
             }
         }

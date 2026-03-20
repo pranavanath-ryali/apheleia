@@ -8,7 +8,7 @@ use std::mem;
 
 pub struct Context<'a> {
     id: NodeId,
-    event_data: Option<EventData>,
+    event_data: Option<&'a EventData>,
 
     rootnode_data: RootNodeData<'a>,
 
@@ -24,7 +24,11 @@ impl<'a> Context<'a> {
         }
     }
 
-    pub fn new_event(id: NodeId, event_data: EventData, rootnode_data: RootNodeData<'a>) -> Self {
+    pub fn new_event(
+        id: NodeId,
+        event_data: &'a EventData,
+        rootnode_data: RootNodeData<'a>,
+    ) -> Self {
         Self {
             id,
             event_data: Some(event_data),
@@ -37,7 +41,7 @@ impl<'a> Context<'a> {
         self.id
     }
 
-    pub fn get_event(&self) -> &Option<EventData> {
+    pub fn get_event(&self) -> &Option<&'a EventData> {
         &self.event_data
     }
 

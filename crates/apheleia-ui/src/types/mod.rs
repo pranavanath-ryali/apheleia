@@ -1,11 +1,15 @@
+use std::fmt;
+
 use apheleia_core::types::vector::Vector2;
 use crossterm::event::KeyEvent;
 
 pub type NodeId = usize;
 pub type ExtensionId = usize;
 
-#[derive(Hash, PartialEq, Eq, Clone, Copy)]
+#[derive(Hash, PartialEq, Eq, Clone, Copy, fmt::Debug)]
 pub enum EventType {
+    None,
+
     Resize,
     Keys,
 }
@@ -16,6 +20,7 @@ pub enum UpdateTypeNode {
     Event(EventType),
 }
 
+#[derive(fmt::Debug)]
 pub enum EventData {
     Resize(Vector2),
     Keys(KeyEvent),

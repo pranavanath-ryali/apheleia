@@ -17,6 +17,9 @@ impl UpdateTracker {
     }
 
     pub fn iter(&self, update_type: UpdateTypeNode) -> Option<indexmap::set::Iter<'_, usize>> {
-        self.id_update.get(&update_type).map(|set| set.iter())
+        if let Some(ids) = self.id_update.get(&update_type) {
+            return Some(ids.into_iter());
+        }
+        None
     }
 }
