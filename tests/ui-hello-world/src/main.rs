@@ -66,13 +66,17 @@ fn main() {
     root.create_node("child_node")
         .set_position(Vector2(1, 5))
         .node(Box::new(TestNode(false, "Hello".to_string())))
-        .extension(Box::new(TestExt { test: false }))
         .build();
     root.create_node("child")
         .set_parent("parent_node")
         .set_position(Vector2(2, 10))
         .node(Box::new(TestNode(false, "!123124".to_string())))
         .build();
+
+    root.bind_extension_to_classes(
+        vec!["child_node", "child"],
+        Box::new(TestExt { test: false }),
+    );
 
     root.run();
 }

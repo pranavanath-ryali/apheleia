@@ -15,7 +15,7 @@ use tree_ds::prelude::{Node, Tree};
 use crate::{
     builder::node::NodeBuilder,
     contexts::Context,
-    extensions::ExtensionStore,
+    extensions::{Extension, ExtensionStore},
     id_generator::{IdGenerator, IdGeneratorTrait},
     node::storage::NodeStorage,
     rootnode::{data::RootNodeData, dirty_tracker::DirtyTracker, update_tracker::UpdateTracker},
@@ -306,6 +306,7 @@ impl RootNode {
         }
     }
 
+    // Functions for Developers
     pub fn create_node<'a>(&'a mut self, class: &str) -> NodeBuilder<'a> {
         NodeBuilder::new(
             self.nodeid_gen.borrow_mut().next(),
@@ -315,5 +316,21 @@ impl RootNode {
             self.node_storage.clone(),
             self.extension_store.clone(),
         )
+    }
+
+    pub fn bind_extension_to_classes<T: Extension>(
+        &mut self,
+        classes: Vec<&str>,
+        extension: Box<T>,
+    ) {
+        let mut ext_store = self.extension_store.borrow_mut();
+        let ext_id = ext_store.get_id();
+        ext_store.add_extension(ext_id, extension);
+
+        for class in classes {
+            if let Some(id) = self.node_storage.borrow_mut().get_id(class) {
+                _ = ext_store.bind_extension::<T>(*id, ext_id);
+            }
+        }
     }
 }
