@@ -37,7 +37,10 @@ impl NodeTrait for TestNode {
         if self.0 {
             buf.write_line(0, 0, self.1.as_str(), None);
         } else {
-            buf.write_line(0, 0, "AAAAAA", None);
+            buf.write_line(0, 0, "AAAAAA", None);,
+                                    node_storage: self.node_storage.clone(),
+                                    dirty_tracker: self.dirty_tracker.clone(),
+                                    update_tracker: self.update_tra
         }
     }
 
