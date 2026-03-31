@@ -38,11 +38,17 @@ impl NodeStorage {
         None
     }
 
-    pub fn get_node(&self, id: NodeId) -> Option<&Box<dyn NodeTrait>> {
-        self.id_nodes.get(&id)
+    pub fn get_node(&self, id: NodeId) -> Option<&dyn NodeTrait> {
+        if let Some(node) = self.id_nodes.get(&id) {
+            return Some(node.as_ref());
+        }
+        None
     }
-    pub fn get_node_mut(&mut self, id: NodeId) -> Option<&mut Box<dyn NodeTrait>> {
-        self.id_nodes.get_mut(&id)
+    pub fn get_node_mut(&mut self, id: NodeId) -> Option<&mut dyn NodeTrait> {
+        if let Some(node) = self.id_nodes.get_mut(&id) {
+            return Some(node.as_mut());
+        }
+        None
     }
 
     pub fn get_data(&self, id: NodeId) -> Option<&NodeData> {
