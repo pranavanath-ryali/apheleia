@@ -12,10 +12,30 @@ pub struct NodeStorage {
     class_id: HashMap<String, NodeId>,
 }
 impl NodeStorage {
-    pub fn add_node(&mut self, id: NodeId, class: &str, node: Box<dyn NodeTrait>, data: NodeData) {
+    pub fn add_node<T: NodeTrait>(
+        &mut self,
+        id: NodeId,
+        class: &str,
+        node: Box<T>,
+        data: NodeData,
+    ) {
+        println!("ADDED NODE {}", id);
         self.id_nodes.insert(id, node);
         self.id_data.insert(id, data);
         self.class_id.insert(class.to_string(), id);
+    }
+
+    pub fn get_node_as<T: NodeTrait>(&self, id: NodeId) -> Option<&T> {
+        if let Some(node) = self.id_nodes.get(&id) {
+            return node.as_any().downcast_ref::<T>();
+        }
+        None
+    }
+    pub fn get_node_mut_as<T: NodeTrait>(&mut self, id: NodeId) -> Option<&mut T> {
+        if let Some(node) = self.id_nodes.get_mut(&id) {
+            return node.as_any_mut().downcast_mut::<T>();
+        }
+        None
     }
 
     pub fn get_node(&self, id: NodeId) -> Option<&Box<dyn NodeTrait>> {
@@ -41,16 +61,5 @@ impl NodeStorage {
     }
     pub fn iter_id_data_mut(&mut self) -> std::collections::hash_map::IterMut<'_, usize, NodeData> {
         self.id_data.iter_mut()
-    }
-
-    pub fn iter_id_node(
-        &self,
-    ) -> std::collections::hash_map::Iter<'_, usize, Box<dyn NodeTrait + 'static>> {
-        self.id_nodes.iter()
-    }
-    pub fn iter_id_node_mut(
-        &mut self,
-    ) -> std::collections::hash_map::IterMut<'_, usize, Box<dyn NodeTrait + 'static>> {
-        self.id_nodes.iter_mut()
     }
 }

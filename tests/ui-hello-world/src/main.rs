@@ -6,7 +6,7 @@ use apheleia_ui::{
         commands::{MarkRenderDirty, RegisterForEvent, SetSize},
     },
     extensions::Extension,
-    node::NodeTrait,
+    node::{EmptyNode, NodeTrait},
     rootnode::RootNode,
     setup_logger,
     types::{DirtyRenderLevel, EventData, EventType},
@@ -37,14 +37,18 @@ impl NodeTrait for TestNode {
         if self.0 {
             buf.write_line(0, 0, self.1.as_str(), None);
         } else {
-            buf.write_line(0, 0, "AAAAAA", None);,
-                                    node_storage: self.node_storage.clone(),
-                                    dirty_tracker: self.dirty_tracker.clone(),
-                                    update_tracker: self.update_tra
+            buf.write_line(0, 0, "AAAAAA", None);
         }
     }
 
     fn update(&mut self, ctx: &mut Context) {}
+
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
+    fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
+        self
+    }
 }
 
 struct TestExt {
@@ -64,17 +68,16 @@ fn main() {
 
     root.create_node("parent_node")
         .set_position(Vector2(1, 0))
-        .build();
+        .build(EmptyNode);
 
     root.create_node("child_node")
         .set_position(Vector2(1, 5))
-        .node(Box::new(TestNode(false, "Hello".to_string())))
-        .build();
+        .build(TestNode(false, "Hello".to_string()));
+
     root.create_node("child")
         .set_parent("parent_node")
         .set_position(Vector2(2, 10))
-        .node(Box::new(TestNode(false, "!123124".to_string())))
-        .build();
+        .build(TestNode(false, "!123124".to_string()));
 
     root.bind_extension_to_classes(
         vec!["child_node", "child"],

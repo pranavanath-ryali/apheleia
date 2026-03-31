@@ -311,7 +311,6 @@ impl RootNode {
         NodeBuilder::new(
             self.nodeid_gen.borrow_mut().next(),
             class,
-            self.nodeid_gen.clone(),
             &mut self.relations,
             self.node_storage.clone(),
             self.extension_store.clone(),

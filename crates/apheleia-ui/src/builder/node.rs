@@ -1,4 +1,4 @@
-use std::{cell::RefCell, mem, rc::Rc, vec};
+use std::{any::Any, cell::RefCell, mem, rc::Rc, vec};
 
 use apheleia_core::types::vector::Vector2;
 use tree_ds::prelude::{Node, Tree};
@@ -11,7 +11,6 @@ use crate::{
 };
 
 pub struct NodeBuilder<'a> {
-    id_generator: Rc<RefCell<IdGenerator<NodeId>>>,
     relations: &'a mut Tree<NodeId, NodeId>,
     node_storage: Rc<RefCell<NodeStorage>>,
     extension_store: Rc<RefCell<ExtensionStore>>,
@@ -19,20 +18,17 @@ pub struct NodeBuilder<'a> {
     id: NodeId,
     class: String,
     parent_id: NodeId,
-    node_box: Box<dyn NodeTrait>,
     data: NodeData,
 }
 impl<'a> NodeBuilder<'a> {
     pub fn new(
         id: NodeId,
         class: &str,
-        id_generator: Rc<RefCell<IdGenerator<NodeId>>>,
         relations: &'a mut Tree<NodeId, NodeId>,
         node_storage: Rc<RefCell<NodeStorage>>,
         extension_store: Rc<RefCell<ExtensionStore>>,
     ) -> Self {
         NodeBuilder {
-            id_generator,
             relations,
             node_storage,
             extension_store,
@@ -40,7 +36,6 @@ impl<'a> NodeBuilder<'a> {
             id,
             class: class.to_string(),
             parent_id: 0,
-            node_box: Box::new(EmptyNode),
             data: NodeData::default(),
         }
     }
@@ -64,11 +59,6 @@ impl<'a> NodeBuilder<'a> {
         self
     }
 
-    pub fn node(&mut self, node: Box<dyn NodeTrait>) -> &mut Self {
-        self.node_box = node;
-        self
-    }
-
     pub fn extension<T: Extension>(&mut self, extension: Box<T>) -> &mut Self {
         {
             let mut store = self.extension_store.borrow_mut();
@@ -79,13 +69,13 @@ impl<'a> NodeBuilder<'a> {
         self
     }
 
-    pub fn build(&mut self) {
-        let node = mem::replace(&mut self.node_box, Box::new(EmptyNode));
+    pub fn build<T: NodeTrait>(&mut self, node: T) {
         _ = self
             .relations
             .add_node(Node::new(self.id, None), Some(&self.parent_id));
+
         self.node_storage
             .borrow_mut()
-            .add_node(self.id, &self.class, node, self.data);
+            .add_node(self.id, &self.class, Box::new(node), self.data);
     }
 }
