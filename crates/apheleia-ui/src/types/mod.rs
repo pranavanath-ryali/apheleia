@@ -5,6 +5,7 @@ use crossterm::event::KeyEvent;
 
 pub type NodeId = usize;
 pub type ExtensionId = usize;
+pub type SystemId = usize;
 
 #[derive(Hash, PartialEq, Eq, Clone, Copy, fmt::Debug)]
 pub enum EventType {

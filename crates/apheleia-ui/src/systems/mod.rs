@@ -1,0 +1,54 @@
+use std::collections::{BTreeMap, HashMap};
+
+use crate::{
+    id_generator::{IdGenerator, IdGeneratorTrait},
+    types::{NodeId, SystemId, UpdateTypeNode},
+};
+
+pub type System = fn();
+
+#[derive(Default)]
+pub struct SystemStore {
+    id_generator: IdGenerator<SystemId>,
+
+    id_systems: HashMap<SystemId, System>,
+    updatetype_nodesystems: HashMap<UpdateTypeNode, HashMap<NodeId, BTreeMap<isize, SystemId>>>,
+}
+impl SystemStore {
+    pub fn add_system(
+        &mut self,
+        node_id: NodeId,
+        update_type: UpdateTypeNode,
+        priority: isize,
+        system: System,
+    ) {
+        let id = self.id_generator.next();
+        let map = self.updatetype_nodesystems.entry(update_type).or_default();
+        let node_functions = map.entry(node_id).or_default();
+
+        node_functions.insert(priority, id);
+        self.id_systems.insert(id, system);
+    }
+
+    pub fn run_systems_for_type(&self, update_type: UpdateTypeNode) {
+        if let Some(map) = self.updatetype_nodesystems.get(&update_type) {
+            for (_, treemap) in map.iter() {
+                for (_, system_id) in treemap.iter() {
+                    let system = self.id_systems.get(system_id).unwrap();
+                    system();
+                }
+            }
+        }
+    }
+
+    pub fn run_systems_for_node_with_type(&self, update_type: UpdateTypeNode, node_id: NodeId) {
+        if let Some(map) = self.updatetype_nodesystems.get(&update_type)
+            && let Some(treemap) = map.get(&node_id)
+        {
+            for (_, system_id) in treemap.iter() {
+                let system = self.id_systems.get(system_id).unwrap();
+                system();
+            }
+        }
+    }
+}
