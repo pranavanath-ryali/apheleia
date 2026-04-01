@@ -8,7 +8,6 @@ use crossterm::{
     event::{KeyCode, KeyModifiers, poll, read},
     terminal::{self, enable_raw_mode},
 };
-use indexmap::IndexMap;
 use log::{info, warn};
 use tree_ds::prelude::{Node, Tree};
 

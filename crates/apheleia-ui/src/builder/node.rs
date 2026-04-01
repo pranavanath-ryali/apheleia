@@ -1,11 +1,11 @@
 use std::{cell::RefCell, rc::Rc};
 
 use apheleia_core::types::vector::Vector2;
-use tree_ds::prelude::{Node, Tree};
+use tree_ds::prelude::Node;
 
 use crate::{
-    extensions::{Extension, ExtensionStore},
-    node::{NodeTrait, data::NodeData, storage::NodeStorage},
+    extensions::Extension,
+    node::{NodeTrait, data::NodeData},
     rootnode::RootNodeData,
     types::NodeId,
 };

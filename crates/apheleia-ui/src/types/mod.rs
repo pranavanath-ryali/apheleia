@@ -20,16 +20,13 @@ pub enum UpdateTypeNode {
     Event(EventType),
 }
 
-#[derive(fmt::Debug)]
+#[derive(fmt::Debug, Default)]
 pub enum EventData {
     Resize(Vector2),
     Keys(KeyEvent),
+
+    #[default]
     None,
-}
-impl Default for EventData {
-    fn default() -> Self {
-        EventData::None
-    }
 }
 
 #[derive(Clone, Copy)]
