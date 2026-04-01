@@ -23,12 +23,12 @@ use crate::{
 };
 
 pub struct RootNodeData {
-    relations: Tree<NodeId, NodeId>,
+    pub relations: Tree<NodeId, NodeId>,
 
-    node_storage: NodeStorage,
-    extension_store: ExtensionStore,
-    dirty_tracker: DirtyTracker,
-    update_tracker: UpdateTracker,
+    pub node_storage: NodeStorage,
+    pub extension_store: ExtensionStore,
+    pub dirty_tracker: DirtyTracker,
+    pub update_tracker: UpdateTracker,
 }
 impl Default for RootNodeData {
     fn default() -> Self {
@@ -270,28 +270,41 @@ impl RootNode {
     fn render_flip(&mut self) {
         self.renderer.clear(&mut self.buffer.borrow_mut());
 
-        let data = self.data.clone();
-        let relations = &data.borrow().relations;
-        let ids = relations
+        let ids: Vec<NodeId> = self
+            .data
+            .borrow()
+            .relations
             .traverse(&0, tree_ds::prelude::TraversalStrategy::PreOrder)
             .unwrap()
-            .iter();
+            .iter()
+            .copied()
+            .collect();
 
         for id in ids {
-            if *id == 0_usize {
+            if id == 0_usize {
                 continue;
             }
-            self.render_node(*id);
+            self.render_node(id);
         }
+
         self.renderer.render(&mut self.buffer.borrow_mut());
         self.data.borrow_mut().dirty_tracker.clear_render();
     }
 
     fn render(&mut self) {
-        for id in self.data.borrow().dirty_tracker.iter_render() {
+        let ids: Vec<NodeId> = self
+            .data
+            .borrow()
+            .dirty_tracker
+            .iter_render()
+            .copied()
+            .collect();
+
+        for id in ids {
             info!("Apparently id {} is marked dirty", id);
-            self.render_node(*id);
+            self.render_node(id);
         }
+
         self.renderer.render(&mut self.buffer.borrow_mut());
         self.data.borrow_mut().dirty_tracker.clear_render();
     }
@@ -310,13 +323,11 @@ impl RootNode {
     }
 
     // Functions for Developers
-    pub fn create_node<'a>(&'a mut self, class: &str) -> NodeBuilder<'a> {
+    pub fn create_node<'a>(&'a mut self, class: &str) -> NodeBuilder {
         NodeBuilder::new(
             self.nodeid_gen.borrow_mut().next(),
             class,
-            &mut self.relations,
-            self.node_storage.clone(),
-            self.extension_store.clone(),
+            self.data.clone(),
         )
     }
 
