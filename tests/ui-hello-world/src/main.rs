@@ -3,7 +3,9 @@ use apheleia_ui::{
     KeyCode,
     contexts::{
         Context,
-        commands::{MarkRenderDirty, RegisterForEvent, SetSize},
+        commands::{
+            MarkRenderDirty, MarkUpdateDirty, RegisterForEvent, RegisterForUpdate, SetSize,
+        },
     },
     extensions::Extension,
     node::{EmptyNode, NodeTrait},

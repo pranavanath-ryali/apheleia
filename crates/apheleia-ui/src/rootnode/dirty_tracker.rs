@@ -18,6 +18,13 @@ impl DirtyTracker {
         self.dirty_renders.insert(id);
     }
 
+    pub fn is_update_empty(&self) -> bool {
+        self.dirty_updates.is_empty()
+    }
+    pub fn is_render_empty(&self) -> bool {
+        self.dirty_renders.is_empty()
+    }
+
     pub fn iter_update(&self) -> indexmap::set::Iter<'_, usize> {
         self.dirty_updates.iter()
     }

@@ -1,21 +1,21 @@
 use apheleia_core::types::vector::Vector2;
 
 use crate::{
-    rootnode::data::RootNodeData,
+    rootnode::RootNodeData,
     types::{EventData, NodeId},
 };
-use std::mem;
+use std::{cell::RefCell, mem, rc::Rc};
 
 pub struct Context<'a> {
     id: NodeId,
     event_data: Option<&'a EventData>,
 
-    rootnode_data: RootNodeData<'a>,
+    rootnode_data: Rc<RefCell<RootNodeData>>,
 
     pub(crate) commands: Vec<Box<dyn ContextCommand>>,
 }
 impl<'a> Context<'a> {
-    pub fn new(id: NodeId, rootnode_data: RootNodeData<'a>) -> Self {
+    pub fn new(id: NodeId, rootnode_data: Rc<RefCell<RootNodeData>>) -> Self {
         Self {
             id,
             event_data: None,
@@ -27,7 +27,7 @@ impl<'a> Context<'a> {
     pub fn new_event(
         id: NodeId,
         event_data: &'a EventData,
-        rootnode_data: RootNodeData<'a>,
+        rootnode_data: Rc<RefCell<RootNodeData>>,
     ) -> Self {
         Self {
             id,
@@ -47,8 +47,8 @@ impl<'a> Context<'a> {
 
     pub fn get_position(&self) -> Vector2 {
         self.rootnode_data
-            .node_storage
             .borrow()
+            .node_storage
             .get_data(self.id)
             .unwrap()
             .get_position()
@@ -66,6 +66,7 @@ impl<'a> Context<'a> {
         // TODO: Fix cases where no. of children is 0. Then return None
         let mut children: Vec<NodeId> = vec![];
         self.rootnode_data
+            .borrow()
             .relations
             .get_subtree(&id, Some(1))
             .unwrap()
@@ -90,13 +91,13 @@ impl<'a> Context<'a> {
     pub(crate) fn run_commands(&mut self) {
         let commands = mem::take(&mut self.commands);
         for command in commands {
-            command.execute(self.id, &mut self.rootnode_data);
+            command.execute(self.id, self.rootnode_data.clone());
         }
     }
 }
 
 pub trait ContextCommand {
-    fn execute(self: Box<Self>, id: NodeId, rootnode_data: &mut RootNodeData);
+    fn execute(self: Box<Self>, id: NodeId, rootnode_data: Rc<RefCell<RootNodeData>>);
 }
 
 pub mod commands;

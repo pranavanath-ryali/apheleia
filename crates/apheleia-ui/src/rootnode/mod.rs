@@ -1,14 +1,14 @@
-pub mod data;
 pub mod dirty_tracker;
 pub mod update_tracker;
 
-use std::{cell::RefCell, error::Error, io::stdout, mem, rc::Rc, time::Duration};
+use std::{cell::RefCell, error::Error, io::stdout, rc::Rc, time::Duration};
 
 use apheleia_core::{buffer::Buffer, renderer::Renderer, types::vector::Vector2};
 use crossterm::{
     event::{KeyCode, KeyModifiers, poll, read},
     terminal::{self, enable_raw_mode},
 };
+use indexmap::IndexMap;
 use log::{info, warn};
 use tree_ds::prelude::{Node, Tree};
 
@@ -118,32 +118,35 @@ impl RootNode {
 
     fn initial_setup(&mut self) {
         info!("RootNode inital_setup started");
-
-        let ids = self
+        let ids: Vec<NodeId> = self
             .data
             .borrow()
             .relations
             .traverse(&0, tree_ds::prelude::TraversalStrategy::PreOrder)
             .unwrap()
-            .iter();
+            .to_vec();
+
         for id in ids {
-            if *id == 0_usize {
+            if id == 0_usize {
                 continue;
             }
 
-            let mut ctx = Context::new(*id, self.data.clone());
-            let mut node_storage = self.data.borrow_mut().node_storage;
+            let mut ctx = Context::new(id, self.data.clone());
 
-            node_storage
-                .get_node_mut(*id)
+            self.data
+                .borrow_mut()
+                .node_storage
+                .get_node_mut(id)
                 .unwrap()
                 .initial_setup(&mut ctx);
 
             ctx.run_commands();
 
-            let global_position = self.calculate_global_position(*id);
-            node_storage
-                .get_data_mut(*id)
+            let global_position = self.calculate_global_position(id);
+            self.data
+                .borrow_mut()
+                .node_storage
+                .get_data_mut(id)
                 .unwrap()
                 .set_global_position(global_position);
         }
@@ -177,20 +180,29 @@ impl RootNode {
         info!("RootNode Event triggered: {:?}", event_type);
 
         if event_type != EventType::None
-            && let Some(ids) = self
+            && self
+                .data
+                .borrow()
+                .update_tracker
+                .is_empty(crate::types::UpdateTypeNode::Event(event_type))
+        {
+            info!("RootNode Event data: {:?}", event_data);
+
+            let ids: Vec<NodeId> = self
                 .data
                 .borrow()
                 .update_tracker
                 .iter(crate::types::UpdateTypeNode::Event(event_type))
-        {
-            info!("RootNode Event data: {:?}", event_data);
+                .unwrap()
+                .copied()
+                .collect();
             for id in ids {
                 warn!("RootNode Event for nodeid: {}", id);
-                let mut ctx = Context::new_event(*id, &event_data, self.data.clone());
+                let mut ctx = Context::new_event(id, &event_data, self.data.clone());
                 self.data
                     .borrow_mut()
                     .node_storage
-                    .get_node_mut(*id)
+                    .get_node_mut(id)
                     .unwrap()
                     .event(&mut ctx);
                 ctx.run_commands();
@@ -202,12 +214,19 @@ impl RootNode {
     }
     fn update(&mut self) {
         // Update Nodes marked dirty
-        for id in self.data.borrow().dirty_tracker.iter_update() {
-            let mut ctx = Context::new(*id, self.data.clone());
+        let ids: Vec<NodeId> = self
+            .data
+            .borrow()
+            .dirty_tracker
+            .iter_update()
+            .copied()
+            .collect();
+        for id in ids {
+            let mut ctx = Context::new(id, self.data.clone());
             self.data
                 .borrow_mut()
                 .node_storage
-                .get_node_mut(*id)
+                .get_node_mut(id)
                 .unwrap()
                 .update(&mut ctx);
             ctx.run_commands();
@@ -215,18 +234,26 @@ impl RootNode {
         self.data.borrow_mut().dirty_tracker.clear_update();
 
         // Update Nodes registered for constant update
-        if let Some(ids) = self
+        if self
             .data
             .borrow()
             .update_tracker
-            .iter(crate::types::UpdateTypeNode::ConstantUpdate)
+            .is_empty(crate::types::UpdateTypeNode::ConstantUpdate)
         {
+            let ids: Vec<NodeId> = self
+                .data
+                .borrow()
+                .update_tracker
+                .iter(crate::types::UpdateTypeNode::ConstantUpdate)
+                .unwrap()
+                .copied()
+                .collect();
             for id in ids {
-                let mut ctx = Context::new(*id, self.data.clone());
+                let mut ctx = Context::new(id, self.data.clone());
                 self.data
                     .borrow_mut()
                     .node_storage
-                    .get_node_mut(*id)
+                    .get_node_mut(id)
                     .unwrap()
                     .update(&mut ctx);
                 ctx.run_commands();
@@ -276,9 +303,7 @@ impl RootNode {
             .relations
             .traverse(&0, tree_ds::prelude::TraversalStrategy::PreOrder)
             .unwrap()
-            .iter()
-            .copied()
-            .collect();
+            .to_vec();
 
         for id in ids {
             if id == 0_usize {
@@ -323,7 +348,7 @@ impl RootNode {
     }
 
     // Functions for Developers
-    pub fn create_node<'a>(&'a mut self, class: &str) -> NodeBuilder {
+    pub fn create_node(&mut self, class: &str) -> NodeBuilder {
         NodeBuilder::new(
             self.nodeid_gen.borrow_mut().next(),
             class,
@@ -343,12 +368,13 @@ impl RootNode {
             .add_extension(ext_id, extension);
 
         for class in classes {
-            if let Some(id) = self.data.borrow_mut().node_storage.get_id(class) {
+            let id = self.data.borrow_mut().node_storage.get_id(class).cloned();
+            if let Some(id) = id {
                 _ = self
                     .data
                     .borrow_mut()
                     .extension_store
-                    .bind_extension::<T>(*id, ext_id);
+                    .bind_extension::<T>(id, ext_id);
             }
         }
     }
