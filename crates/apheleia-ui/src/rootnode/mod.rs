@@ -18,9 +18,33 @@ use crate::{
     extensions::{Extension, ExtensionStore},
     id_generator::{IdGenerator, IdGeneratorTrait},
     node::storage::NodeStorage,
-    rootnode::{data::RootNodeData, dirty_tracker::DirtyTracker, update_tracker::UpdateTracker},
+    rootnode::{dirty_tracker::DirtyTracker, update_tracker::UpdateTracker},
     types::{EventData, EventType, NodeId},
 };
+
+pub struct RootNodeData {
+    relations: Tree<NodeId, NodeId>,
+
+    node_storage: NodeStorage,
+    extension_store: ExtensionStore,
+    dirty_tracker: DirtyTracker,
+    update_tracker: UpdateTracker,
+}
+impl Default for RootNodeData {
+    fn default() -> Self {
+        let mut relations: Tree<NodeId, NodeId> = Tree::new(None);
+        _ = relations.add_node(Node::new(0, None), None);
+
+        Self {
+            relations,
+
+            node_storage: NodeStorage::default(),
+            extension_store: ExtensionStore::default(),
+            dirty_tracker: DirtyTracker::default(),
+            update_tracker: UpdateTracker::default(),
+        }
+    }
+}
 
 pub struct RootNode {
     fps: u16,
@@ -29,12 +53,7 @@ pub struct RootNode {
     running: bool,
 
     nodeid_gen: Rc<RefCell<IdGenerator<NodeId>>>,
-
-    relations: Tree<NodeId, NodeId>,
-    node_storage: Rc<RefCell<NodeStorage>>,
-    extension_store: Rc<RefCell<ExtensionStore>>,
-    dirty_tracker: Rc<RefCell<DirtyTracker>>,
-    update_tracker: Rc<RefCell<UpdateTracker>>,
+    data: Rc<RefCell<RootNodeData>>,
 
     buffer: RefCell<Buffer>,
     renderer: Renderer,
@@ -55,12 +74,7 @@ impl Default for RootNode {
             height,
 
             nodeid_gen: Rc::new(RefCell::new(IdGenerator::<NodeId>::new(0))),
-
-            relations,
-            node_storage: Rc::new(RefCell::new(NodeStorage::default())),
-            extension_store: Rc::new(RefCell::new(ExtensionStore::default())),
-            dirty_tracker: Rc::new(RefCell::new(DirtyTracker::default())),
-            update_tracker: Rc::new(RefCell::new(UpdateTracker::default())),
+            data: Rc::new(RefCell::new(RootNodeData::default())),
 
             buffer: RefCell::new(Buffer::new(width, height)),
             renderer: Renderer {
@@ -73,16 +87,26 @@ impl Default for RootNode {
 }
 impl RootNode {
     fn calculate_global_position(&self, id: NodeId) -> Vector2 {
-        let mut position = self.node_storage.borrow().get_data(id).unwrap().position;
-        self.relations
+        let mut position = self
+            .data
+            .borrow()
+            .node_storage
+            .get_data(id)
+            .unwrap()
+            .position;
+
+        self.data
+            .borrow()
+            .relations
             .get_ancestor_ids(&id)
             .unwrap()
             .iter()
             .filter(|id| **id != 0_usize)
             .for_each(|node_id| {
                 let pos = self
-                    .node_storage
+                    .data
                     .borrow()
+                    .node_storage
                     .get_data(*node_id)
                     .unwrap()
                     .position;
@@ -95,35 +119,30 @@ impl RootNode {
     fn initial_setup(&mut self) {
         info!("RootNode inital_setup started");
 
-        for id in self
+        let ids = self
+            .data
+            .borrow()
             .relations
             .traverse(&0, tree_ds::prelude::TraversalStrategy::PreOrder)
             .unwrap()
-            .iter()
-        {
+            .iter();
+        for id in ids {
             if *id == 0_usize {
                 continue;
             }
 
-            let mut ctx = Context::new(
-                *id,
-                RootNodeData {
-                    relations: &mut self.relations,
-                    node_storage: self.node_storage.clone(),
-                    dirty_tracker: self.dirty_tracker.clone(),
-                    update_tracker: self.update_tracker.clone(),
-                },
-            );
-            self.node_storage
-                .borrow_mut()
+            let mut ctx = Context::new(*id, self.data.clone());
+            let mut node_storage = self.data.borrow_mut().node_storage;
+
+            node_storage
                 .get_node_mut(*id)
                 .unwrap()
                 .initial_setup(&mut ctx);
+
             ctx.run_commands();
 
             let global_position = self.calculate_global_position(*id);
-            self.node_storage
-                .borrow_mut()
+            node_storage
                 .get_data_mut(*id)
                 .unwrap()
                 .set_global_position(global_position);
@@ -159,25 +178,18 @@ impl RootNode {
 
         if event_type != EventType::None
             && let Some(ids) = self
-                .update_tracker
+                .data
                 .borrow()
+                .update_tracker
                 .iter(crate::types::UpdateTypeNode::Event(event_type))
         {
             info!("RootNode Event data: {:?}", event_data);
             for id in ids {
                 warn!("RootNode Event for nodeid: {}", id);
-                let mut ctx = Context::new_event(
-                    *id,
-                    &event_data,
-                    RootNodeData {
-                        relations: &mut self.relations,
-                        node_storage: self.node_storage.clone(),
-                        dirty_tracker: self.dirty_tracker.clone(),
-                        update_tracker: self.update_tracker.clone(),
-                    },
-                );
-                self.node_storage
+                let mut ctx = Context::new_event(*id, &event_data, self.data.clone());
+                self.data
                     .borrow_mut()
+                    .node_storage
                     .get_node_mut(*id)
                     .unwrap()
                     .event(&mut ctx);
@@ -190,43 +202,30 @@ impl RootNode {
     }
     fn update(&mut self) {
         // Update Nodes marked dirty
-        for id in self.dirty_tracker.borrow().iter_update() {
-            let mut ctx = Context::new(
-                *id,
-                RootNodeData {
-                    relations: &mut self.relations,
-                    node_storage: self.node_storage.clone(),
-                    dirty_tracker: self.dirty_tracker.clone(),
-                    update_tracker: self.update_tracker.clone(),
-                },
-            );
-            self.node_storage
+        for id in self.data.borrow().dirty_tracker.iter_update() {
+            let mut ctx = Context::new(*id, self.data.clone());
+            self.data
                 .borrow_mut()
+                .node_storage
                 .get_node_mut(*id)
                 .unwrap()
                 .update(&mut ctx);
             ctx.run_commands();
         }
-        self.dirty_tracker.borrow_mut().clear_update();
+        self.data.borrow_mut().dirty_tracker.clear_update();
 
         // Update Nodes registered for constant update
         if let Some(ids) = self
-            .update_tracker
+            .data
             .borrow()
+            .update_tracker
             .iter(crate::types::UpdateTypeNode::ConstantUpdate)
         {
             for id in ids {
-                let mut ctx = Context::new(
-                    *id,
-                    RootNodeData {
-                        relations: &mut self.relations,
-                        node_storage: self.node_storage.clone(),
-                        dirty_tracker: self.dirty_tracker.clone(),
-                        update_tracker: self.update_tracker.clone(),
-                    },
-                );
-                self.node_storage
+                let mut ctx = Context::new(*id, self.data.clone());
+                self.data
                     .borrow_mut()
+                    .node_storage
                     .get_node_mut(*id)
                     .unwrap()
                     .update(&mut ctx);
@@ -235,29 +234,29 @@ impl RootNode {
         }
     }
     fn render_node(&mut self, id: NodeId) {
-        let size = self.node_storage.borrow().get_data(id).unwrap().get_size();
+        let size = self
+            .data
+            .borrow()
+            .node_storage
+            .get_data(id)
+            .unwrap()
+            .get_size();
         if let Some(size) = size {
             info!("RootNode Render node begins: {}", id);
             let position = self
-                .node_storage
+                .data
                 .borrow_mut()
+                .node_storage
                 .get_data(id)
                 .unwrap()
                 .get_global_position()
                 .unwrap_or(Vector2(0, 0));
 
             let mut node_buffer = Buffer::new(size.0, size.1);
-            let mut ctx = Context::new(
-                id,
-                RootNodeData {
-                    relations: &mut self.relations,
-                    node_storage: self.node_storage.clone(),
-                    dirty_tracker: self.dirty_tracker.clone(),
-                    update_tracker: self.update_tracker.clone(),
-                },
-            );
-            self.node_storage
+            let mut ctx = Context::new(id, self.data.clone());
+            self.data
                 .borrow_mut()
+                .node_storage
                 .get_node_mut(id)
                 .unwrap()
                 .render(&mut node_buffer, &mut ctx);
@@ -271,26 +270,28 @@ impl RootNode {
     fn render(&mut self, flip: bool) {
         if flip {
             self.renderer.clear(&mut self.buffer.borrow_mut());
-            for id in self
-                .relations
+
+            let data = self.data.clone();
+            let relations = &data.borrow().relations;
+            let ids = relations
                 .traverse(&0, tree_ds::prelude::TraversalStrategy::PreOrder)
                 .unwrap()
-                .iter()
-            {
+                .iter();
+
+            for id in ids {
                 if *id == 0_usize {
                     continue;
                 }
                 self.render_node(*id);
             }
         } else {
-            let tracker = self.dirty_tracker.clone();
-            for id in tracker.borrow().iter_render() {
+            for id in self.data.borrow().dirty_tracker.iter_render() {
                 info!("Apparently id {} is marked dirty", id);
                 self.render_node(*id);
             }
         }
         self.renderer.render(&mut self.buffer.borrow_mut());
-        self.dirty_tracker.borrow_mut().clear_render();
+        self.data.borrow_mut().dirty_tracker.clear_render();
     }
     pub fn run(&mut self) {
         _ = enable_raw_mode();
@@ -322,13 +323,19 @@ impl RootNode {
         classes: Vec<&str>,
         extension: Box<T>,
     ) {
-        let mut ext_store = self.extension_store.borrow_mut();
-        let ext_id = ext_store.get_id();
-        ext_store.add_extension(ext_id, extension);
+        let ext_id = self.data.borrow_mut().extension_store.get_id();
+        self.data
+            .borrow_mut()
+            .extension_store
+            .add_extension(ext_id, extension);
 
         for class in classes {
-            if let Some(id) = self.node_storage.borrow_mut().get_id(class) {
-                _ = ext_store.bind_extension::<T>(*id, ext_id);
+            if let Some(id) = self.data.borrow_mut().node_storage.get_id(class) {
+                _ = self
+                    .data
+                    .borrow_mut()
+                    .extension_store
+                    .bind_extension::<T>(*id, ext_id);
             }
         }
     }

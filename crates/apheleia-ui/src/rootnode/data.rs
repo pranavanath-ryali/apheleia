@@ -7,9 +7,9 @@ use crate::{
     types::NodeId,
 };
 
-pub struct RootNodeData<'a> {
-    pub relations: &'a mut Tree<NodeId, NodeId>,
-    pub node_storage: Rc<RefCell<NodeStorage>>,
-    pub dirty_tracker: Rc<RefCell<DirtyTracker>>,
-    pub update_tracker: Rc<RefCell<UpdateTracker>>,
-}
+// pub struct RootNodeData<'a> {
+//     pub relations: &'a mut Tree<NodeId, NodeId>,
+//     pub node_storage: Rc<RefCell<NodeStorage>>,
+//     pub dirty_tracker: Rc<RefCell<DirtyTracker>>,
+//     pub update_tracker: Rc<RefCell<UpdateTracker>>,
+// }
