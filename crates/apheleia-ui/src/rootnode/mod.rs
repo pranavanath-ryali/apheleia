@@ -267,28 +267,30 @@ impl RootNode {
             info!("RootNode Render node ends: {}", id);
         }
     }
-    fn render(&mut self, flip: bool) {
-        if flip {
-            self.renderer.clear(&mut self.buffer.borrow_mut());
+    fn render_flip(&mut self) {
+        self.renderer.clear(&mut self.buffer.borrow_mut());
 
-            let data = self.data.clone();
-            let relations = &data.borrow().relations;
-            let ids = relations
-                .traverse(&0, tree_ds::prelude::TraversalStrategy::PreOrder)
-                .unwrap()
-                .iter();
+        let data = self.data.clone();
+        let relations = &data.borrow().relations;
+        let ids = relations
+            .traverse(&0, tree_ds::prelude::TraversalStrategy::PreOrder)
+            .unwrap()
+            .iter();
 
-            for id in ids {
-                if *id == 0_usize {
-                    continue;
-                }
-                self.render_node(*id);
+        for id in ids {
+            if *id == 0_usize {
+                continue;
             }
-        } else {
-            for id in self.data.borrow().dirty_tracker.iter_render() {
-                info!("Apparently id {} is marked dirty", id);
-                self.render_node(*id);
-            }
+            self.render_node(*id);
+        }
+        self.renderer.render(&mut self.buffer.borrow_mut());
+        self.data.borrow_mut().dirty_tracker.clear_render();
+    }
+
+    fn render(&mut self) {
+        for id in self.data.borrow().dirty_tracker.iter_render() {
+            info!("Apparently id {} is marked dirty", id);
+            self.render_node(*id);
         }
         self.renderer.render(&mut self.buffer.borrow_mut());
         self.data.borrow_mut().dirty_tracker.clear_render();
@@ -297,13 +299,13 @@ impl RootNode {
         _ = enable_raw_mode();
 
         self.initial_setup();
-        self.render(true);
+        self.render_flip();
 
         self.running = true;
         while self.running {
             _ = self.event();
             self.update();
-            self.render(false);
+            self.render();
         }
     }
 
