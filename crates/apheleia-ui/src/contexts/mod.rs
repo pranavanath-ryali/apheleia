@@ -1,4 +1,4 @@
-use apheleia_core::types::vector::Vector2;
+use apheleia_core::{buffer::Buffer, types::vector::Vector2};
 
 use crate::{
     rootnode::RootNodeData,
@@ -9,6 +9,7 @@ use std::{cell::RefCell, mem, rc::Rc};
 pub struct Context<'a> {
     id: NodeId,
     event_data: Option<&'a EventData>,
+    buffer: Option<&'a mut Buffer>,
 
     rootnode_data: Rc<RefCell<RootNodeData>>,
 
@@ -19,6 +20,7 @@ impl<'a> Context<'a> {
         Self {
             id,
             event_data: None,
+            buffer: None,
             rootnode_data,
             commands: vec![],
         }
@@ -32,6 +34,21 @@ impl<'a> Context<'a> {
         Self {
             id,
             event_data: Some(event_data),
+            buffer: None,
+            rootnode_data,
+            commands: vec![],
+        }
+    }
+
+    pub fn new_render(
+        id: NodeId,
+        buffer: &'a mut Buffer,
+        rootnode_data: Rc<RefCell<RootNodeData>>,
+    ) -> Self {
+        Self {
+            id,
+            event_data: None,
+            buffer: Some(buffer),
             rootnode_data,
             commands: vec![],
         }

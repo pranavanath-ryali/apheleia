@@ -236,31 +236,35 @@ impl RootNode {
         self.data.borrow_mut().dirty_tracker.clear_update();
 
         // Update Nodes registered for constant update
-        if self
-            .data
-            .borrow()
-            .update_tracker
-            .is_empty(crate::types::UpdateTypeNode::ConstantUpdate)
-        {
-            let ids: Vec<NodeId> = self
-                .data
-                .borrow()
-                .update_tracker
-                .iter(crate::types::UpdateTypeNode::ConstantUpdate)
-                .unwrap()
-                .copied()
-                .collect();
-            for id in ids {
-                let mut ctx = Context::new(id, self.data.clone());
-                self.data
-                    .borrow_mut()
-                    .node_storage
-                    .get_node_mut(id)
-                    .unwrap()
-                    .update(&mut ctx);
-                ctx.run_commands();
-            }
-        }
+        self.data
+            .borrow_mut()
+            .system_store
+            .run_systems_for_type(crate::types::UpdateTypeNode::ConstantUpdate);
+        // if self
+        //     .data
+        //     .borrow()
+        //     .update_tracker
+        //     .is_empty(crate::types::UpdateTypeNode::ConstantUpdate)
+        // {
+        //     let ids: Vec<NodeId> = self
+        //         .data
+        //         .borrow()
+        //         .update_tracker
+        //         .iter(crate::types::UpdateTypeNode::ConstantUpdate)
+        //         .unwrap()
+        //         .copied()
+        //         .collect();
+        //     for id in ids {
+        //         let mut ctx = Context::new(id, self.data.clone());
+        //         self.data
+        //             .borrow_mut()
+        //             .node_storage
+        //             .get_node_mut(id)
+        //             .unwrap()
+        //             .update(&mut ctx);
+        //         ctx.run_commands();
+        //     }
+        // }
     }
     fn render_node(&mut self, id: NodeId) {
         let size = self
