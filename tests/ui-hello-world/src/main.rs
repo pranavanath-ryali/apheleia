@@ -3,15 +3,13 @@ use apheleia_ui::{
     KeyCode,
     contexts::{
         Context,
-        commands::{
-            MarkRenderDirty, MarkUpdateDirty, RegisterForEvent, RegisterForUpdate, SetSize,
-        },
+        commands::{MarkRenderDirty, RegisterForEvent, SetSize},
     },
     extensions::Extension,
     node::{EmptyNode, NodeTrait},
     rootnode::RootNode,
     setup_logger,
-    types::{DirtyRenderLevel, EventData, EventType},
+    types::{DirtyRenderLevel, EventData, EventType, UpdateTypeNode::ConstantUpdate},
 };
 
 struct TestNode(bool, String);
@@ -62,6 +60,10 @@ impl Extension for TestExt {
     }
 }
 
+fn test_system() {
+    println!("YO");
+}
+
 fn main() {
     if cfg!(debug_assertions) {
         _ = setup_logger();
@@ -79,6 +81,7 @@ fn main() {
     root.create_node("child")
         .set_parent("parent_node")
         .set_position(Vector2(2, 10))
+        .add_system(ConstantUpdate, 0, test_system)
         .build(TestNode(false, "!123124".to_string()));
 
     root.bind_extension_to_classes(

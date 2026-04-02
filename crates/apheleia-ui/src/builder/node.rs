@@ -7,7 +7,8 @@ use crate::{
     extensions::Extension,
     node::{NodeTrait, data::NodeData},
     rootnode::RootNodeData,
-    types::NodeId,
+    systems::System,
+    types::{NodeId, UpdateTypeNode},
 };
 
 pub struct NodeBuilder {
@@ -62,6 +63,21 @@ impl NodeBuilder {
                 .extension_store
                 .bind_extension::<T>(self.id, ext_id);
         }
+        self
+    }
+
+    pub fn add_system(
+        &mut self,
+        update_type: UpdateTypeNode,
+        priority: isize,
+        system: System,
+    ) -> &mut Self {
+        self.rootnode_data.borrow_mut().system_store.add_system(
+            self.id,
+            update_type,
+            priority,
+            system,
+        );
         self
     }
 

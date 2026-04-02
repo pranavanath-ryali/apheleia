@@ -18,6 +18,7 @@ use crate::{
     id_generator::{IdGenerator, IdGeneratorTrait},
     node::storage::NodeStorage,
     rootnode::{dirty_tracker::DirtyTracker, update_tracker::UpdateTracker},
+    systems::SystemStore,
     types::{EventData, EventType, NodeId},
 };
 
@@ -28,6 +29,7 @@ pub struct RootNodeData {
     pub extension_store: ExtensionStore,
     pub dirty_tracker: DirtyTracker,
     pub update_tracker: UpdateTracker,
+    pub system_store: SystemStore,
 }
 impl Default for RootNodeData {
     fn default() -> Self {
@@ -41,6 +43,7 @@ impl Default for RootNodeData {
             extension_store: ExtensionStore::default(),
             dirty_tracker: DirtyTracker::default(),
             update_tracker: UpdateTracker::default(),
+            system_store: SystemStore::default(),
         }
     }
 }
