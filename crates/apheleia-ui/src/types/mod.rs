@@ -19,6 +19,7 @@ pub enum EventType {
 pub enum UpdateTypeNode {
     ConstantUpdate,
     Event(EventType),
+    Render,
 }
 
 #[derive(fmt::Debug, Default)]

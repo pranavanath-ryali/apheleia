@@ -1,11 +1,12 @@
 use std::collections::{BTreeMap, HashMap};
 
 use crate::{
+    contexts::Context,
     id_generator::{IdGenerator, IdGeneratorTrait},
     types::{NodeId, SystemId, UpdateTypeNode},
 };
 
-pub type System = fn();
+pub type System = fn(&mut Context);
 
 #[derive(Default)]
 pub struct SystemStore {
@@ -30,24 +31,33 @@ impl SystemStore {
         self.id_systems.insert(id, system);
     }
 
-    pub fn run_systems_for_type(&self, update_type: UpdateTypeNode) {
+    pub fn run_systems_for_type(&self, update_type: UpdateTypeNode, ctx: &mut Context) {
         if let Some(map) = self.updatetype_nodesystems.get(&update_type) {
-            for (_, treemap) in map.iter() {
+            for (node_id, treemap) in map.iter() {
                 for (_, system_id) in treemap.iter() {
                     let system = self.id_systems.get(system_id).unwrap();
-                    system();
+
+                    ctx.set_id(*node_id);
+                    system(ctx);
                 }
             }
         }
     }
 
-    pub fn run_systems_for_node_with_type(&self, update_type: UpdateTypeNode, node_id: NodeId) {
+    pub fn run_systems_for_node_with_type(
+        &self,
+        update_type: UpdateTypeNode,
+        node_id: NodeId,
+        ctx: &mut Context,
+    ) {
         if let Some(map) = self.updatetype_nodesystems.get(&update_type)
             && let Some(treemap) = map.get(&node_id)
         {
             for (_, system_id) in treemap.iter() {
                 let system = self.id_systems.get(system_id).unwrap();
-                system();
+
+                ctx.set_id(node_id);
+                system(ctx);
             }
         }
     }

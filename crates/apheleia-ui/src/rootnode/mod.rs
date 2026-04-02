@@ -133,7 +133,8 @@ impl RootNode {
                 continue;
             }
 
-            let mut ctx = Context::new(id, self.data.clone());
+            let mut ctx = Context::new(self.data.clone());
+            ctx.set_id(id);
 
             self.data
                 .borrow_mut()
@@ -190,26 +191,33 @@ impl RootNode {
         {
             info!("RootNode Event data: {:?}", event_data);
 
-            let ids: Vec<NodeId> = self
-                .data
-                .borrow()
-                .update_tracker
-                .iter(crate::types::UpdateTypeNode::Event(event_type))
-                .unwrap()
-                .copied()
-                .collect();
-            for id in ids {
-                warn!("RootNode Event for nodeid: {}", id);
-                let mut ctx = Context::new_event(id, &event_data, self.data.clone());
-                self.data
-                    .borrow_mut()
-                    .node_storage
-                    .get_node_mut(id)
-                    .unwrap()
-                    .event(&mut ctx);
-                ctx.run_commands();
-                info!("RootNode Event for nodeid done!");
-            }
+            let mut ctx = Context::new_event(&event_data, self.data.clone());
+            self.data
+                .borrow_mut()
+                .system_store
+                .run_systems_for_type(crate::types::UpdateTypeNode::Event(event_type), &mut ctx);
+            ctx.run_commands();
+
+            // let ids: Vec<NodeId> = self
+            //     .data
+            //     .borrow()
+            //     .update_tracker
+            //     .iter(crate::types::UpdateTypeNode::Event(event_type))
+            //     .unwrap()
+            //     .copied()
+            //     .collect();
+            // for id in ids {
+            //     warn!("RootNode Event for nodeid: {}", id);
+            //     let mut ctx = Context::new_event(id, &event_data, self.data.clone());
+            //     self.data
+            //         .borrow_mut()
+            //         .node_storage
+            //         .get_node_mut(id)
+            //         .unwrap()
+            //         .event(&mut ctx);
+            //     ctx.run_commands();
+            //     info!("RootNode Event for nodeid done!");
+            // }
         }
         info!("RootNode event ended");
         Ok(())
@@ -224,22 +232,32 @@ impl RootNode {
             .copied()
             .collect();
         for id in ids {
-            let mut ctx = Context::new(id, self.data.clone());
+            let mut ctx = Context::new(self.data.clone());
             self.data
                 .borrow_mut()
-                .node_storage
-                .get_node_mut(id)
-                .unwrap()
-                .update(&mut ctx);
+                .system_store
+                .run_systems_for_node_with_type(
+                    crate::types::UpdateTypeNode::ConstantUpdate,
+                    id,
+                    &mut ctx,
+                );
+            // self.data
+            //     .borrow_mut()
+            //     .node_storage
+            //     .get_node_mut(id)
+            //     .unwrap()
+            //     .update(&mut ctx);
             ctx.run_commands();
         }
         self.data.borrow_mut().dirty_tracker.clear_update();
 
         // Update Nodes registered for constant update
+        let mut ctx = Context::new(self.data.clone());
         self.data
             .borrow_mut()
             .system_store
-            .run_systems_for_type(crate::types::UpdateTypeNode::ConstantUpdate);
+            .run_systems_for_type(crate::types::UpdateTypeNode::ConstantUpdate, &mut ctx);
+        ctx.run_commands();
         // if self
         //     .data
         //     .borrow()
@@ -286,13 +304,18 @@ impl RootNode {
                 .unwrap_or(Vector2(0, 0));
 
             let mut node_buffer = Buffer::new(size.0, size.1);
-            let mut ctx = Context::new(id, self.data.clone());
+            let mut ctx = Context::new(self.data.clone());
+            // self.data
+            //     .borrow_mut()
+            //     .node_storage
+            //     .get_node_mut(id)
+            //     .unwrap()
+            //     .render(&mut node_buffer, &mut ctx);
+
             self.data
                 .borrow_mut()
-                .node_storage
-                .get_node_mut(id)
-                .unwrap()
-                .render(&mut node_buffer, &mut ctx);
+                .system_store
+                .run_systems_for_node_with_type(crate::types::UpdateTypeNode::Render, id, &mut ctx);
 
             self.buffer
                 .borrow_mut()

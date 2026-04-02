@@ -60,8 +60,8 @@ impl Extension for TestExt {
     }
 }
 
-fn test_system() {
-    println!("YO");
+fn test_system(ctx: &mut Context) {
+    println!("YO ID IS: {}", ctx.get_id());
 }
 
 fn main() {

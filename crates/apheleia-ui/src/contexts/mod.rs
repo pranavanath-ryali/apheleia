@@ -7,7 +7,7 @@ use crate::{
 use std::{cell::RefCell, mem, rc::Rc};
 
 pub struct Context<'a> {
-    id: NodeId,
+    id: Option<NodeId>,
     event_data: Option<&'a EventData>,
     buffer: Option<&'a mut Buffer>,
 
@@ -16,9 +16,13 @@ pub struct Context<'a> {
     pub(crate) commands: Vec<Box<dyn ContextCommand>>,
 }
 impl<'a> Context<'a> {
-    pub fn new(id: NodeId, rootnode_data: Rc<RefCell<RootNodeData>>) -> Self {
+    pub fn set_id(&mut self, id: NodeId) {
+        self.id = Some(id);
+    }
+
+    pub fn new(rootnode_data: Rc<RefCell<RootNodeData>>) -> Self {
         Self {
-            id,
+            id: None,
             event_data: None,
             buffer: None,
             rootnode_data,
@@ -26,13 +30,9 @@ impl<'a> Context<'a> {
         }
     }
 
-    pub fn new_event(
-        id: NodeId,
-        event_data: &'a EventData,
-        rootnode_data: Rc<RefCell<RootNodeData>>,
-    ) -> Self {
+    pub fn new_event(event_data: &'a EventData, rootnode_data: Rc<RefCell<RootNodeData>>) -> Self {
         Self {
-            id,
+            id: None,
             event_data: Some(event_data),
             buffer: None,
             rootnode_data,
@@ -40,13 +40,9 @@ impl<'a> Context<'a> {
         }
     }
 
-    pub fn new_render(
-        id: NodeId,
-        buffer: &'a mut Buffer,
-        rootnode_data: Rc<RefCell<RootNodeData>>,
-    ) -> Self {
+    pub fn new_render(buffer: &'a mut Buffer, rootnode_data: Rc<RefCell<RootNodeData>>) -> Self {
         Self {
-            id,
+            id: None,
             event_data: None,
             buffer: Some(buffer),
             rootnode_data,
@@ -55,7 +51,8 @@ impl<'a> Context<'a> {
     }
 
     pub fn get_id(&self) -> NodeId {
-        self.id
+        // Unwrap because this should ideally never be None
+        self.id.unwrap()
     }
 
     pub fn get_event(&self) -> &Option<&'a EventData> {
@@ -66,7 +63,7 @@ impl<'a> Context<'a> {
         self.rootnode_data
             .borrow()
             .node_storage
-            .get_data(self.id)
+            .get_data(self.get_id())
             .unwrap()
             .get_position()
     }
@@ -108,7 +105,7 @@ impl<'a> Context<'a> {
     pub(crate) fn run_commands(&mut self) {
         let commands = mem::take(&mut self.commands);
         for command in commands {
-            command.execute(self.id, self.rootnode_data.clone());
+            command.execute(self.get_id(), self.rootnode_data.clone());
         }
     }
 }
