@@ -5,7 +5,7 @@ pub mod extensions;
 pub mod id_generator;
 pub mod node;
 pub mod resources;
-pub mod rootnode;
+pub mod root;
 pub mod systems;
 pub mod types;
 pub mod world;
