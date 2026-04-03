@@ -1,15 +1,11 @@
 use apheleia_core::types::vector::Vector2;
 use apheleia_ui::{
-    KeyCode,
-    contexts::{
-        // commands::{MarkRenderDirty, RegisterForEvent, SetSize},
-        node::NodeContext,
-        system::SystemContext,
-    },
-    node::{EmptyNode, NodeTrait},
-    rootnode::RootNode,
+    contexts::{node::NodeContext, system::SystemContext},
+    extensions::traits::Extension,
+    node::traits::NodeTrait,
+    root::Root,
     setup_logger,
-    types::{DirtyRenderLevel, EventData, EventType},
+    types::EventType,
 };
 
 fn test_render(ctx: &mut SystemContext) {
@@ -81,7 +77,7 @@ fn main() {
     if cfg!(debug_assertions) {
         _ = setup_logger();
     }
-    let mut root = RootNode::default();
+    let mut root = Root::default();
 
     root.create_node("parent_node")
         .set_position(Vector2(1, 0))
