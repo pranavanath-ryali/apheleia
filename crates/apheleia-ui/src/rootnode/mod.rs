@@ -183,18 +183,15 @@ impl RootNode {
                 }
                 crossterm::event::Event::Mouse(_) => todo!(),
                 crossterm::event::Event::Paste(_) => todo!(),
-                crossterm::event::Event::Resize(_, _) => todo!(),
+                crossterm::event::Event::Resize(width, height) => {
+                    event_type = EventType::Resize;
+                    event_data = EventData::Resize(Vector2(width, height));
+                }
             }
         }
         info!("RootNode Event triggered: {:?}", event_type);
 
-        if event_type != EventType::None
-            && self
-                .data
-                .borrow()
-                .update_tracker
-                .is_empty(crate::types::UpdateTypeNode::Event(event_type))
-        {
+        if event_type != EventType::None {
             info!("RootNode Event data: {:?}", event_data);
 
             let mut ctx = SystemContext::new_event(&event_data, self.data.clone());
@@ -203,27 +200,6 @@ impl RootNode {
                 .system_store
                 .run_systems_for_type(crate::types::UpdateTypeNode::Event(event_type), &mut ctx);
             ctx.run_commands();
-
-            // let ids: Vec<NodeId> = self
-            //     .data
-            //     .borrow()
-            //     .update_tracker
-            //     .iter(crate::types::UpdateTypeNode::Event(event_type))
-            //     .unwrap()
-            //     .copied()
-            //     .collect();
-            // for id in ids {
-            //     warn!("RootNode Event for nodeid: {}", id);
-            //     let mut ctx = Context::new_event(id, &event_data, self.data.clone());
-            //     self.data
-            //         .borrow_mut()
-            //         .node_storage
-            //         .get_node_mut(id)
-            //         .unwrap()
-            //         .event(&mut ctx);
-            //     ctx.run_commands();
-            //     info!("RootNode Event for nodeid done!");
-            // }
         }
         info!("RootNode event ended");
         Ok(())
@@ -368,6 +344,7 @@ impl RootNode {
         self.renderer.render(&mut self.buffer.borrow_mut());
         self.data.borrow_mut().dirty_tracker.clear_render();
     }
+
     pub fn run(&mut self) {
         _ = enable_raw_mode();
 

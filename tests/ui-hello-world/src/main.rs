@@ -16,6 +16,8 @@ use apheleia_ui::{
 fn test_render(ctx: &mut SystemContext) {
     let id = ctx.get_id();
 
+    println!("YAY");
+
     // ctx.get_buffer()
     //     .write_line(0, 0, format!("ID: {}", id).as_str(), None);
 }
@@ -26,7 +28,13 @@ impl NodeTrait for TestNode {
         // ctx.add_command(Box::new(SetSize(Vector2(10, 1))));
         // ctx.add_command(Box::new(RegisterForEvent(EventType::Keys)));
 
-        ctx.add_system(apheleia_ui::types::UpdateTypeNode::Render, 0, test_render);
+        // ctx.add_system(apheleia_ui::types::UpdateTypeNode::Render, 0, test_render);
+
+        ctx.add_system(
+            apheleia_ui::types::UpdateTypeNode::Event(EventType::Resize),
+            0,
+            test_render,
+        );
     }
 
     // fn event(&mut self, ctx: &mut Context) {
