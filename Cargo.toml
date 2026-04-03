@@ -3,11 +3,9 @@ resolver = "2"
 members = [
 	"crates/apheleia-core",
 	"crates/apheleia-ui",
-	"crates/apheleia-widgets",
 
 	"examples/e1_hello_world",
 
 	"tests/core-hello-world",
 	"tests/ui-hello-world",
-	"tests/widgets-playground"
 ]
