@@ -6,8 +6,7 @@ use tree_ds::prelude::Node;
 use crate::{
     extensions::traits::Extension,
     node::{data::NodeData, traits::NodeTrait},
-    systems::System,
-    types::{NodeId, UpdateType},
+    types::{NodeId, System, UpdateType},
     world::World,
 };
 

@@ -2,8 +2,7 @@ use std::{cell::RefCell, mem, rc::Rc};
 
 use crate::{
     contexts::traits::ContextCommand,
-    systems::System,
-    types::{NodeId, UpdateType},
+    types::{NodeId, System, UpdateType},
     world::World,
 };
 

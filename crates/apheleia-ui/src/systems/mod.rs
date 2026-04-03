@@ -3,10 +3,8 @@ use std::collections::{BTreeMap, HashMap};
 use crate::{
     contexts::system::SystemContext,
     id_generator::{IdGenerator, IdGeneratorTrait},
-    types::{NodeId, SystemId, UpdateType},
+    types::{NodeId, System, SystemId, UpdateType},
 };
-
-pub type System = fn(&mut SystemContext);
 
 #[derive(Default)]
 pub struct SystemStore {

@@ -3,9 +3,13 @@ use std::fmt;
 use apheleia_core::types::vector::Vector2;
 use crossterm::event::KeyEvent;
 
+use crate::contexts::system::SystemContext;
+
 pub type NodeId = usize;
 pub type ExtensionId = usize;
 pub type SystemId = usize;
+
+pub type System = fn(&mut SystemContext);
 
 #[derive(Hash, PartialEq, Eq, Clone, Copy, fmt::Debug)]
 pub enum EventType {
