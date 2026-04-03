@@ -3,7 +3,7 @@ use std::{cell::RefCell, mem, rc::Rc};
 use apheleia_core::buffer::Buffer;
 
 use crate::{
-    contexts::ContextCommand,
+    contexts::traits::ContextCommand,
     rootnode::RootNodeData,
     types::{EventData, NodeId},
 };

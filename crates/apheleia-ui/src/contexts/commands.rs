@@ -1,12 +1,14 @@
-use std::{cell::RefCell, rc::Rc};
+// TODO: Rewrite default commands
 
-use apheleia_core::types::vector::Vector2;
+// use std::{cell::RefCell, rc::Rc};
 
-use crate::{
-    contexts::ContextCommand,
-    rootnode::RootNodeData,
-    types::{DirtyRenderLevel, EventType, NodeId, UpdateTypeNode},
-};
+// use apheleia_core::types::vector::Vector2;
+
+// use crate::{
+//     contexts::ContextCommand,
+//     rootnode::RootNodeData,
+//     types::{DirtyRenderLevel, EventType, NodeId, UpdateTypeNode},
+// };
 
 // pub struct SetSize(pub Vector2);
 // pub struct SetSizeForNode(pub String, pub Vector2);

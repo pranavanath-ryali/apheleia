@@ -1,7 +1,7 @@
 use std::{cell::RefCell, mem, rc::Rc};
 
 use crate::{
-    contexts::ContextCommand,
+    contexts::traits::ContextCommand,
     rootnode::RootNodeData,
     systems::System,
     types::{NodeId, UpdateTypeNode},
