@@ -5,6 +5,7 @@ use apheleia_ui::{
         Context,
         commands::{MarkRenderDirty, RegisterForEvent, SetSize},
         node::NodeContext,
+        systems::SystemContext,
     },
     extensions::Extension,
     node::{EmptyNode, NodeTrait},
@@ -13,18 +14,18 @@ use apheleia_ui::{
     types::{DirtyRenderLevel, EventData, EventType},
 };
 
-fn test_render(ctx: &mut Context) {
+fn test_render(ctx: &mut SystemContext) {
     let id = ctx.get_id();
 
-    ctx.get_buffer()
-        .write_line(0, 0, format!("ID: {}", id).as_str(), None);
+    // ctx.get_buffer()
+    //     .write_line(0, 0, format!("ID: {}", id).as_str(), None);
 }
 
 struct TestNode(bool, String);
 impl NodeTrait for TestNode {
     fn initial_setup(&mut self, ctx: &mut NodeContext) {
-        ctx.add_command(Box::new(SetSize(Vector2(10, 1))));
-        ctx.add_command(Box::new(RegisterForEvent(EventType::Keys)));
+        // ctx.add_command(Box::new(SetSize(Vector2(10, 1))));
+        // ctx.add_command(Box::new(RegisterForEvent(EventType::Keys)));
 
         ctx.add_system(apheleia_ui::types::UpdateTypeNode::Render, 0, test_render);
     }

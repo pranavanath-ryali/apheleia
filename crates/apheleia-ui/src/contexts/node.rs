@@ -1,6 +1,11 @@
 use std::{cell::RefCell, mem, rc::Rc};
 
-use crate::{contexts::ContextCommand, rootnode::RootNodeData, types::NodeId};
+use crate::{
+    contexts::ContextCommand,
+    rootnode::RootNodeData,
+    systems::System,
+    types::{NodeId, UpdateTypeNode},
+};
 
 pub struct NodeContext {
     id: NodeId,
@@ -19,6 +24,14 @@ impl NodeContext {
 
     pub fn get_id(&self) -> NodeId {
         self.id
+    }
+
+    pub fn add_system(&mut self, update_type: UpdateTypeNode, priority: isize, system: System) {
+        let id = self.get_id();
+        self.rootnode_data
+            .borrow_mut()
+            .system_store
+            .add_system(id, update_type, priority, system);
     }
 
     pub(crate) fn run_commands(&mut self) {
