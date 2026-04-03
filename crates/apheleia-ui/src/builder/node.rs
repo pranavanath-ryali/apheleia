@@ -4,7 +4,7 @@ use apheleia_core::types::vector::Vector2;
 use tree_ds::prelude::Node;
 
 use crate::{
-    extensions::Extension,
+    extensions::traits::Extension,
     node::{NodeTrait, data::NodeData},
     rootnode::RootNodeData,
     systems::System,
