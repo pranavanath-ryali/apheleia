@@ -16,7 +16,7 @@ use crate::{
     extensions::{store::ExtensionStore, traits::Extension},
     id_generator::{IdGenerator, IdGeneratorTrait},
     node::{store::NodeStore, traits::NodeTrait},
-    resources::ResourceStore,
+    resources::store::ResourceStore,
     rootnode::dirty_tracker::DirtyTracker,
     systems::SystemStore,
     types::{EventData, EventType, NodeId},
