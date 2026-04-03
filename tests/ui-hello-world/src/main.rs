@@ -4,6 +4,7 @@ use apheleia_ui::{
     contexts::{
         Context,
         commands::{MarkRenderDirty, RegisterForEvent, SetSize},
+        node::NodeContext,
     },
     extensions::Extension,
     node::{EmptyNode, NodeTrait},
@@ -21,7 +22,7 @@ fn test_render(ctx: &mut Context) {
 
 struct TestNode(bool, String);
 impl NodeTrait for TestNode {
-    fn initial_setup(&mut self, ctx: &mut Context) {
+    fn initial_setup(&mut self, ctx: &mut NodeContext) {
         ctx.add_command(Box::new(SetSize(Vector2(10, 1))));
         ctx.add_command(Box::new(RegisterForEvent(EventType::Keys)));
 

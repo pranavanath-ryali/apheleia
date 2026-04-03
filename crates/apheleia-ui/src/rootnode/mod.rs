@@ -13,7 +13,7 @@ use tree_ds::prelude::{Node, Tree};
 
 use crate::{
     builder::node::NodeBuilder,
-    contexts::Context,
+    contexts::{Context, node::NodeContext},
     extensions::{Extension, ExtensionStore},
     id_generator::{IdGenerator, IdGeneratorTrait},
     node::{NodeTrait, storage::NodeStorage},
@@ -141,26 +141,10 @@ impl RootNode {
                     .unwrap() as *mut Box<dyn NodeTrait>
             };
 
-            let mut ctx = Context::new(self.data.clone());
-            ctx.set_id(id);
+            let mut ctx = NodeContext::new(id, self.data.clone());
             unsafe {
                 (*node).initial_setup(&mut ctx);
             }
-
-            // let node = self
-            //     .data
-            //     .borrow_mut()
-            //     .node_storage
-            //     .get_node_mut(id)
-            //     .unwrap();
-            // node.initial_setup(&mut ctx);
-            // self.data
-            //     .borrow_mut()
-            //     .node_storage
-            //     .get_node_mut(id)
-            //     .unwrap()
-            //     .initial_setup(&mut ctx);
-
             ctx.run_commands();
 
             let global_position = self.calculate_global_position(id);
