@@ -6,13 +6,13 @@ use tree_ds::prelude::Node;
 use crate::{
     extensions::traits::Extension,
     node::{data::NodeData, traits::NodeTrait},
-    rootnode::RootNodeData,
+    rootnode::World,
     systems::System,
     types::{NodeId, UpdateTypeNode},
 };
 
 pub struct NodeBuilder {
-    rootnode_data: Rc<RefCell<RootNodeData>>,
+    rootnode_data: Rc<RefCell<World>>,
 
     id: NodeId,
     class: String,
@@ -20,7 +20,7 @@ pub struct NodeBuilder {
     data: NodeData,
 }
 impl NodeBuilder {
-    pub fn new(id: NodeId, class: &str, rootnode_data: Rc<RefCell<RootNodeData>>) -> Self {
+    pub fn new(id: NodeId, class: &str, rootnode_data: Rc<RefCell<World>>) -> Self {
         NodeBuilder {
             rootnode_data,
 

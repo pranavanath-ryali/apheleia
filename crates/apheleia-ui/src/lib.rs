@@ -8,6 +8,7 @@ pub mod resources;
 pub mod rootnode;
 pub mod systems;
 pub mod types;
+pub mod world;
 
 use std::{error::Error, fs::OpenOptions};
 

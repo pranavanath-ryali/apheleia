@@ -2,19 +2,19 @@ use std::{cell::RefCell, mem, rc::Rc};
 
 use crate::{
     contexts::traits::ContextCommand,
-    rootnode::RootNodeData,
+    rootnode::World,
     systems::System,
     types::{NodeId, UpdateTypeNode},
 };
 
 pub struct NodeContext {
     id: NodeId,
-    rootnode_data: Rc<RefCell<RootNodeData>>,
+    rootnode_data: Rc<RefCell<World>>,
 
     commands: Vec<Box<dyn ContextCommand>>,
 }
 impl NodeContext {
-    pub fn new(id: NodeId, rootnode_data: Rc<RefCell<RootNodeData>>) -> NodeContext {
+    pub fn new(id: NodeId, rootnode_data: Rc<RefCell<World>>) -> NodeContext {
         Self {
             id,
             rootnode_data,

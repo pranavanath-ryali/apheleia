@@ -1,7 +1,7 @@
 use std::{cell::RefCell, rc::Rc};
 
-use crate::{rootnode::RootNodeData, types::NodeId};
+use crate::{rootnode::World, types::NodeId};
 
 pub trait ContextCommand {
-    fn execute(self: Box<Self>, id: NodeId, rootnode_data: Rc<RefCell<RootNodeData>>);
+    fn execute(self: Box<Self>, id: NodeId, rootnode_data: Rc<RefCell<World>>);
 }

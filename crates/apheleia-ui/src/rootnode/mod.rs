@@ -20,7 +20,7 @@ use crate::{
     types::{EventData, EventType, NodeId},
 };
 
-pub struct RootNodeData {
+pub struct World {
     pub relations: Tree<NodeId, NodeId>,
 
     pub node_storage: NodeStore,
@@ -29,7 +29,7 @@ pub struct RootNodeData {
     pub system_store: SystemStore,
     pub resource_store: ResourceStore,
 }
-impl Default for RootNodeData {
+impl Default for World {
     fn default() -> Self {
         let mut relations: Tree<NodeId, NodeId> = Tree::new(None);
         _ = relations.add_node(Node::new(0, None), None);
@@ -53,7 +53,7 @@ pub struct RootNode {
     running: bool,
 
     nodeid_gen: Rc<RefCell<IdGenerator<NodeId>>>,
-    data: Rc<RefCell<RootNodeData>>,
+    data: Rc<RefCell<World>>,
 
     buffer: RefCell<Buffer>,
     renderer: Renderer,
@@ -74,7 +74,7 @@ impl Default for RootNode {
             height,
 
             nodeid_gen: Rc::new(RefCell::new(IdGenerator::<NodeId>::new(0))),
-            data: Rc::new(RefCell::new(RootNodeData::default())),
+            data: Rc::new(RefCell::new(World::default())),
 
             buffer: RefCell::new(Buffer::new(width, height)),
             renderer: Renderer {

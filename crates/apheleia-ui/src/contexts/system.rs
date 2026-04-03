@@ -4,7 +4,7 @@ use apheleia_core::buffer::Buffer;
 
 use crate::{
     contexts::traits::ContextCommand,
-    rootnode::RootNodeData,
+    rootnode::World,
     types::{EventData, NodeId},
 };
 
@@ -13,7 +13,7 @@ pub struct SystemContext<'a> {
     event_data: Option<&'a EventData>,
     buffer: Option<&'a mut Buffer>,
 
-    rootnode_data: Rc<RefCell<RootNodeData>>,
+    rootnode_data: Rc<RefCell<World>>,
     commands: Vec<Box<dyn ContextCommand>>,
 }
 impl<'a> SystemContext<'a> {
@@ -24,7 +24,7 @@ impl<'a> SystemContext<'a> {
         self.id.unwrap()
     }
 
-    pub fn new(rootnode_data: Rc<RefCell<RootNodeData>>) -> Self {
+    pub fn new(rootnode_data: Rc<RefCell<World>>) -> Self {
         Self {
             id: None,
             event_data: None,
@@ -34,7 +34,7 @@ impl<'a> SystemContext<'a> {
         }
     }
 
-    pub fn new_event(event_data: &'a EventData, rootnode_data: Rc<RefCell<RootNodeData>>) -> Self {
+    pub fn new_event(event_data: &'a EventData, rootnode_data: Rc<RefCell<World>>) -> Self {
         Self {
             id: None,
             event_data: Some(event_data),
@@ -44,7 +44,7 @@ impl<'a> SystemContext<'a> {
         }
     }
 
-    pub fn new_render(buffer: &'a mut Buffer, rootnode_data: Rc<RefCell<RootNodeData>>) -> Self {
+    pub fn new_render(buffer: &'a mut Buffer, rootnode_data: Rc<RefCell<World>>) -> Self {
         Self {
             id: None,
             event_data: None,
