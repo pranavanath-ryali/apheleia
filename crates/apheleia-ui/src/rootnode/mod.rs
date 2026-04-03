@@ -16,7 +16,7 @@ use crate::{
     contexts::Context,
     extensions::{Extension, ExtensionStore},
     id_generator::{IdGenerator, IdGeneratorTrait},
-    node::storage::NodeStorage,
+    node::{NodeTrait, storage::NodeStorage},
     rootnode::{dirty_tracker::DirtyTracker, update_tracker::UpdateTracker},
     systems::SystemStore,
     types::{EventData, EventType, NodeId},
@@ -133,15 +133,33 @@ impl RootNode {
                 continue;
             }
 
+            let node = {
+                self.data
+                    .borrow_mut()
+                    .node_storage
+                    .get_node_mut(id)
+                    .unwrap() as *mut Box<dyn NodeTrait>
+            };
+
             let mut ctx = Context::new(self.data.clone());
             ctx.set_id(id);
+            unsafe {
+                (*node).initial_setup(&mut ctx);
+            }
 
-            self.data
-                .borrow_mut()
-                .node_storage
-                .get_node_mut(id)
-                .unwrap()
-                .initial_setup(&mut ctx);
+            // let node = self
+            //     .data
+            //     .borrow_mut()
+            //     .node_storage
+            //     .get_node_mut(id)
+            //     .unwrap();
+            // node.initial_setup(&mut ctx);
+            // self.data
+            //     .borrow_mut()
+            //     .node_storage
+            //     .get_node_mut(id)
+            //     .unwrap()
+            //     .initial_setup(&mut ctx);
 
             ctx.run_commands();
 
@@ -304,7 +322,7 @@ impl RootNode {
                 .unwrap_or(Vector2(0, 0));
 
             let mut node_buffer = Buffer::new(size.0, size.1);
-            let mut ctx = Context::new(self.data.clone());
+            let mut ctx = Context::new_render(&mut node_buffer, self.data.clone());
             // self.data
             //     .borrow_mut()
             //     .node_storage

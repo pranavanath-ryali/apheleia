@@ -1,4 +1,7 @@
-use std::collections::HashMap;
+use std::{
+    cell::{RefCell, RefMut},
+    collections::HashMap,
+};
 
 use crate::{
     node::{NodeTrait, data::NodeData},
@@ -44,9 +47,9 @@ impl NodeStorage {
         }
         None
     }
-    pub fn get_node_mut(&mut self, id: NodeId) -> Option<&mut dyn NodeTrait> {
+    pub fn get_node_mut(&mut self, id: NodeId) -> Option<&mut Box<dyn NodeTrait>> {
         if let Some(node) = self.id_nodes.get_mut(&id) {
-            return Some(node.as_mut());
+            return Some(node);
         }
         None
     }

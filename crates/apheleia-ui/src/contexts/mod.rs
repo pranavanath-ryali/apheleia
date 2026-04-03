@@ -2,7 +2,8 @@ use apheleia_core::{buffer::Buffer, types::vector::Vector2};
 
 use crate::{
     rootnode::RootNodeData,
-    types::{EventData, NodeId},
+    systems::System,
+    types::{EventData, NodeId, UpdateTypeNode},
 };
 use std::{cell::RefCell, mem, rc::Rc};
 
@@ -10,7 +11,7 @@ pub struct Context<'a> {
     id: Option<NodeId>,
     event_data: Option<&'a EventData>,
     buffer: Option<&'a mut Buffer>,
-
+    // buffer: Option<Buffer>,
     rootnode_data: Rc<RefCell<RootNodeData>>,
 
     pub(crate) commands: Vec<Box<dyn ContextCommand>>,
@@ -96,6 +97,18 @@ impl<'a> Context<'a> {
             });
 
         children
+    }
+
+    pub fn get_buffer(&mut self) -> &mut Buffer {
+        self.buffer.as_mut().unwrap()
+    }
+
+    pub fn add_system(&mut self, update_type: UpdateTypeNode, priority: isize, system: System) {
+        let id = self.get_id();
+        self.rootnode_data
+            .borrow_mut()
+            .system_store
+            .add_system(id, update_type, priority, system);
     }
 
     pub fn add_command(&mut self, command: Box<dyn ContextCommand>) {
