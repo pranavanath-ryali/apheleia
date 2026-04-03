@@ -6,9 +6,9 @@ use tree_ds::prelude::Node;
 use crate::{
     extensions::traits::Extension,
     node::{data::NodeData, traits::NodeTrait},
-    rootnode::World,
     systems::System,
     types::{NodeId, UpdateTypeNode},
+    world::World,
 };
 
 pub struct NodeBuilder {

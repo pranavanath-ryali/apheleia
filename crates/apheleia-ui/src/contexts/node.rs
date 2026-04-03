@@ -2,9 +2,9 @@ use std::{cell::RefCell, mem, rc::Rc};
 
 use crate::{
     contexts::traits::ContextCommand,
-    rootnode::World,
     systems::System,
     types::{NodeId, UpdateTypeNode},
+    world::World,
 };
 
 pub struct NodeContext {

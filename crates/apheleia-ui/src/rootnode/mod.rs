@@ -11,40 +11,12 @@ use tree_ds::prelude::{Node, Tree};
 use crate::{
     builder::node::NodeBuilder,
     contexts::{node::NodeContext, system::SystemContext},
-    dirty_tracker::DirtyTracker,
-    extensions::{store::ExtensionStore, traits::Extension},
+    extensions::traits::Extension,
     id_generator::{IdGenerator, IdGeneratorTrait},
-    node::{store::NodeStore, traits::NodeTrait},
-    resources::store::ResourceStore,
-    systems::SystemStore,
+    node::traits::NodeTrait,
     types::{EventData, EventType, NodeId},
+    world::World,
 };
-
-pub struct World {
-    pub relations: Tree<NodeId, NodeId>,
-
-    pub node_storage: NodeStore,
-    pub extension_store: ExtensionStore,
-    pub dirty_tracker: DirtyTracker,
-    pub system_store: SystemStore,
-    pub resource_store: ResourceStore,
-}
-impl Default for World {
-    fn default() -> Self {
-        let mut relations: Tree<NodeId, NodeId> = Tree::new(None);
-        _ = relations.add_node(Node::new(0, None), None);
-
-        Self {
-            relations,
-
-            node_storage: NodeStore::default(),
-            extension_store: ExtensionStore::default(),
-            dirty_tracker: DirtyTracker::default(),
-            system_store: SystemStore::default(),
-            resource_store: ResourceStore::default(),
-        }
-    }
-}
 
 pub struct RootNode {
     fps: u16,

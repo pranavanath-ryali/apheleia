@@ -4,8 +4,8 @@ use apheleia_core::buffer::Buffer;
 
 use crate::{
     contexts::traits::ContextCommand,
-    rootnode::World,
     types::{EventData, NodeId},
+    world::World,
 };
 
 pub struct SystemContext<'a> {
