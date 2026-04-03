@@ -18,7 +18,7 @@ use crate::{
     world::World,
 };
 
-pub struct RootNode {
+pub struct Root {
     fps: u16,
     width: u16,
     height: u16,
@@ -30,7 +30,7 @@ pub struct RootNode {
     buffer: RefCell<Buffer>,
     renderer: Renderer,
 }
-impl Default for RootNode {
+impl Default for Root {
     fn default() -> Self {
         let (width, height) = terminal::size().unwrap();
 
@@ -39,7 +39,7 @@ impl Default for RootNode {
 
         info!("RootNode initialization started");
 
-        RootNode {
+        Root {
             fps: 15,
             running: false,
             width,
@@ -57,7 +57,7 @@ impl Default for RootNode {
         }
     }
 }
-impl RootNode {
+impl Root {
     fn calculate_global_position(&self, id: NodeId) -> Vector2 {
         let mut position = self
             .data
