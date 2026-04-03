@@ -2,7 +2,7 @@ use tree_ds::prelude::{Node, Tree};
 
 use crate::{
     dirty_tracker::DirtyTracker, extensions::store::ExtensionStore, node::store::NodeStore,
-    resources::store::ResourceStore, systems::SystemStore, types::NodeId,
+    resources::store::ResourceStore, systems::store::SystemStore, types::NodeId,
 };
 
 pub struct World {
