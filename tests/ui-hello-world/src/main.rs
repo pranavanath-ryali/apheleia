@@ -2,10 +2,9 @@ use apheleia_core::types::vector::Vector2;
 use apheleia_ui::{
     KeyCode,
     contexts::{
-        Context,
         commands::{MarkRenderDirty, RegisterForEvent, SetSize},
         node::NodeContext,
-        systems::SystemContext,
+        system::SystemContext,
     },
     extensions::Extension,
     node::{EmptyNode, NodeTrait},
