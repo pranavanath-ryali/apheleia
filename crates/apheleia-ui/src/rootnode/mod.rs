@@ -1,5 +1,3 @@
-pub mod dirty_tracker;
-
 use std::{cell::RefCell, error::Error, io::stdout, rc::Rc, time::Duration};
 
 use apheleia_core::{buffer::Buffer, renderer::Renderer, types::vector::Vector2};
@@ -13,11 +11,11 @@ use tree_ds::prelude::{Node, Tree};
 use crate::{
     builder::node::NodeBuilder,
     contexts::{node::NodeContext, system::SystemContext},
+    dirty_tracker::DirtyTracker,
     extensions::{store::ExtensionStore, traits::Extension},
     id_generator::{IdGenerator, IdGeneratorTrait},
     node::{store::NodeStore, traits::NodeTrait},
     resources::store::ResourceStore,
-    rootnode::dirty_tracker::DirtyTracker,
     systems::SystemStore,
     types::{EventData, EventType, NodeId},
 };
