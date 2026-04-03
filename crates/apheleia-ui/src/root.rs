@@ -179,48 +179,18 @@ impl Root {
                     id,
                     &mut ctx,
                 );
-            // self.data
-            //     .borrow_mut()
-            //     .node_storage
-            //     .get_node_mut(id)
-            //     .unwrap()
-            //     .update(&mut ctx);
             ctx.run_commands();
         }
         self.data.borrow_mut().dirty_tracker.clear_update();
 
         // Update Nodes registered for constant update
+        // TODO: Add a check to see if there are any systems registered for constant update
         let mut ctx = SystemContext::new(self.data.clone());
         self.data
             .borrow_mut()
             .system_store
             .run_systems_for_type(crate::types::UpdateType::ConstantUpdate, &mut ctx);
         ctx.run_commands();
-        // if self
-        //     .data
-        //     .borrow()
-        //     .update_tracker
-        //     .is_empty(crate::types::UpdateTypeNode::ConstantUpdate)
-        // {
-        //     let ids: Vec<NodeId> = self
-        //         .data
-        //         .borrow()
-        //         .update_tracker
-        //         .iter(crate::types::UpdateTypeNode::ConstantUpdate)
-        //         .unwrap()
-        //         .copied()
-        //         .collect();
-        //     for id in ids {
-        //         let mut ctx = Context::new(id, self.data.clone());
-        //         self.data
-        //             .borrow_mut()
-        //             .node_storage
-        //             .get_node_mut(id)
-        //             .unwrap()
-        //             .update(&mut ctx);
-        //         ctx.run_commands();
-        //     }
-        // }
     }
     fn render_node(&mut self, id: NodeId) {
         let size = self
@@ -243,12 +213,6 @@ impl Root {
 
             let mut node_buffer = Buffer::new(size.0, size.1);
             let mut ctx = SystemContext::new_render(&mut node_buffer, self.data.clone());
-            // self.data
-            //     .borrow_mut()
-            //     .node_storage
-            //     .get_node_mut(id)
-            //     .unwrap()
-            //     .render(&mut node_buffer, &mut ctx);
 
             self.data
                 .borrow_mut()
@@ -269,12 +233,12 @@ impl Root {
             .relations
             .traverse(&0, tree_ds::prelude::TraversalStrategy::PreOrder)
             .unwrap()
-            .to_vec();
+            .iter()
+            .filter(|v| **v != 0_usize)
+            .copied()
+            .collect();
 
         for id in ids {
-            if id == 0_usize {
-                continue;
-            }
             self.render_node(id);
         }
 
