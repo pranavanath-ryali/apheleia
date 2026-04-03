@@ -1,7 +1,4 @@
-use std::{
-    cell::{RefCell, RefMut},
-    collections::HashMap,
-};
+use std::collections::HashMap;
 
 use crate::{
     node::{NodeTrait, data::NodeData},
@@ -22,7 +19,6 @@ impl NodeStorage {
         node: Box<T>,
         data: NodeData,
     ) {
-        println!("ADDED NODE {}", id);
         self.id_nodes.insert(id, node);
         self.id_data.insert(id, data);
         self.class_id.insert(class.to_string(), id);
