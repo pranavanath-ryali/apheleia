@@ -80,19 +80,19 @@ impl Root {
 
     fn initial_setup(&mut self) {
         info!("RootNode inital_setup started");
+
         let ids: Vec<NodeId> = self
             .data
             .borrow()
             .relations
             .traverse(&0, tree_ds::prelude::TraversalStrategy::PreOrder)
             .unwrap()
-            .to_vec();
+            .iter()
+            .filter(|v| **v != 0_usize)
+            .copied()
+            .collect();
 
         for id in ids {
-            if id == 0_usize {
-                continue;
-            }
-
             let node = {
                 self.data
                     .borrow_mut()
@@ -100,7 +100,6 @@ impl Root {
                     .get_node_mut(id)
                     .unwrap() as *mut Box<dyn NodeTrait>
             };
-
             let mut ctx = NodeContext::new(id, self.data.clone());
             unsafe {
                 (*node).initial_setup(&mut ctx);
