@@ -13,7 +13,7 @@ use tree_ds::prelude::{Node, Tree};
 use crate::{
     builder::node::NodeBuilder,
     contexts::{node::NodeContext, system::SystemContext},
-    extensions::{Extension, ExtensionStore},
+    extensions::{store::ExtensionStore, traits::Extension},
     id_generator::{IdGenerator, IdGeneratorTrait},
     node::{NodeTrait, storage::NodeStorage},
     resources::ResourceStore,
