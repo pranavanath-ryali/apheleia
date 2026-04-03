@@ -65,4 +65,6 @@ impl NodeTrait for LabelNode {
     }
 }
 
-fn render(ctx: &mut SystemContext) {}
+fn render(ctx: &mut SystemContext) {
+    let size = ctx.get_size().unwrap();
+}
