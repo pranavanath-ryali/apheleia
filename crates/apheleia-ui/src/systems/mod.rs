@@ -1,12 +1,12 @@
 use std::collections::{BTreeMap, HashMap};
 
 use crate::{
-    contexts::Context,
+    contexts::systems::SystemContext,
     id_generator::{IdGenerator, IdGeneratorTrait},
     types::{NodeId, SystemId, UpdateTypeNode},
 };
 
-pub type System = fn(&mut Context);
+pub type System = fn(&mut SystemContext);
 
 #[derive(Default)]
 pub struct SystemStore {
@@ -31,7 +31,7 @@ impl SystemStore {
         self.id_systems.insert(id, system);
     }
 
-    pub fn run_systems_for_type(&self, update_type: UpdateTypeNode, ctx: &mut Context) {
+    pub fn run_systems_for_type(&self, update_type: UpdateTypeNode, ctx: &mut SystemContext) {
         if let Some(map) = self.updatetype_nodesystems.get(&update_type) {
             for (node_id, treemap) in map.iter() {
                 for (_, system_id) in treemap.iter() {
@@ -48,7 +48,7 @@ impl SystemStore {
         &self,
         update_type: UpdateTypeNode,
         node_id: NodeId,
-        ctx: &mut Context,
+        ctx: &mut SystemContext,
     ) {
         if let Some(map) = self.updatetype_nodesystems.get(&update_type)
             && let Some(treemap) = map.get(&node_id)

@@ -13,7 +13,7 @@ use tree_ds::prelude::{Node, Tree};
 
 use crate::{
     builder::node::NodeBuilder,
-    contexts::{Context, node::NodeContext},
+    contexts::{Context, node::NodeContext, systems::SystemContext},
     extensions::{Extension, ExtensionStore},
     id_generator::{IdGenerator, IdGeneratorTrait},
     node::{NodeTrait, storage::NodeStorage},
@@ -158,6 +158,7 @@ impl RootNode {
 
         info!("RootNode intial_setup ended");
     }
+
     fn event(&mut self) -> Result<(), Box<dyn Error>> {
         info!("RootNode event started");
         // TODO: Implement event function
@@ -193,7 +194,7 @@ impl RootNode {
         {
             info!("RootNode Event data: {:?}", event_data);
 
-            let mut ctx = Context::new_event(&event_data, self.data.clone());
+            let mut ctx = SystemContext::new_event(&event_data, self.data.clone());
             self.data
                 .borrow_mut()
                 .system_store
@@ -234,7 +235,7 @@ impl RootNode {
             .copied()
             .collect();
         for id in ids {
-            let mut ctx = Context::new(self.data.clone());
+            let mut ctx = SystemContext::new(self.data.clone());
             self.data
                 .borrow_mut()
                 .system_store
@@ -254,7 +255,7 @@ impl RootNode {
         self.data.borrow_mut().dirty_tracker.clear_update();
 
         // Update Nodes registered for constant update
-        let mut ctx = Context::new(self.data.clone());
+        let mut ctx = SystemContext::new(self.data.clone());
         self.data
             .borrow_mut()
             .system_store
@@ -306,7 +307,7 @@ impl RootNode {
                 .unwrap_or(Vector2(0, 0));
 
             let mut node_buffer = Buffer::new(size.0, size.1);
-            let mut ctx = Context::new_render(&mut node_buffer, self.data.clone());
+            let mut ctx = SystemContext::new_render(&mut node_buffer, self.data.clone());
             // self.data
             //     .borrow_mut()
             //     .node_storage
