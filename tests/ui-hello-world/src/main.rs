@@ -8,6 +8,7 @@ use apheleia_ui::{
     setup_logger,
     types::EventType,
 };
+use apheleia_widgets::label::LabelNode;
 
 fn test_render(ctx: &mut SystemContext) {
     let id = ctx.get_id();
@@ -102,6 +103,12 @@ fn main() {
         .set_position(Vector2(1, 0))
         // .build(EmptyNode);
         .build(TestNode(false, "Hello".to_string()));
+
+    root.create_node("test").build(
+        LabelNode::new("Hello World")
+            .set_overflow(apheleia_widgets::label::TextOverflow::Ellipses)
+            .set_horizontal_align(apheleia_widgets::label::HorizontalAlignment::Left),
+    );
 
     // root.create_node("child_node")
     //     .set_position(Vector2(1, 5))

@@ -6,3 +6,4 @@ edition = "2024"
 [dependencies]
 apheleia-ui = { path = "../../crates/apheleia-ui" }
 apheleia-core = { path = "../../crates/apheleia-core" }
+apheleia-widgets = { path = "../../crates/apheleia-widgets" }
