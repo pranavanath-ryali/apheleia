@@ -1,7 +1,7 @@
 use std::collections::{BTreeMap, HashMap};
 
 use crate::{
-    contexts::systems::SystemContext,
+    contexts::system::SystemContext,
     id_generator::{IdGenerator, IdGeneratorTrait},
     types::{NodeId, SystemId, UpdateTypeNode},
 };
