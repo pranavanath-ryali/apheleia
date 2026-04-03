@@ -3,6 +3,7 @@ use apheleia_ui::{
     contexts::{node::NodeContext, system::SystemContext},
     extensions::traits::Extension,
     node::traits::NodeTrait,
+    resources::traits::Resource,
     root::Root,
     setup_logger,
     types::EventType,
@@ -25,11 +26,16 @@ impl NodeTrait for TestNode {
 
         // ctx.add_system(apheleia_ui::types::UpdateTypeNode::Render, 0, test_render);
 
-        ctx.add_system(
-            apheleia_ui::types::UpdateType::Event(EventType::Resize),
-            0,
-            test_render,
-        );
+        // ctx.add_system(
+        //     apheleia_ui::types::UpdateType::Event(EventType::Resize),
+        //     0,
+        //     test_render,
+        // );
+
+        let res = ctx.get_resource_mut::<TestRes>().unwrap();
+        println!("MESSAGE: {}", res.message);
+        res.message = "HELLO AGAIN".to_string();
+        println!("MESSAGE: {}", res.message);
     }
 
     // fn event(&mut self, ctx: &mut Context) {
@@ -73,11 +79,24 @@ impl Extension for TestExt {
     }
 }
 
+struct TestRes {
+    message: String,
+}
+impl Resource for TestRes {
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
+}
+
 fn main() {
     if cfg!(debug_assertions) {
         _ = setup_logger();
     }
     let mut root = Root::default();
+
+    root.add_resource(TestRes {
+        message: "HELLO".to_string(),
+    });
 
     root.create_node("parent_node")
         .set_position(Vector2(1, 0))
