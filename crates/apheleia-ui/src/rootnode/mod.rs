@@ -8,7 +8,7 @@ use crossterm::{
     event::{KeyCode, KeyModifiers, poll, read},
     terminal::{self, enable_raw_mode},
 };
-use log::{info, warn};
+use log::info;
 use tree_ds::prelude::{Node, Tree};
 
 use crate::{
