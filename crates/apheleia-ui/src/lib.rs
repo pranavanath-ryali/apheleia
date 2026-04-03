@@ -3,6 +3,7 @@ pub mod contexts;
 pub mod extensions;
 pub mod id_generator;
 pub mod node;
+pub mod resources;
 pub mod rootnode;
 pub mod systems;
 pub mod types;
