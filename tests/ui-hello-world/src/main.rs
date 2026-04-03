@@ -30,7 +30,7 @@ impl NodeTrait for TestNode {
         // ctx.add_system(apheleia_ui::types::UpdateTypeNode::Render, 0, test_render);
 
         ctx.add_system(
-            apheleia_ui::types::UpdateTypeNode::Event(EventType::Resize),
+            apheleia_ui::types::UpdateType::Event(EventType::Resize),
             0,
             test_render,
         );

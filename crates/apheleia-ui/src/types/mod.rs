@@ -16,7 +16,7 @@ pub enum EventType {
 }
 
 #[derive(Hash, PartialEq, Eq, Clone, Copy)]
-pub enum UpdateTypeNode {
+pub enum UpdateType {
     ConstantUpdate,
     Event(EventType),
     Render,

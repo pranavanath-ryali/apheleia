@@ -7,7 +7,7 @@ use crate::{
     extensions::traits::Extension,
     node::{data::NodeData, traits::NodeTrait},
     systems::System,
-    types::{NodeId, UpdateTypeNode},
+    types::{NodeId, UpdateType},
     world::World,
 };
 
@@ -68,7 +68,7 @@ impl NodeBuilder {
 
     pub fn add_system(
         &mut self,
-        update_type: UpdateTypeNode,
+        update_type: UpdateType,
         priority: isize,
         system: System,
     ) -> &mut Self {

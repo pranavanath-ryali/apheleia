@@ -3,7 +3,7 @@ use std::{cell::RefCell, mem, rc::Rc};
 use crate::{
     contexts::traits::ContextCommand,
     systems::System,
-    types::{NodeId, UpdateTypeNode},
+    types::{NodeId, UpdateType},
     world::World,
 };
 
@@ -26,7 +26,7 @@ impl NodeContext {
         self.id
     }
 
-    pub fn add_system(&mut self, update_type: UpdateTypeNode, priority: isize, system: System) {
+    pub fn add_system(&mut self, update_type: UpdateType, priority: isize, system: System) {
         let id = self.get_id();
         self.rootnode_data
             .borrow_mut()

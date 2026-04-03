@@ -165,7 +165,7 @@ impl Root {
             self.data
                 .borrow_mut()
                 .system_store
-                .run_systems_for_type(crate::types::UpdateTypeNode::Event(event_type), &mut ctx);
+                .run_systems_for_type(crate::types::UpdateType::Event(event_type), &mut ctx);
             ctx.run_commands();
         }
         info!("RootNode event ended");
@@ -186,7 +186,7 @@ impl Root {
                 .borrow_mut()
                 .system_store
                 .run_systems_for_node_with_type(
-                    crate::types::UpdateTypeNode::ConstantUpdate,
+                    crate::types::UpdateType::ConstantUpdate,
                     id,
                     &mut ctx,
                 );
@@ -205,7 +205,7 @@ impl Root {
         self.data
             .borrow_mut()
             .system_store
-            .run_systems_for_type(crate::types::UpdateTypeNode::ConstantUpdate, &mut ctx);
+            .run_systems_for_type(crate::types::UpdateType::ConstantUpdate, &mut ctx);
         ctx.run_commands();
         // if self
         //     .data
@@ -264,7 +264,7 @@ impl Root {
             self.data
                 .borrow_mut()
                 .system_store
-                .run_systems_for_node_with_type(crate::types::UpdateTypeNode::Render, id, &mut ctx);
+                .run_systems_for_node_with_type(crate::types::UpdateType::Render, id, &mut ctx);
 
             self.buffer
                 .borrow_mut()
