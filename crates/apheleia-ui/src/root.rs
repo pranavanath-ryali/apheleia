@@ -21,8 +21,8 @@ use crate::{
 
 pub struct Root {
     fps: u16,
-    width: u16,
-    height: u16,
+    pub width: u16,
+    pub height: u16,
     running: bool,
 
     nodeid_gen: Rc<RefCell<IdGenerator<NodeId>>>,

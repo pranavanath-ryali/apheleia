@@ -12,6 +12,7 @@ pub mod world;
 
 use std::{error::Error, fs::OpenOptions};
 
+pub use apheleia_core::types::vector;
 pub use crossterm::event::*;
 use fern::Dispatch;
 use log::info;

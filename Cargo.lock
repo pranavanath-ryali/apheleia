@@ -169,6 +169,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "e1_hello_world"
+version = "0.1.0"
+dependencies = [
+ "apheleia-ui",
+]
+
+[[package]]
 name = "equivalent"
 version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"

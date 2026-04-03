@@ -60,4 +60,10 @@ impl<'a> SystemContext<'a> {
             command.execute(self.get_id(), self.rootnode_data.clone());
         }
     }
+
+    pub fn get_buffer(&mut self) -> &mut Buffer {
+        self.buffer
+            .as_mut()
+            .expect("SystemContext.get_buffer() is used outside of render context.")
+    }
 }
