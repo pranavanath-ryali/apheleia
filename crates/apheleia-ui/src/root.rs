@@ -14,6 +14,7 @@ use crate::{
     extensions::traits::Extension,
     id_generator::{IdGenerator, IdGeneratorTrait},
     node::traits::NodeTrait,
+    resources::traits::Resource,
     types::{EventData, EventType, NodeId},
     world::World,
 };
@@ -285,6 +286,13 @@ impl Root {
             class,
             self.data.clone(),
         )
+    }
+
+    pub fn add_resource<T: Resource>(&mut self, res: T) {
+        self.data
+            .borrow_mut()
+            .resource_store
+            .add_resource(Box::new(res));
     }
 
     pub fn bind_extension_to_classes<T: Extension>(
