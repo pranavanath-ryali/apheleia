@@ -5,7 +5,7 @@ use tree_ds::prelude::Node;
 
 use crate::{
     extensions::traits::Extension,
-    node::{NodeTrait, data::NodeData},
+    node::{data::NodeData, traits::NodeTrait},
     rootnode::RootNodeData,
     systems::System,
     types::{NodeId, UpdateTypeNode},

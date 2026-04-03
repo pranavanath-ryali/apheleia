@@ -6,12 +6,12 @@ use crate::{
 };
 
 #[derive(Default)]
-pub struct NodeStorage {
+pub struct NodeStore {
     id_nodes: HashMap<NodeId, Box<dyn NodeTrait>>,
     id_data: HashMap<NodeId, NodeData>,
     class_id: HashMap<String, NodeId>,
 }
-impl NodeStorage {
+impl NodeStore {
     pub fn add_node<T: NodeTrait>(
         &mut self,
         id: NodeId,

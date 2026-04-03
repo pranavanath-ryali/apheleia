@@ -6,7 +6,6 @@ use apheleia_ui::{
         node::NodeContext,
         system::SystemContext,
     },
-    extensions::Extension,
     node::{EmptyNode, NodeTrait},
     rootnode::RootNode,
     setup_logger,

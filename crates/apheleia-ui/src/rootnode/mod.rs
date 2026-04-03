@@ -15,7 +15,7 @@ use crate::{
     contexts::{node::NodeContext, system::SystemContext},
     extensions::{store::ExtensionStore, traits::Extension},
     id_generator::{IdGenerator, IdGeneratorTrait},
-    node::{NodeTrait, storage::NodeStorage},
+    node::{store::NodeStore, traits::NodeTrait},
     resources::ResourceStore,
     rootnode::dirty_tracker::DirtyTracker,
     systems::SystemStore,
@@ -25,7 +25,7 @@ use crate::{
 pub struct RootNodeData {
     pub relations: Tree<NodeId, NodeId>,
 
-    pub node_storage: NodeStorage,
+    pub node_storage: NodeStore,
     pub extension_store: ExtensionStore,
     pub dirty_tracker: DirtyTracker,
     pub system_store: SystemStore,
@@ -39,7 +39,7 @@ impl Default for RootNodeData {
         Self {
             relations,
 
-            node_storage: NodeStorage::default(),
+            node_storage: NodeStore::default(),
             extension_store: ExtensionStore::default(),
             dirty_tracker: DirtyTracker::default(),
             system_store: SystemStore::default(),
