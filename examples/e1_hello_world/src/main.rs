@@ -15,6 +15,7 @@ impl NodeTrait for HelloWorldNode {
         ctx.add_system(UpdateType::Render, 0, render_hello_world);
     }
 
+    // TODO: Eventually make this a macro
     fn as_any(&self) -> &dyn std::any::Any {
         self
     }
@@ -24,6 +25,7 @@ impl NodeTrait for HelloWorldNode {
 }
 
 fn main() {
+    // TODO: Instead of creating a custom node. Eventually, use a prebuild LabelNode
     let mut root = Root::default();
     let width = root.width;
     let height = root.height;
