@@ -27,7 +27,7 @@ pub struct Root {
     nodeid_gen: Rc<RefCell<IdGenerator<NodeId>>>,
     data: Rc<RefCell<World>>,
 
-    buffer: RefCell<Buffer>,
+    buffer: Buffer,
     renderer: Renderer,
 }
 impl Default for Root {
@@ -48,7 +48,7 @@ impl Default for Root {
             nodeid_gen: Rc::new(RefCell::new(IdGenerator::<NodeId>::new(0))),
             data: Rc::new(RefCell::new(World::default())),
 
-            buffer: RefCell::new(Buffer::new(width, height)),
+            buffer: Buffer::new(width, height),
             renderer: Renderer {
                 width,
                 height,
@@ -267,13 +267,12 @@ impl Root {
                 .run_systems_for_node_with_type(crate::types::UpdateType::Render, id, &mut ctx);
 
             self.buffer
-                .borrow_mut()
                 .render_buffer(position.0, position.1, &mut node_buffer);
             info!("RootNode Render node ends: {}", id);
         }
     }
     fn render_flip(&mut self) {
-        self.renderer.clear(&mut self.buffer.borrow_mut());
+        self.renderer.clear(&mut self.buffer);
 
         let ids: Vec<NodeId> = self
             .data
@@ -290,7 +289,7 @@ impl Root {
             self.render_node(id);
         }
 
-        self.renderer.render(&mut self.buffer.borrow_mut());
+        self.renderer.render(&mut self.buffer);
         self.data.borrow_mut().dirty_tracker.clear_render();
     }
 
@@ -308,7 +307,7 @@ impl Root {
             self.render_node(id);
         }
 
-        self.renderer.render(&mut self.buffer.borrow_mut());
+        self.renderer.render(&mut self.buffer);
         self.data.borrow_mut().dirty_tracker.clear_render();
     }
 
