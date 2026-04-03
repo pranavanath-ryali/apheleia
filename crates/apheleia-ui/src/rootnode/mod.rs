@@ -1,5 +1,4 @@
 pub mod dirty_tracker;
-pub mod update_tracker;
 
 use std::{cell::RefCell, error::Error, io::stdout, rc::Rc, time::Duration};
 
@@ -18,7 +17,7 @@ use crate::{
     id_generator::{IdGenerator, IdGeneratorTrait},
     node::{NodeTrait, storage::NodeStorage},
     resources::ResourceStore,
-    rootnode::{dirty_tracker::DirtyTracker, update_tracker::UpdateTracker},
+    rootnode::dirty_tracker::DirtyTracker,
     systems::SystemStore,
     types::{EventData, EventType, NodeId},
 };
@@ -29,7 +28,6 @@ pub struct RootNodeData {
     pub node_storage: NodeStorage,
     pub extension_store: ExtensionStore,
     pub dirty_tracker: DirtyTracker,
-    pub update_tracker: UpdateTracker,
     pub system_store: SystemStore,
     pub resource_store: ResourceStore,
 }
@@ -44,7 +42,6 @@ impl Default for RootNodeData {
             node_storage: NodeStorage::default(),
             extension_store: ExtensionStore::default(),
             dirty_tracker: DirtyTracker::default(),
-            update_tracker: UpdateTracker::default(),
             system_store: SystemStore::default(),
             resource_store: ResourceStore::default(),
         }
