@@ -59,32 +59,22 @@ impl Default for Root {
 }
 impl Root {
     fn calculate_global_position(&self, id: NodeId) -> Vector2 {
-        let mut position = self
-            .data
-            .borrow()
-            .node_storage
-            .get_data(id)
-            .unwrap()
-            .position;
+        let relations = &self.data.borrow().relations;
+        let node_storage = &self.data.borrow().node_storage;
 
-        self.data
-            .borrow()
-            .relations
+        let mut position = node_storage.get_data(id).unwrap().position;
+        relations
             .get_ancestor_ids(&id)
             .unwrap()
             .iter()
             .filter(|id| **id != 0_usize)
             .for_each(|node_id| {
-                let pos = self
-                    .data
-                    .borrow()
-                    .node_storage
-                    .get_data(*node_id)
-                    .unwrap()
-                    .position;
+                let pos = node_storage.get_data(*node_id).unwrap().position;
+
                 position.0 += pos.0;
                 position.1 += pos.1;
             });
+
         position
     }
 
