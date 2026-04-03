@@ -3,6 +3,8 @@ use std::{
     collections::HashMap,
 };
 
+use rustc_hash::FxHashMap;
+
 use crate::{
     extensions::traits::Extension,
     id_generator::{IdGenerator, IdGeneratorTrait},
@@ -13,8 +15,8 @@ use crate::{
 pub struct ExtensionStore {
     id_generator: IdGenerator<ExtensionId>,
 
-    nodeid_extid: HashMap<NodeId, HashMap<TypeId, ExtensionId>>,
-    extensions_storage: HashMap<ExtensionId, Box<dyn Any>>,
+    nodeid_extid: FxHashMap<NodeId, HashMap<TypeId, ExtensionId>>,
+    extensions_storage: FxHashMap<ExtensionId, Box<dyn Any>>,
 }
 impl ExtensionStore {
     pub fn get_id(&mut self) -> ExtensionId {

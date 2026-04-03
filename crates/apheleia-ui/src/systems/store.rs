@@ -1,5 +1,7 @@
 use std::collections::{BTreeMap, HashMap};
 
+use rustc_hash::FxHashMap;
+
 use crate::{
     contexts::system::SystemContext,
     id_generator::{IdGenerator, IdGeneratorTrait},
@@ -10,8 +12,8 @@ use crate::{
 pub struct SystemStore {
     id_generator: IdGenerator<SystemId>,
 
-    id_systems: HashMap<SystemId, System>,
-    updatetype_nodesystems: HashMap<UpdateType, HashMap<NodeId, BTreeMap<isize, SystemId>>>,
+    id_systems: FxHashMap<SystemId, System>,
+    updatetype_nodesystems: HashMap<UpdateType, FxHashMap<NodeId, BTreeMap<isize, SystemId>>>,
 }
 impl SystemStore {
     pub fn add_system(

@@ -1,5 +1,7 @@
 use std::collections::HashMap;
 
+use rustc_hash::FxHashMap;
+
 use crate::{
     node::{NodeTrait, data::NodeData},
     types::NodeId,
@@ -7,8 +9,8 @@ use crate::{
 
 #[derive(Default)]
 pub struct NodeStore {
-    id_nodes: HashMap<NodeId, Box<dyn NodeTrait>>,
-    id_data: HashMap<NodeId, NodeData>,
+    id_nodes: FxHashMap<NodeId, Box<dyn NodeTrait>>,
+    id_data: FxHashMap<NodeId, NodeData>,
     class_id: HashMap<String, NodeId>,
 }
 impl NodeStore {
