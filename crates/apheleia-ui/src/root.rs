@@ -15,6 +15,7 @@ use crate::{
     id_generator::{IdGenerator, IdGeneratorTrait},
     node::traits::NodeTrait,
     resources::traits::Resource,
+    systems::store::SystemStore,
     types::{EventData, EventType, NodeId},
     world::World,
 };
@@ -203,6 +204,20 @@ impl Root {
             .get_size();
         if let Some(size) = size {
             info!("RootNode Render node begins: {}", id);
+
+            let mut node_buffer = Buffer::new(size.0, size.1);
+            let mut ctx = SystemContext::new_render(&mut node_buffer, self.data.clone());
+
+            let system_store =
+                { (self.data.borrow_mut().system_store.as_mut()) as *mut SystemStore };
+            unsafe {
+                (*system_store).run_systems_for_node_with_type(
+                    crate::types::UpdateType::Render,
+                    id,
+                    &mut ctx,
+                );
+            }
+
             let position = self
                 .data
                 .borrow_mut()
@@ -211,17 +226,9 @@ impl Root {
                 .unwrap()
                 .get_global_position()
                 .unwrap_or(Vector2(0, 0));
-
-            let mut node_buffer = Buffer::new(size.0, size.1);
-            let mut ctx = SystemContext::new_render(&mut node_buffer, self.data.clone());
-
-            self.data
-                .borrow_mut()
-                .system_store
-                .run_systems_for_node_with_type(crate::types::UpdateType::Render, id, &mut ctx);
-
             self.buffer
                 .render_buffer(position.0, position.1, &mut node_buffer);
+
             info!("RootNode Render node ends: {}", id);
         }
     }

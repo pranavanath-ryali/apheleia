@@ -1,4 +1,4 @@
-use apheleia_ui::{contexts::system::SystemContext, node::traits::NodeTrait};
+use apheleia_ui::{contexts::system::SystemContext, node::traits::NodeTrait, vector::Vector2};
 
 pub struct ScrollingTextParams;
 
@@ -66,5 +66,31 @@ impl NodeTrait for LabelNode {
 }
 
 fn render(ctx: &mut SystemContext) {
-    let size = ctx.get_size().unwrap();
+    let mut text: String = String::new();
+    let mut position = Vector2(0, 0);
+
+    {
+        let size = ctx.get_size().unwrap();
+        let node = ctx.get_node::<LabelNode>();
+
+        if node.text.len() <= size.0 as usize {
+            text = node.text.to_string();
+            match node.horizontal_alignment {
+                HorizontalAlignment::Left => position.0 = 0,
+                HorizontalAlignment::Center => {
+                    position.0 = (size.0 / 2) - (node.text.len() / 2) as u16
+                }
+                HorizontalAlignment::Right => position.0 = size.0 - node.text.len() as u16,
+            }
+            match node.vertical_alignment {
+                VerticalAlignment::Top => position.1 = 0,
+                VerticalAlignment::Center => position.1 = size.1 / 2,
+                VerticalAlignment::Bottom => position.1 = size.1 - 1,
+            }
+            // TODO: Implement Vertical Alignment
+        }
+    }
+
+    ctx.get_buffer()
+        .write_line(position.0, position.1, text.as_str(), None);
 }

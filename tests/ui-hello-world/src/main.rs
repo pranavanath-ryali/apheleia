@@ -95,19 +95,19 @@ fn main() {
     }
     let mut root = Root::default();
 
-    root.add_resource(TestRes {
-        message: "HELLO".to_string(),
-    });
+    // root.add_resource(TestRes {
+    //     message: "HELLO".to_string(),
+    // });
 
-    root.create_node("parent_node")
-        .set_position(Vector2(1, 0))
-        // .build(EmptyNode);
-        .build(TestNode(false, "Hello".to_string()));
+    // root.create_node("parent_node")
+    //     .set_position(Vector2(1, 0))
+    //     // .build(EmptyNode);
+    //     .build(TestNode(false, "Hello".to_string()));
 
-    root.create_node("test").build(
-        LabelNode::new("Hello World")
-            .set_overflow(apheleia_widgets::label::TextOverflow::Ellipses)
-            .set_horizontal_align(apheleia_widgets::label::HorizontalAlignment::Left),
+    root.create_node("test").set_size(Vector2(50, 5)).build(
+        LabelNode::new("<red;italic>Hello <green>World!")
+            .set_horizontal_align(apheleia_widgets::label::HorizontalAlignment::Left)
+            .set_vertical_align(apheleia_widgets::label::VerticalAlignment::Top),
     );
 
     // root.create_node("child_node")
