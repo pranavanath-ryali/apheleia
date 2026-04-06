@@ -4,7 +4,9 @@ use apheleia_core::{buffer::Buffer, types::vector::Vector2};
 
 use crate::{
     contexts::traits::ContextCommand,
+    extensions::traits::Extension,
     node::traits::NodeTrait,
+    resources::traits::Resource,
     types::{EventData, NodeId},
     world::World,
 };
@@ -62,6 +64,80 @@ impl<'a> SystemContext<'a> {
         }
     }
 
+    // ExtensionStore Functions
+    pub fn get_extension<E: Extension>(&self) -> &E {
+        return unsafe {
+            &*(self
+                .rootnode_data
+                .borrow()
+                .extension_store
+                .get_extension::<E>(self.get_id()) as *const E)
+        };
+    }
+    pub fn get_extension_mut<E: Extension>(&mut self) -> &mut E {
+        return unsafe {
+            &mut *(self
+                .rootnode_data
+                .borrow_mut()
+                .extension_store
+                .get_extension_mut::<E>(self.get_id()) as *mut E)
+        };
+    }
+
+    // ResourceStore Functions
+    pub fn get_resource<R: Resource>(&self) -> &R {
+        return unsafe {
+            &*(self
+                .rootnode_data
+                .borrow()
+                .resource_store
+                .get_resource::<R>()
+                .unwrap() as *const R)
+        };
+    }
+    pub fn get_resource_mut<R: Resource>(&mut self) -> &mut R {
+        return unsafe {
+            &mut *(self
+                .rootnode_data
+                .borrow_mut()
+                .resource_store
+                .get_resource_mut::<R>()
+                .unwrap() as *mut R)
+        };
+    }
+
+    // DirtyTracker Functions
+    pub fn mark_render_dirty(&mut self) {
+        self.rootnode_data
+            .borrow_mut()
+            .dirty_tracker
+            .add_render(self.get_id());
+    }
+    pub fn mark_update_dirty(&mut self) {
+        self.rootnode_data
+            .borrow_mut()
+            .dirty_tracker
+            .add_update(self.get_id());
+    }
+
+    pub fn mark_render_dirty_for_node(&mut self, class: &str) {
+        if let Some(id) = self.rootnode_data.borrow().node_storage.get_id(class) {
+            self.rootnode_data
+                .borrow_mut()
+                .dirty_tracker
+                .add_render(*id);
+        }
+    }
+    pub fn mark_update_dirty_for_node(&mut self, class: &str) {
+        if let Some(id) = self.rootnode_data.borrow().node_storage.get_id(class) {
+            self.rootnode_data
+                .borrow_mut()
+                .dirty_tracker
+                .add_update(*id);
+        }
+    }
+
+    // NodeStore Functions
     pub fn get_node<T: NodeTrait>(&self) -> &T {
         return unsafe {
             &*(self
