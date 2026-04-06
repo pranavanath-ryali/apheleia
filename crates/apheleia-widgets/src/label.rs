@@ -44,7 +44,7 @@ impl LabelNode {
             scroll_i: 0,
             scroll_dir: 1,
             scroll_counter: 0.0,
-            scroll_counter_step: 0.25,
+            scroll_counter_step: 1.0,
         }
     }
 
@@ -84,7 +84,7 @@ impl NodeTrait for LabelNode {
 }
 
 fn scroll_update(ctx: &mut SystemContext) {
-    let size = ctx.get_size().unwrap();
+    let size = ctx.get_size().expect("A size is expected for Label");
     let node = ctx.get_node_mut::<LabelNode>();
 
     if let TextOverflow::Scroll(scroll_params) = node.overflow {
@@ -94,27 +94,18 @@ fn scroll_update(ctx: &mut SystemContext) {
 
             if node.scroll_dir == 1 {
                 node.scroll_i += 1;
-                if node.scroll_i > node.text.len() - size.0 as usize {
+                if node.scroll_i >= node.text.len() - size.0 as usize {
                     node.scroll_i = node.text.len() - size.0 as usize;
                     node.scroll_dir = -1;
                 }
             } else if node.scroll_i == 0 {
                 node.scroll_dir = 1;
+                node.scroll_i = 1;
             } else {
                 node.scroll_i -= 1;
             }
-
-            // if node.scroll_i == 0 && node.scroll_dir == -1 {
-            //     node.scroll_i = 0;
-            //     node.scroll_dir = 1;
-            // }
-            // node.scroll_i += (node.scroll_dir) as usize;
-            // if node.scroll_i > node.text.len() - size.0 as usize {
-            //     node.scroll_i = node.text.len() - size.0 as usize;
-            //     node.scroll_dir = -1;
-            // }
         }
-        println!("{}", node.scroll_i);
+        ctx.mark_render_dirty();
     }
 }
 
@@ -123,7 +114,7 @@ fn render(ctx: &mut SystemContext) {
     let mut position = Vector2(0, 0);
 
     {
-        let size = ctx.get_size().unwrap();
+        let size = ctx.get_size().expect("A size is expected for Label");
         let node = ctx.get_node::<LabelNode>();
 
         if node.text.len() <= size.0 as usize {
@@ -160,7 +151,7 @@ fn render(ctx: &mut SystemContext) {
                         .to_string()
                         .split_at(node.scroll_i)
                         .1
-                        .split_at(node.scroll_i + size.0 as usize)
+                        .split_at(size.0 as usize)
                         .0
                         .to_string();
                 }

@@ -6,7 +6,6 @@ use apheleia_ui::{
     resources::traits::Resource,
     root::Root,
     setup_logger,
-    types::EventType,
 };
 use apheleia_widgets::label::{self, LabelNode, ScrollingTextParams};
 
@@ -104,8 +103,8 @@ fn main() {
     //     // .build(EmptyNode);
     //     .build(TestNode(false, "Hello".to_string()));
 
-    root.create_node("test").set_size(Vector2(5, 5)).build(
-        LabelNode::new("Hello World!")
+    root.create_node("label").set_size(Vector2(10, 5)).build(
+        LabelNode::new("Hello Surya Bitch. YOU FUCKING IDIOT")
             .set_overflow(label::TextOverflow::Scroll(ScrollingTextParams))
             .set_horizontal_align(label::HorizontalAlignment::Left)
             .set_vertical_align(label::VerticalAlignment::Top),

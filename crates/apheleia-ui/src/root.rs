@@ -162,6 +162,7 @@ impl Root {
         info!("RootNode event ended");
         Ok(())
     }
+
     fn update(&mut self) {
         // Update Nodes marked dirty
         let ids: Vec<NodeId> = self
@@ -173,14 +174,15 @@ impl Root {
             .collect();
         for id in ids {
             let mut ctx = SystemContext::new(self.data.clone());
-            self.data
-                .borrow_mut()
-                .system_store
-                .run_systems_for_node_with_type(
+            let system_store =
+                { (self.data.borrow_mut().system_store.as_mut()) as *mut SystemStore };
+            unsafe {
+                (*system_store).run_systems_for_node_with_type(
                     crate::types::UpdateType::ConstantUpdate,
                     id,
                     &mut ctx,
                 );
+            }
             ctx.run_commands();
         }
         self.data.borrow_mut().dirty_tracker.clear_update();
@@ -188,17 +190,11 @@ impl Root {
         // Update Nodes registered for constant update
         // TODO: Add a check to see if there are any systems registered for constant update
         let mut ctx = SystemContext::new(self.data.clone());
-        // self.data
-        //     .borrow_mut()
-        //     .system_store
-        //     .run_systems_for_type(crate::types::UpdateType::ConstantUpdate, &mut ctx);
-
         let system_store = { (self.data.borrow_mut().system_store.as_mut()) as *mut SystemStore };
         unsafe {
             (*system_store)
                 .run_systems_for_type(crate::types::UpdateType::ConstantUpdate, &mut ctx);
         }
-
         ctx.run_commands();
     }
     fn render_node(&mut self, id: NodeId) {
