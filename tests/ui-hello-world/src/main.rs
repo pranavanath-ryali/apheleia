@@ -8,7 +8,7 @@ use apheleia_ui::{
     setup_logger,
     types::EventType,
 };
-use apheleia_widgets::label::LabelNode;
+use apheleia_widgets::label::{self, LabelNode, ScrollingTextParams};
 
 fn test_render(ctx: &mut SystemContext) {
     let id = ctx.get_id();
@@ -104,10 +104,11 @@ fn main() {
     //     // .build(EmptyNode);
     //     .build(TestNode(false, "Hello".to_string()));
 
-    root.create_node("test").set_size(Vector2(50, 5)).build(
-        LabelNode::new("<red;italic>Hello <green>World!")
-            .set_horizontal_align(apheleia_widgets::label::HorizontalAlignment::Left)
-            .set_vertical_align(apheleia_widgets::label::VerticalAlignment::Top),
+    root.create_node("test").set_size(Vector2(5, 5)).build(
+        LabelNode::new("Hello World!")
+            .set_overflow(label::TextOverflow::Scroll(ScrollingTextParams))
+            .set_horizontal_align(label::HorizontalAlignment::Left)
+            .set_vertical_align(label::VerticalAlignment::Top),
     );
 
     // root.create_node("child_node")
