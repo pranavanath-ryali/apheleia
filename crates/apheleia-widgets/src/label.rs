@@ -44,7 +44,7 @@ impl LabelNode {
             scroll_i: 0,
             scroll_dir: 1,
             scroll_counter: 0.0,
-            scroll_counter_step: 0.025,
+            scroll_counter_step: 0.25,
         }
     }
 
@@ -92,17 +92,29 @@ fn scroll_update(ctx: &mut SystemContext) {
         if node.scroll_counter >= 1.0 {
             node.scroll_counter = 0.0;
 
-            if node.scroll_i == 0 && node.scroll_dir == -1 {
-                node.scroll_i = 0;
+            if node.scroll_dir == 1 {
+                node.scroll_i += 1;
+                if node.scroll_i > node.text.len() - size.0 as usize {
+                    node.scroll_i = node.text.len() - size.0 as usize;
+                    node.scroll_dir = -1;
+                }
+            } else if node.scroll_i == 0 {
                 node.scroll_dir = 1;
             } else {
-                node.scroll_i += (node.scroll_dir) as usize;
+                node.scroll_i -= 1;
             }
-            if node.scroll_i > node.text.len() - size.0 as usize {
-                node.scroll_i = node.text.len() - size.0 as usize;
-                node.scroll_dir = -1;
-            }
+
+            // if node.scroll_i == 0 && node.scroll_dir == -1 {
+            //     node.scroll_i = 0;
+            //     node.scroll_dir = 1;
+            // }
+            // node.scroll_i += (node.scroll_dir) as usize;
+            // if node.scroll_i > node.text.len() - size.0 as usize {
+            //     node.scroll_i = node.text.len() - size.0 as usize;
+            //     node.scroll_dir = -1;
+            // }
         }
+        println!("{}", node.scroll_i);
     }
 }
 
@@ -149,7 +161,7 @@ fn render(ctx: &mut SystemContext) {
                         .split_at(node.scroll_i)
                         .1
                         .split_at(node.scroll_i + size.0 as usize)
-                        .1
+                        .0
                         .to_string();
                 }
             }

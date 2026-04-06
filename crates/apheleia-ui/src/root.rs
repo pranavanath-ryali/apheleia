@@ -188,10 +188,17 @@ impl Root {
         // Update Nodes registered for constant update
         // TODO: Add a check to see if there are any systems registered for constant update
         let mut ctx = SystemContext::new(self.data.clone());
-        self.data
-            .borrow_mut()
-            .system_store
-            .run_systems_for_type(crate::types::UpdateType::ConstantUpdate, &mut ctx);
+        // self.data
+        //     .borrow_mut()
+        //     .system_store
+        //     .run_systems_for_type(crate::types::UpdateType::ConstantUpdate, &mut ctx);
+
+        let system_store = { (self.data.borrow_mut().system_store.as_mut()) as *mut SystemStore };
+        unsafe {
+            (*system_store)
+                .run_systems_for_type(crate::types::UpdateType::ConstantUpdate, &mut ctx);
+        }
+
         ctx.run_commands();
     }
     fn render_node(&mut self, id: NodeId) {
