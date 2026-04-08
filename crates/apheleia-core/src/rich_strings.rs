@@ -1,11 +1,11 @@
 use std::{
     collections::{BTreeSet, btree_set},
-    slice::Iter,
     vec,
 };
 
 use crate::style::Style;
 
+#[derive(Debug)]
 pub struct RichString {
     text: String,
     i_text: BTreeSet<usize>,
@@ -65,9 +65,14 @@ impl<'a> Iterator for RichStringIter<'a> {
                 Some((*i, *j))
             });
             let style = match markup {
-                Some(markup) => Style::default(),
+                Some(markup) => {
+                    let markup_text = self.chars[markup.0..markup.1].iter().collect::<String>();
+                    Style::from_markup(markup_text.as_str())
+                }
                 None => Style::default(),
             };
+
+            return Some((*c, style));
         }
         None
     }
@@ -99,7 +104,7 @@ fn map_markup_index(text: &str) -> Vec<(usize, usize)> {
         match c {
             '<' => start = i,
             '>' => {
-                ij_markup.push((start + 1, i - 1));
+                ij_markup.push((start + 1, i));
             }
             _ => (),
         }
@@ -160,6 +165,51 @@ mod rich_string_test {
 
         println!("Rich String Text: {}", rich_str.text);
 
-        assert_eq!(ij_markup, vec![(6, 8), (14, 14)]);
+        assert_eq!(ij_markup, vec![(14, 15), (6, 9)]);
+    }
+
+    #[test]
+    fn test_richstring_iter() {
+        let rich_str = RichString::new("He<bold>llo");
+        let vec: Vec<(char, Style)> = rich_str.iter().collect();
+
+        assert_eq!(
+            vec,
+            vec![
+                (
+                    'H',
+                    Style {
+                        ..Default::default()
+                    }
+                ),
+                (
+                    'e',
+                    Style {
+                        ..Default::default()
+                    }
+                ),
+                (
+                    'l',
+                    Style {
+                        flags: StyleFlags::BOLD,
+                        ..Default::default()
+                    }
+                ),
+                (
+                    'l',
+                    Style {
+                        flags: StyleFlags::BOLD,
+                        ..Default::default()
+                    }
+                ),
+                (
+                    'o',
+                    Style {
+                        flags: StyleFlags::BOLD,
+                        ..Default::default()
+                    }
+                ),
+            ]
+        );
     }
 }

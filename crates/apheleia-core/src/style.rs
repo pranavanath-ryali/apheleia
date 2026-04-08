@@ -200,7 +200,7 @@ mod style_tests {
     #[test]
     fn test_markup_to_style() {
         assert_eq!(
-            Style::from_markup("bold;italic;under_lined;reverse;"),
+            Style::from_markup("bold;italic;under_lined;reverse"),
             Style {
                 flags: StyleFlags::BOLD
                     | StyleFlags::ITALIC
@@ -453,5 +453,14 @@ mod style_tests {
         );
 
         // WHY? For fun
+
+        assert_eq!(
+            Style::from_markup("bold;i;fg:Red;bg:WhIte"),
+            Style {
+                fg: Color::Red,
+                bg: Color::White,
+                flags: StyleFlags::BOLD | StyleFlags::ITALIC
+            }
+        );
     }
 }
