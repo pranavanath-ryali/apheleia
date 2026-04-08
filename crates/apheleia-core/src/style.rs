@@ -34,6 +34,16 @@ impl Default for Style {
     }
 }
 impl Style {
+    pub fn update(&mut self, style: Style) {
+        self.flags |= style.flags;
+        // if self.fg != Color::Reset {
+        self.fg = style.fg;
+        // }
+        // if self.bg != Color::Reset {
+        self.bg = style.bg;
+        // }
+    }
+
     pub fn from_markup(markup: &str) -> Self {
         let mut fg: Color = Color::Reset;
         let mut bg: Color = Color::Reset;

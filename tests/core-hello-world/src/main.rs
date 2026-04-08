@@ -7,7 +7,7 @@ fn main() {
     let mut renderer = Renderer::new(size.0, size.1);
     renderer.init();
 
-    buffer.write_rich_string(size.0 - 3, 0, RichString::new("H<fg:red>ello"));
+    buffer.write_rich_string(5, 5, RichString::new("H<fg:red;italic>el<under_lined>lo"));
 
     renderer.render_flip(&mut buffer);
     renderer.quit();

@@ -43,6 +43,7 @@ impl RichString {
             chars: self.text.chars().collect(),
             i_text_iter: self.i_text.iter(),
             ij_markup: &self.ij_markup,
+            current_style: Style::default(),
         }
     }
 }
@@ -51,6 +52,7 @@ pub struct RichStringIter<'a> {
     chars: Vec<char>,
     i_text_iter: btree_set::Iter<'a, usize>,
     ij_markup: &'a Vec<(usize, usize)>,
+    current_style: Style,
 }
 impl<'a> Iterator for RichStringIter<'a> {
     type Item = (char, Style);
@@ -72,7 +74,9 @@ impl<'a> Iterator for RichStringIter<'a> {
                 None => Style::default(),
             };
 
-            return Some((*c, style));
+            self.current_style.update(style);
+
+            return Some((*c, self.current_style));
         }
         None
     }
@@ -170,7 +174,7 @@ mod rich_string_test {
 
     #[test]
     fn test_richstring_iter() {
-        let rich_str = RichString::new("He<bold>llo");
+        let rich_str = RichString::new("<bold>H<italic>H");
         let vec: Vec<(char, Style)> = rich_str.iter().collect();
 
         assert_eq!(
@@ -179,33 +183,14 @@ mod rich_string_test {
                 (
                     'H',
                     Style {
-                        ..Default::default()
-                    }
-                ),
-                (
-                    'e',
-                    Style {
-                        ..Default::default()
-                    }
-                ),
-                (
-                    'l',
-                    Style {
                         flags: StyleFlags::BOLD,
                         ..Default::default()
                     }
                 ),
                 (
-                    'l',
+                    'H',
                     Style {
-                        flags: StyleFlags::BOLD,
-                        ..Default::default()
-                    }
-                ),
-                (
-                    'o',
-                    Style {
-                        flags: StyleFlags::BOLD,
+                        flags: StyleFlags::BOLD | StyleFlags::ITALIC,
                         ..Default::default()
                     }
                 ),

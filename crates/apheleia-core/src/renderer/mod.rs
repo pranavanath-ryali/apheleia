@@ -64,6 +64,8 @@ impl Renderer {
             _ = queue!(self.stdout, SetBackgroundColor(style.bg));
             _ = queue_flags(&mut self.stdout, style.flags);
             _ = queue!(self.stdout, Print(text.to_string()));
+
+            queue!(self.stdout, SetAttribute(Attribute::Reset));
         }
 
         buf.clear_diff();
