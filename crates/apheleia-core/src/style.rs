@@ -192,8 +192,8 @@ mod style_tests {
             flags: StyleFlags::BOLD | StyleFlags::ITALIC | StyleFlags::REVERSE,
         };
 
-        assert_eq!(style_opts.get_fg_markup(), "fg:cyan");
-        assert_eq!(style_opts.get_bg_markup(), "bg:dark_blue");
+        assert_eq!(style_opts.get_fg_markup(), "fg:cyan;");
+        assert_eq!(style_opts.get_bg_markup(), "bg:dark_blue;");
         assert_eq!(style_opts.get_style_markup(), "bold;italic;reverse;")
     }
 

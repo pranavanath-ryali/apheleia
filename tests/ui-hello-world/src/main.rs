@@ -103,7 +103,7 @@ fn main() {
     //     // .build(EmptyNode);
     //     .build(TestNode(false, "Hello".to_string()));
 
-    root.create_node("label").set_size(Vector2(10, 5)).build(
+    root.create_node("label").set_size(Vector2(20, 5)).build(
         LabelNode::new("Hello Surya Bitch. YOU FUCKING IDIOT")
             .set_overflow(label::TextOverflow::Scroll(ScrollingTextParams))
             .set_horizontal_align(label::HorizontalAlignment::Left)
