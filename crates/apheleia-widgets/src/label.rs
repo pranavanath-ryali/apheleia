@@ -165,5 +165,5 @@ fn render(ctx: &mut SystemContext) {
     }
 
     ctx.get_buffer()
-        .write_line(position.0, position.1, text.as_str(), None);
+        .write_string(position.0, position.1, text.as_str(), None);
 }

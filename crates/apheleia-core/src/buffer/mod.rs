@@ -29,7 +29,7 @@ impl Buffer {
         }
     }
 
-    pub fn write_line(
+    pub fn write_string(
         &mut self,
         start_pos_x: u16,
         start_pos_y: u16,
@@ -52,7 +52,7 @@ impl Buffer {
 
     pub fn render_buffer(&mut self, start_pos_x: u16, start_pos_y: u16, buf: &mut Self) {
         for line in buf.get_update_list() {
-            self.write_line(
+            self.write_string(
                 start_pos_x + line.position.0,
                 start_pos_y + line.position.1,
                 &line.text,
@@ -94,7 +94,10 @@ impl Buffer {
 //         }
 //     }
 
-//     pub fn write_string(x: u16, y: u16, text: String, style: Style) {}
+//     pub fn write_string(&mut self, x: u16, y: u16, text: String, style: Style) {
+//         let rich_string = RichString::to_rich(&text, style);
+//         self.write_rich_string(x, y, rich_string);
+//     }
 
-//     pub fn write_rich_string(x: u16, y: u16, rich_text: RichString) {}
+//     pub fn write_rich_string(&mut self, x: u16, y: u16, rich_string: RichString) {}
 // }

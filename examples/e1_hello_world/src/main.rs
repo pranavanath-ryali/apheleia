@@ -6,7 +6,7 @@ use apheleia_ui::{
 fn render_hello_world(ctx: &mut SystemContext) {
     let buffer = ctx.get_buffer();
 
-    buffer.write_line(0, 0, "Hello World!", None);
+    buffer.write_string(0, 0, "Hello World!", None);
 }
 
 struct HelloWorldNode;

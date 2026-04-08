@@ -13,14 +13,14 @@ fn main() {
     };
     renderer.clear(&mut buffer);
 
-    buffer.write_line(
+    buffer.write_string(
         0,
         0,
         "<magenta>H<italic;darkgrey>e<cyan>l<normal;darkgreen>l<dim;darkgreen>o",
         None,
     );
-    buffer.write_line(0, 1, "<blink;b;i>Hello World", None);
-    buffer.write_line(size.0 - 5, 5, "Hello World", None);
+    buffer.write_string(0, 1, "<blink;b;i>Hello World", None);
+    buffer.write_string(size.0 - 5, 5, "Hello World", None);
 
     renderer.render(&mut buffer);
     renderer.quit();
