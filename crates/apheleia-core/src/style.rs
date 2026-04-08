@@ -35,11 +35,17 @@ impl Default for Style {
 }
 impl Style {
     pub fn get_fg_markup(&self) -> String {
-        format!("fg:{}", get_markup_for_color(self.fg))
+        if self.fg == Color::Reset {
+            return "".to_string();
+        }
+        format!("fg:{};", get_markup_for_color(self.fg))
     }
 
     pub fn get_bg_markup(&self) -> String {
-        format!("bg:{}", get_markup_for_color(self.bg))
+        if self.bg == Color::Reset {
+            return "".to_string();
+        }
+        format!("bg:{};", get_markup_for_color(self.bg))
     }
 
     pub fn get_style_markup(&self) -> String {
