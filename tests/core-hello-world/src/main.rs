@@ -1,27 +1,14 @@
-use std::io::stdout;
-
-use apheleia_core::{buffer::Buffer, renderer::Renderer, terminal};
+use apheleia_core::{buffer::Buffer, renderer::Renderer, rich_strings::RichString, terminal};
 
 fn main() {
     let size = terminal::size().unwrap();
 
-    let mut buffer = Buffer::new(100, size.1);
-    let mut renderer = Renderer {
-        width: size.0,
-        height: size.1,
-        stdout: stdout(),
-    };
-    renderer.clear(&mut buffer);
+    let mut buffer = Buffer::new(size.0, size.1);
+    let mut renderer = Renderer::new(size.0, size.1);
+    renderer.init();
 
-    buffer.write_string(
-        0,
-        0,
-        "<magenta>H<italic;darkgrey>e<cyan>l<normal;darkgreen>l<dim;darkgreen>o",
-        None,
-    );
-    buffer.write_string(0, 1, "<blink;b;i>Hello World", None);
-    buffer.write_string(size.0 - 5, 5, "Hello World", None);
+    buffer.write_rich_string(size.0 - 3, 0, RichString::new("H<fg:red>ello"));
 
-    renderer.render(&mut buffer);
+    renderer.render_flip(&mut buffer);
     renderer.quit();
 }
