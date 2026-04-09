@@ -1,4 +1,4 @@
-use std::io::{Error, Stdout, stdout};
+use std::io::{Error, Stdout, Write, stdout};
 
 use crossterm::{
     cursor::{MoveTo, MoveToRow},
@@ -73,10 +73,26 @@ impl Renderer {
             _ = queue!(self.stdout, Print(batch_text.to_string()));
         }
 
+        _ = self.stdout.flush();
         buf.clear_diff();
     }
 
-    pub fn render(&mut self, buf: &mut Buffer) {}
+    pub fn render(&mut self, buf: &mut Buffer) {
+        for (y, map) in buf.get_diffed_cells().iter() {
+            let mut batch_text = String::new();
+            let mut style = Style::default();
+            let mut start_x = 0u16;
+            let mut offset = 0u16;
+
+            _ = queue!(self.stdout, SetAttribute(Attribute::Reset));
+
+            for (x, cell) in map.iter() {
+                println!("X: {} Y: {}", x, y);
+            }
+        }
+
+        _ = self.stdout.flush();
+    }
 
     pub fn quit(&mut self) {
         _ = disable_raw_mode();

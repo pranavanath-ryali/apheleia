@@ -21,6 +21,14 @@ fn main() {
         RichString::new("H<fg:red;bold;italic>el<under_lined>lo"),
     );
 
+    let mut buf = Buffer::new(20, 1);
+    buf.write_rich_string(0, 0, RichString::new("THIS BUFFER"));
+
     renderer.render_flip(&mut buffer);
+
+    buffer.render_buffer(0, 0, &mut buf);
+    renderer.render(&mut buffer);
+    // renderer.render_flip(&mut buffer);
+
     renderer.quit();
 }

@@ -1,3 +1,7 @@
+use std::collections::HashMap;
+
+use indexmap::IndexMap;
+
 use crate::{rich_strings::RichString, style::Style};
 
 // pub struct Line {
@@ -88,7 +92,7 @@ impl Default for Cell {
 pub struct Buffer {
     size: (u16, u16),
     cells: Vec<Vec<Cell>>,
-    diffed_cells: Vec<(u16, u16)>,
+    diffed_cells: HashMap<u16, IndexMap<u16, Cell>>,
 }
 impl Buffer {
     pub fn new(width: u16, height: u16) -> Self {
@@ -105,7 +109,7 @@ impl Buffer {
         Self {
             size: (width, height),
             cells,
-            diffed_cells: vec![],
+            diffed_cells: HashMap::new(),
         }
     }
 
@@ -124,15 +128,23 @@ impl Buffer {
         }
     }
 
-    pub fn render_buffer(&mut self, buf: &mut Buffer) {
+    pub fn render_buffer(&mut self, offset_x: u16, offset_y: u16, buf: &mut Buffer) {
         for (y, row) in buf.cells.iter().enumerate() {
             for (x, cell) in row.iter().enumerate() {
                 if *cell == self.cells[y][x] {
                     continue;
                 }
 
-                self.cells[y][x] = *cell;
-                self.diffed_cells.push((x as u16, y as u16));
+                if offset_x + x as u16 >= self.size.0 || offset_y + y as u16 > self.size.1 {
+                    println!("DROPPED");
+                    continue;
+                }
+
+                self.cells[y + offset_y as usize][x + offset_x as usize] = *cell;
+                self.diffed_cells
+                    .entry(y as u16 + offset_y)
+                    .or_default()
+                    .insert(x as u16 + offset_x, *cell);
             }
         }
     }
@@ -141,7 +153,7 @@ impl Buffer {
         &self.cells[y as usize][x as usize]
     }
 
-    pub fn get_diffed_cells(&self) -> &Vec<(u16, u16)> {
+    pub fn get_diffed_cells(&self) -> &HashMap<u16, IndexMap<u16, Cell>> {
         &self.diffed_cells
     }
 
