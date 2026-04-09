@@ -1,6 +1,4 @@
-use apheleia_core::{
-    buffer::Buffer, renderer::Renderer, rich_strings::RichString, style::Style, terminal,
-};
+use apheleia_core::{buffer::Buffer, renderer::Renderer, rich_strings::RichString, terminal};
 
 fn main() {
     let size = terminal::size().unwrap();
