@@ -120,6 +120,8 @@ fn map_markup_index(text: &str) -> Vec<(usize, usize)> {
 
 #[cfg(test)]
 mod rich_string_test {
+    use crossterm::style::Color;
+
     use crate::style::StyleFlags;
 
     use super::*;
@@ -174,7 +176,7 @@ mod rich_string_test {
 
     #[test]
     fn test_richstring_iter() {
-        let rich_str = RichString::new("<bold>H<italic>H");
+        let rich_str = RichString::new("<bold;fg: red; bg: white>H<bg:blue;italic>H");
         let vec: Vec<(char, Style)> = rich_str.iter().collect();
 
         assert_eq!(
@@ -183,15 +185,17 @@ mod rich_string_test {
                 (
                     'H',
                     Style {
+                        fg: Color::Red,
+                        bg: Color::White,
                         flags: StyleFlags::BOLD,
-                        ..Default::default()
                     }
                 ),
                 (
                     'H',
                     Style {
+                        fg: Color::Red,
+                        bg: Color::Blue,
                         flags: StyleFlags::BOLD | StyleFlags::ITALIC,
-                        ..Default::default()
                     }
                 ),
             ]

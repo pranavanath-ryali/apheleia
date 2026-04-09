@@ -36,36 +36,41 @@ impl Renderer {
         _ = execute!(self.stdout, Clear(crossterm::terminal::ClearType::All));
 
         for y in 0..self.size.1 {
-            let mut text = "".to_string();
+            let mut batch_text = String::new();
             let mut style = Style::default();
-            let mut start_x: u16 = 0;
+            let mut start_x = 0u16;
+
+            _ = queue!(self.stdout, SetAttribute(Attribute::Reset));
 
             for x in 0..self.size.0 {
                 let cell = buf.get_cell(x, y);
-                if style == cell.style {
-                    text.push(cell.c);
+
+                if cell.style == style {
+                    batch_text.push(cell.c);
                     continue;
                 }
+
+                _ = queue!(self.stdout, SetAttribute(Attribute::Reset));
 
                 _ = queue!(self.stdout, MoveTo(start_x, y));
                 _ = queue!(self.stdout, SetForegroundColor(style.fg));
                 _ = queue!(self.stdout, SetBackgroundColor(style.bg));
                 _ = queue_flags(&mut self.stdout, style.flags);
-                _ = queue!(self.stdout, Print(text.to_string()));
+                _ = queue!(self.stdout, Print(batch_text.to_string()));
 
-                text.clear();
-                text.push(cell.c);
+                batch_text.clear();
+                batch_text.push(cell.c);
                 style = cell.style;
                 start_x = x;
             }
+
+            _ = queue!(self.stdout, SetAttribute(Attribute::Reset));
 
             _ = queue!(self.stdout, MoveTo(start_x, y));
             _ = queue!(self.stdout, SetForegroundColor(style.fg));
             _ = queue!(self.stdout, SetBackgroundColor(style.bg));
             _ = queue_flags(&mut self.stdout, style.flags);
-            _ = queue!(self.stdout, Print(text.to_string()));
-
-            queue!(self.stdout, SetAttribute(Attribute::Reset));
+            _ = queue!(self.stdout, Print(batch_text.to_string()));
         }
 
         buf.clear_diff();
