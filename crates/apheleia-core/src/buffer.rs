@@ -42,8 +42,11 @@ impl Buffer {
         }
     }
 
-    pub fn write_string(&mut self, x: u16, y: u16, text: String, style: Style) {
-        let rich_string = RichString::to_rich(&text, style);
+    pub fn write_string(&mut self, x: u16, y: u16, text: String, style: Option<Style>) {
+        let rich_string: RichString = match style {
+            Some(style) => RichString::to_rich(&text, style),
+            None => RichString::new(&text),
+        };
         self.write_rich_string(x, y, rich_string);
     }
 

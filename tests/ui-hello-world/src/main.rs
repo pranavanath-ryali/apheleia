@@ -1,4 +1,4 @@
-use apheleia_core::types::vector::Vector2;
+use apheleia_core::types::Vector2;
 use apheleia_ui::{
     contexts::{node::NodeContext, system::SystemContext},
     extensions::traits::Extension,

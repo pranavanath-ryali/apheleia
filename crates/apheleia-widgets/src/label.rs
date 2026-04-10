@@ -1,4 +1,4 @@
-use apheleia_ui::{contexts::system::SystemContext, node::traits::NodeTrait, vector::Vector2};
+use apheleia_ui::{Vector2, contexts::system::SystemContext, node::traits::NodeTrait};
 
 #[derive(Clone, Copy)]
 pub struct ScrollingTextParams;
@@ -165,5 +165,5 @@ fn render(ctx: &mut SystemContext) {
     }
 
     ctx.get_buffer()
-        .write_string(position.0, position.1, text.as_str(), None);
+        .write_string(position.0, position.1, text, None);
 }

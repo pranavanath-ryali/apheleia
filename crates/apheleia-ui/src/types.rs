@@ -1,6 +1,6 @@
 use std::fmt;
 
-use apheleia_core::types::vector::Vector2;
+use apheleia_core::types::Vector2;
 use crossterm::event::KeyEvent;
 
 use crate::contexts::system::SystemContext;

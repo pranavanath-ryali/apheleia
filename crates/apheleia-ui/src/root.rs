@@ -1,6 +1,6 @@
 use std::{cell::RefCell, error::Error, io::stdout, rc::Rc, time::Duration};
 
-use apheleia_core::{buffer::Buffer, renderer::Renderer, types::vector::Vector2};
+use apheleia_core::{buffer::Buffer, renderer::Renderer, types::Vector2};
 use crossterm::{
     event::{KeyCode, KeyModifiers, poll, read},
     terminal::{self, enable_raw_mode},

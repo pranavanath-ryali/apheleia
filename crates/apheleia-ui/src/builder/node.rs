@@ -1,6 +1,6 @@
 use std::{cell::RefCell, rc::Rc};
 
-use apheleia_core::types::vector::Vector2;
+use apheleia_core::types::Vector2;
 use tree_ds::prelude::Node;
 
 use crate::{

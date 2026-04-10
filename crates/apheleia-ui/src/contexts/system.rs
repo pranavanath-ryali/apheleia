@@ -1,6 +1,6 @@
 use std::{cell::RefCell, mem, rc::Rc};
 
-use apheleia_core::{buffer::Buffer, types::vector::Vector2};
+use apheleia_core::{buffer::Buffer, types::Vector2};
 
 use crate::{
     contexts::traits::ContextCommand,

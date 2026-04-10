@@ -10,12 +10,11 @@ pub mod systems;
 pub mod types;
 pub mod world;
 
-use std::{error::Error, fs::OpenOptions};
-
-pub use apheleia_core::types::vector;
+pub use apheleia_core::types::Vector2;
 pub use crossterm::event::*;
 use fern::Dispatch;
 use log::info;
+use std::{error::Error, fs::OpenOptions};
 
 pub fn setup_logger() -> Result<(), Box<dyn Error>> {
     let log_file = OpenOptions::new()
