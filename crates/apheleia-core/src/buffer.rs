@@ -63,7 +63,7 @@ impl Buffer {
     pub fn render_buffer(&mut self, offset_x: u16, offset_y: u16, buf: &mut Buffer) {
         for (y, row) in buf.cells.iter().enumerate() {
             for (x, cell) in row.iter().enumerate() {
-                if *cell == self.cells[y][x] {
+                if *cell == self.cells[y + offset_y as usize][x + offset_x as usize] {
                     continue;
                 }
 
