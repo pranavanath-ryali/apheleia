@@ -87,8 +87,48 @@ impl Renderer {
             _ = queue!(self.stdout, SetAttribute(Attribute::Reset));
 
             for (x, cell) in map.iter() {
-                println!("X: {} Y: {}", x, y);
+                if *x != start_x + offset + 1 {
+                    _ = queue!(self.stdout, SetAttribute(Attribute::Reset));
+                    _ = queue!(self.stdout, MoveTo(start_x, *y));
+                    _ = queue!(self.stdout, SetForegroundColor(style.fg));
+                    _ = queue!(self.stdout, SetBackgroundColor(style.bg));
+                    _ = queue_flags(&mut self.stdout, style.flags);
+                    _ = queue!(self.stdout, Print(batch_text.to_string()));
+
+                    start_x = *x;
+                    offset = 0;
+                    style = cell.style;
+                    batch_text.clear();
+                    batch_text.push(cell.c);
+
+                    continue;
+                }
+
+                if cell.style != style {
+                    _ = queue!(self.stdout, SetAttribute(Attribute::Reset));
+                    _ = queue!(self.stdout, MoveTo(start_x, *y));
+                    _ = queue!(self.stdout, SetForegroundColor(style.fg));
+                    _ = queue!(self.stdout, SetBackgroundColor(style.bg));
+                    _ = queue_flags(&mut self.stdout, style.flags);
+                    _ = queue!(self.stdout, Print(batch_text.to_string()));
+
+                    start_x = *x;
+                    offset = 0;
+                    style = cell.style;
+                    batch_text.clear();
+                    batch_text.push(cell.c);
+                }
+
+                offset += 1;
+                batch_text.push(cell.c);
             }
+
+            _ = queue!(self.stdout, SetAttribute(Attribute::Reset));
+            _ = queue!(self.stdout, MoveTo(start_x, *y));
+            _ = queue!(self.stdout, SetForegroundColor(style.fg));
+            _ = queue!(self.stdout, SetBackgroundColor(style.bg));
+            _ = queue_flags(&mut self.stdout, style.flags);
+            _ = queue!(self.stdout, Print(batch_text.to_string()));
         }
 
         _ = self.stdout.flush();

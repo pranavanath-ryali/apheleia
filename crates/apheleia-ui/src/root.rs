@@ -52,8 +52,7 @@ impl Default for Root {
 
             buffer: Buffer::new(width, height),
             renderer: Renderer {
-                width,
-                height,
+                size: (width, height),
                 stdout: stdout(),
             },
         }
@@ -236,8 +235,6 @@ impl Root {
         }
     }
     fn render_flip(&mut self) {
-        self.renderer.clear(&mut self.buffer);
-
         let ids: Vec<NodeId> = self
             .data
             .borrow()
@@ -253,7 +250,7 @@ impl Root {
             self.render_node(id);
         }
 
-        self.renderer.render(&mut self.buffer);
+        self.renderer.render_flip(&mut self.buffer);
         self.data.borrow_mut().dirty_tracker.clear_render();
     }
 
