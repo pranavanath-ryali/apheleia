@@ -30,7 +30,6 @@ fn main() {
 
     buffer.render_buffer(0, 5, &mut buf);
     renderer.render(&mut buffer);
-    // renderer.render_flip(&mut buffer);
 
     renderer.quit();
 }

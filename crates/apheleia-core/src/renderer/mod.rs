@@ -40,8 +40,6 @@ impl Renderer {
             let mut style = Style::default();
             let mut start_x = 0u16;
 
-            _ = queue!(self.stdout, SetAttribute(Attribute::Reset));
-
             for x in 0..self.size.0 {
                 let cell = buf.get_cell(x, y);
 
@@ -50,13 +48,7 @@ impl Renderer {
                     continue;
                 }
 
-                _ = queue!(self.stdout, SetAttribute(Attribute::Reset));
-
-                _ = queue!(self.stdout, MoveTo(start_x, y));
-                _ = queue!(self.stdout, SetForegroundColor(style.fg));
-                _ = queue!(self.stdout, SetBackgroundColor(style.bg));
-                _ = queue_flags(&mut self.stdout, style.flags);
-                _ = queue!(self.stdout, Print(batch_text.to_string()));
+                _ = queue_batch(&mut self.stdout, start_x, y, &batch_text, style);
 
                 batch_text.clear();
                 batch_text.push(cell.c);
@@ -64,13 +56,7 @@ impl Renderer {
                 start_x = x;
             }
 
-            _ = queue!(self.stdout, SetAttribute(Attribute::Reset));
-
-            _ = queue!(self.stdout, MoveTo(start_x, y));
-            _ = queue!(self.stdout, SetForegroundColor(style.fg));
-            _ = queue!(self.stdout, SetBackgroundColor(style.bg));
-            _ = queue_flags(&mut self.stdout, style.flags);
-            _ = queue!(self.stdout, Print(batch_text.to_string()));
+            _ = queue_batch(&mut self.stdout, start_x, y, &batch_text, style);
         }
 
         _ = self.stdout.flush();
@@ -84,16 +70,9 @@ impl Renderer {
             let mut start_x = 0u16;
             let mut offset = 0u16;
 
-            _ = queue!(self.stdout, SetAttribute(Attribute::Reset));
-
             for (x, cell) in map.iter() {
                 if *x != start_x + offset + 1 {
-                    _ = queue!(self.stdout, SetAttribute(Attribute::Reset));
-                    _ = queue!(self.stdout, MoveTo(start_x, *y));
-                    _ = queue!(self.stdout, SetForegroundColor(style.fg));
-                    _ = queue!(self.stdout, SetBackgroundColor(style.bg));
-                    _ = queue_flags(&mut self.stdout, style.flags);
-                    _ = queue!(self.stdout, Print(batch_text.to_string()));
+                    _ = queue_batch(&mut self.stdout, start_x, *y, &batch_text, style);
 
                     start_x = *x;
                     offset = 0;
@@ -105,12 +84,7 @@ impl Renderer {
                 }
 
                 if cell.style != style {
-                    _ = queue!(self.stdout, SetAttribute(Attribute::Reset));
-                    _ = queue!(self.stdout, MoveTo(start_x, *y));
-                    _ = queue!(self.stdout, SetForegroundColor(style.fg));
-                    _ = queue!(self.stdout, SetBackgroundColor(style.bg));
-                    _ = queue_flags(&mut self.stdout, style.flags);
-                    _ = queue!(self.stdout, Print(batch_text.to_string()));
+                    _ = queue_batch(&mut self.stdout, start_x, *y, &batch_text, style);
 
                     start_x = *x;
                     offset = 0;
@@ -123,12 +97,7 @@ impl Renderer {
                 batch_text.push(cell.c);
             }
 
-            _ = queue!(self.stdout, SetAttribute(Attribute::Reset));
-            _ = queue!(self.stdout, MoveTo(start_x, *y));
-            _ = queue!(self.stdout, SetForegroundColor(style.fg));
-            _ = queue!(self.stdout, SetBackgroundColor(style.bg));
-            _ = queue_flags(&mut self.stdout, style.flags);
-            _ = queue!(self.stdout, Print(batch_text.to_string()));
+            _ = queue_batch(&mut self.stdout, start_x, *y, &batch_text, style);
         }
 
         _ = self.stdout.flush();
@@ -137,6 +106,24 @@ impl Renderer {
     pub fn quit(&mut self) {
         _ = disable_raw_mode();
     }
+}
+
+fn queue_batch(
+    stdout: &mut Stdout,
+    x: u16,
+    y: u16,
+    text: &String,
+    style: Style,
+) -> Result<(), Error> {
+    queue!(stdout, SetAttribute(Attribute::Reset))?;
+
+    queue!(stdout, MoveTo(x, y))?;
+    queue!(stdout, SetForegroundColor(style.fg))?;
+    queue!(stdout, SetBackgroundColor(style.bg))?;
+    queue_flags(stdout, style.flags)?;
+    queue!(stdout, Print(text.to_string()))?;
+
+    Ok(())
 }
 
 fn queue_flags(stdout: &mut Stdout, flags: StyleFlags) -> Result<(), Error> {
