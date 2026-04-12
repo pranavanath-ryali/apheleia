@@ -1,4 +1,4 @@
-use std::{cell::RefCell, error::Error, io::stdout, rc::Rc, time::Duration};
+use std::{cell::RefCell, error::Error, io::stdout, mem::take, rc::Rc, time::Duration};
 
 use apheleia_core::{buffer::Buffer, renderer::Renderer, types::Vector2};
 use crossterm::{
@@ -10,7 +10,7 @@ use tree_ds::prelude::{Node, Tree};
 
 use crate::{
     builder::node::NodeBuilder,
-    contexts::{node::NodeContext, system::SystemContext},
+    contexts::{node::NodeContext, system::SystemContext, traits::ContextCommand},
     dirty_tracker::DirtyTracker,
     extensions::{store::ExtensionStore, traits::Extension},
     id_generator::{IdGenerator, IdGeneratorTrait},
@@ -18,7 +18,7 @@ use crate::{
     resources::{store::ResourceStore, traits::Resource},
     systems::store::SystemStore,
     types::{EventData, EventType, NodeId},
-    world::{WorldViewForBuilder, WorldViewForNode, WorldViewForSystems},
+    world::{WorldViewForBuilder, WorldViewForCommands, WorldViewForNode, WorldViewForSystems},
 };
 
 pub struct Root {
@@ -91,6 +91,18 @@ impl Root {
         position
     }
 
+    fn run_commands(&mut self, commands: Vec<Box<dyn ContextCommand>>) {
+        for command in commands {
+            command.execute(&mut WorldViewForCommands {
+                node_storage: &mut self.node_storage,
+                systems_store: &mut self.system_store,
+                extension_store: &mut self.extension_store,
+                dirty_tracker: &mut self.dirty_tracker,
+                resource_store: &mut self.resource_store,
+            });
+        }
+    }
+
     fn initial_setup(&mut self) {
         info!("RootNode inital_setup started");
 
@@ -112,7 +124,9 @@ impl Root {
             };
             let mut ctx = NodeContext::new(id, &mut world);
             node.initial_setup(&mut ctx);
-            ctx.run_commands();
+
+            let commands = take(ctx.get_commands());
+            self.run_commands(commands);
 
             let global_position = self.calculate_global_position(id);
             self.node_storage
@@ -168,7 +182,8 @@ impl Root {
             let mut ctx = SystemContext::new_event(&event_data, &mut world);
             self.system_store
                 .run_systems_for_type(crate::types::UpdateType::Event(event_type), &mut ctx);
-            ctx.run_commands();
+            let commands = take(ctx.get_commands());
+            self.run_commands(commands);
         }
         info!("RootNode event ended");
         Ok(())
@@ -193,7 +208,8 @@ impl Root {
                 id,
                 &mut ctx,
             );
-            ctx.run_commands();
+            let commands = take(ctx.get_commands());
+            self.run_commands(commands);
         }
         self.dirty_tracker.clear_update();
 
@@ -210,7 +226,8 @@ impl Root {
         let mut ctx = SystemContext::new(&mut world);
         self.system_store
             .run_systems_for_type(crate::types::UpdateType::ConstantUpdate, &mut ctx);
-        ctx.run_commands();
+        let commands = take(ctx.get_commands());
+        self.run_commands(commands);
     }
     fn render_node(&mut self, id: NodeId) {
         let size = self.node_storage.get_data(id).unwrap().get_size();

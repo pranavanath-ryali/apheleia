@@ -28,6 +28,14 @@ impl<'a> NodeContext<'a> {
         self.id
     }
 
+    pub fn add_command(&mut self, command: Box<dyn ContextCommand>) {
+        self.commands.push(command);
+    }
+
+    pub fn get_commands(&mut self) -> &mut Vec<Box<dyn ContextCommand>> {
+        &mut self.commands
+    }
+
     // pub fn add_system(&mut self, update_type: UpdateType, priority: isize, system: System) {
     //     let id = self.get_id();
     //     self.rootnode_data
@@ -70,12 +78,12 @@ impl<'a> NodeContext<'a> {
     //     None
     // }
 
-    pub(crate) fn run_commands(&mut self) {
-        let commands = mem::take(&mut self.commands);
-        for command in commands {
-            // command.execute(self.rootnode_data.clone());
-        }
-    }
+    // pub(crate) fn run_commands(&mut self) {
+    //     let commands = mem::take(&mut self.commands);
+    //     for command in commands {
+    //         // command.execute(self.rootnode_data.clone());
+    //     }
+    // }
 
     // pub fn get_position(&self) -> Vector2 {
     //     self.rootnode_data

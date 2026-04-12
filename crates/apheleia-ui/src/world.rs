@@ -29,6 +29,14 @@ pub struct WorldViewForSystems<'a> {
     pub resource_store: &'a mut ResourceStore,
 }
 
+pub struct WorldViewForCommands<'a> {
+    pub node_storage: &'a mut NodeStore,
+    pub systems_store: &'a mut SystemStore,
+    pub extension_store: &'a mut ExtensionStore,
+    pub dirty_tracker: &'a mut DirtyTracker,
+    pub resource_store: &'a mut ResourceStore,
+}
+
 // pub struct World {
 //     pub relations: Tree<NodeId, NodeId>,
 
