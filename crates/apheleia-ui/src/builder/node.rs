@@ -7,19 +7,19 @@ use crate::{
     extensions::traits::Extension,
     node::{data::NodeData, traits::NodeTrait},
     types::{NodeId, System, UpdateType},
-    world::WorldViewForSystems,
+    world::WorldViewForBuilder,
 };
 
-pub struct NodeBuilder {
-    rootnode_data: Rc<RefCell<WorldViewForSystems>>,
+pub struct NodeBuilder<'a> {
+    rootnode_data: &'a mut WorldViewForBuilder<'a>,
 
     id: NodeId,
     class: String,
     parent_id: NodeId,
     data: NodeData,
 }
-impl NodeBuilder {
-    pub fn new(id: NodeId, class: &str, rootnode_data: Rc<RefCell<WorldViewForSystems>>) -> Self {
+impl<'a> NodeBuilder<'a> {
+    pub fn new(id: NodeId, class: &str, rootnode_data: &'a mut WorldViewForBuilder<'a>) -> Self {
         NodeBuilder {
             rootnode_data,
 
@@ -41,7 +41,7 @@ impl NodeBuilder {
     }
 
     pub fn set_parent(&mut self, parent: &str) -> &mut Self {
-        if let Some(parent_id) = self.rootnode_data.borrow().node_storage.get_id(parent) {
+        if let Some(parent_id) = self.rootnode_data.node_storage.get_id(parent) {
             self.parent_id = *parent_id;
         } else {
             panic!("Node of class '{}' doesn't exist.", { parent });
@@ -51,14 +51,12 @@ impl NodeBuilder {
 
     pub fn extension<T: Extension>(&mut self, extension: Box<T>) -> &mut Self {
         {
-            let ext_id = self.rootnode_data.borrow_mut().extension_store.get_id();
+            let ext_id = self.rootnode_data.extension_store.get_id();
             self.rootnode_data
-                .borrow_mut()
                 .extension_store
                 .add_extension(ext_id, extension);
             _ = self
                 .rootnode_data
-                .borrow_mut()
                 .extension_store
                 .bind_extension::<T>(self.id, ext_id);
         }
@@ -71,27 +69,20 @@ impl NodeBuilder {
         priority: isize,
         system: System,
     ) -> &mut Self {
-        self.rootnode_data.borrow_mut().system_store.add_system(
-            self.id,
-            update_type,
-            priority,
-            system,
-        );
+        self.rootnode_data
+            .system_store
+            .add_system(self.id, update_type, priority, system);
         self
     }
 
     pub fn build<T: NodeTrait>(&mut self, node: T) {
         _ = self
             .rootnode_data
-            .borrow_mut()
             .relations
             .add_node(Node::new(self.id, None), Some(&self.parent_id));
 
-        self.rootnode_data.borrow_mut().node_storage.add_node(
-            self.id,
-            &self.class,
-            Box::new(node),
-            self.data,
-        );
+        self.rootnode_data
+            .node_storage
+            .add_node(self.id, &self.class, Box::new(node), self.data);
     }
 }

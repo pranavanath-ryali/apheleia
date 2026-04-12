@@ -6,7 +6,7 @@ use crate::{
     contexts::traits::ContextCommand,
     resources::traits::Resource,
     types::{NodeId, System, UpdateType},
-    world::{WorldViewForNode, WorldViewForSystems},
+    world::WorldViewForNode,
 };
 
 pub struct NodeContext<'a> {

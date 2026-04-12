@@ -5,6 +5,15 @@ use crate::{
     resources::store::ResourceStore, systems::store::SystemStore, types::NodeId,
 };
 
+pub struct WorldViewForBuilder<'a> {
+    pub relations: &'a mut Tree<NodeId, NodeId>,
+
+    pub node_storage: &'a mut NodeStore,
+    pub extension_store: &'a mut ExtensionStore,
+    pub system_store: &'a mut SystemStore,
+    pub resource_store: &'a mut ResourceStore,
+}
+
 pub struct WorldViewForNode<'a> {
     pub extension_store: &'a mut ExtensionStore,
     pub system_store: &'a mut SystemStore,

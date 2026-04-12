@@ -18,7 +18,7 @@ use crate::{
     resources::{store::ResourceStore, traits::Resource},
     systems::store::SystemStore,
     types::{EventData, EventType, NodeId},
-    world::{WorldViewForNode, WorldViewForSystems},
+    world::{WorldViewForBuilder, WorldViewForNode, WorldViewForSystems},
 };
 
 pub struct Root {
