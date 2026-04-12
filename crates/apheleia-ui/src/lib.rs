@@ -10,6 +10,7 @@ pub mod systems;
 pub mod types;
 pub mod world;
 
+pub use apheleia_core::rich_strings::RichString;
 pub use apheleia_core::types::Vector2;
 pub use crossterm::event::*;
 use fern::Dispatch;

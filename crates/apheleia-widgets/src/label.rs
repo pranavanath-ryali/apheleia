@@ -1,7 +1,7 @@
 use std::mem::take;
 
 use apheleia_ui::{
-    Vector2, contexts::system::SystemContext, extensions::traits::Extension,
+    RichString, Vector2, contexts::system::SystemContext, extensions::traits::Extension,
     node::traits::NodeTrait,
 };
 
@@ -31,7 +31,7 @@ pub enum VerticalAlignment {
 }
 
 pub struct LabelExtension {
-    pub text: String,
+    pub text: RichString,
 
     pub overflow: TextOverflow,
     pub horizontal_alignment: HorizontalAlignment,
@@ -48,7 +48,7 @@ impl Extension for LabelExtension {
 }
 
 pub struct LabelNode {
-    pub text: String,
+    pub text: RichString,
 
     pub overflow: TextOverflow,
     pub horizontal_alignment: HorizontalAlignment,

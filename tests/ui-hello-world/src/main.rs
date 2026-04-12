@@ -139,7 +139,7 @@ fn main() {
         builder
             .set_class("scrolling_text")
             .set_size(Vector2(5, 1))
-            .node(LabelNode::new("hmmmmmmmmmmmmmmm").set_overflow(
+            .node(LabelNode::new("Hello World. <fg:red>This Text is <under_lined>RED. <fg:blue>This Text is <slow_blink>BLUE").set_overflow(
                 apheleia_widgets::label::TextOverflow::Scroll(
                     apheleia_widgets::label::ScrollingTextParams { scroll_step: 0.5 },
                 ),
