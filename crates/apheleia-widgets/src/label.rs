@@ -114,7 +114,9 @@ fn scroll_update(ctx: &mut SystemContext) {
     let size = ctx.get_size().expect("A size is expected for Label");
     let ext = ctx.get_extension_mut::<LabelExtension>();
 
-    if let TextOverflow::Scroll(scroll_params) = ext.overflow {
+    if let TextOverflow::Scroll(scroll_params) = ext.overflow
+        && ext.text.len() >= size.0 as usize
+    {
         ext.scroll_counter += scroll_params.scroll_step;
         if ext.scroll_counter >= 1.0 {
             ext.scroll_counter = 0.0;

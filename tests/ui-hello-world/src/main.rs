@@ -138,8 +138,8 @@ fn main() {
     root.create_node(|builder| {
         builder
             .set_class("scrolling_text")
-            .set_size(Vector2(10, 1))
-            .node(LabelNode::new("HelloThereMyNameIsAPHELEIA").set_overflow(
+            .set_size(Vector2(5, 1))
+            .node(LabelNode::new("hmmmmmmmmmmmmmmm").set_overflow(
                 apheleia_widgets::label::TextOverflow::Scroll(
                     apheleia_widgets::label::ScrollingTextParams { scroll_step: 0.5 },
                 ),
