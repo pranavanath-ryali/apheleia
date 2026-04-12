@@ -11,7 +11,7 @@ use crate::{
     node::traits::NodeTrait,
     resources::traits::Resource,
     types::{EventData, NodeId},
-    world::World,
+    world::WorldViewForSystems,
 };
 
 pub struct SystemContext<'a> {
@@ -19,7 +19,7 @@ pub struct SystemContext<'a> {
     event_data: Option<&'a EventData>,
     buffer: Option<&'a mut Buffer>,
 
-    rootnode_data: &'a mut World<'a>,
+    rootnode_data: &'a mut WorldViewForSystems<'a>,
     commands: Vec<Box<dyn ContextCommand>>,
 }
 impl<'a> SystemContext<'a> {
@@ -30,7 +30,7 @@ impl<'a> SystemContext<'a> {
         self.id.unwrap()
     }
 
-    pub fn new(rootnode_data: &'a mut World<'a>) -> Self {
+    pub fn new(rootnode_data: &'a mut WorldViewForSystems<'a>) -> Self {
         Self {
             id: None,
             event_data: None,
@@ -40,7 +40,10 @@ impl<'a> SystemContext<'a> {
         }
     }
 
-    pub fn new_event(event_data: &'a EventData, rootnode_data: &'a mut World<'a>) -> Self {
+    pub fn new_event(
+        event_data: &'a EventData,
+        rootnode_data: &'a mut WorldViewForSystems<'a>,
+    ) -> Self {
         Self {
             id: None,
             event_data: Some(event_data),
@@ -50,7 +53,10 @@ impl<'a> SystemContext<'a> {
         }
     }
 
-    pub fn new_render(buffer: &'a mut Buffer, rootnode_data: &'a mut World<'a>) -> Self {
+    pub fn new_render(
+        buffer: &'a mut Buffer,
+        rootnode_data: &'a mut WorldViewForSystems<'a>,
+    ) -> Self {
         Self {
             id: None,
             event_data: None,

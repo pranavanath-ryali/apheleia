@@ -18,7 +18,7 @@ use crate::{
     resources::{store::ResourceStore, traits::Resource},
     systems::store::SystemStore,
     types::{EventData, EventType, NodeId},
-    world::{World, WorldViewForNode},
+    world::{WorldViewForNode, WorldViewForSystems},
 };
 
 pub struct Root {
@@ -75,17 +75,14 @@ impl Default for Root {
 }
 impl Root {
     fn calculate_global_position(&self, id: NodeId) -> Vector2 {
-        let relations = &self.data.borrow().relations;
-        let node_storage = &self.data.borrow().node_storage;
-
-        let mut position = node_storage.get_data(id).unwrap().position;
-        relations
+        let mut position = self.node_storage.get_data(id).unwrap().position;
+        self.relations
             .get_ancestor_ids(&id)
             .unwrap()
             .iter()
             .filter(|id| **id != 0_usize)
             .for_each(|node_id| {
-                let pos = node_storage.get_data(*node_id).unwrap().position;
+                let pos = self.node_storage.get_data(*node_id).unwrap().position;
 
                 position.0 += pos.0;
                 position.1 += pos.1;
@@ -107,7 +104,6 @@ impl Root {
             .collect();
 
         for id in ids {
-            // let node = { self.node_storage.get_node_mut(id).unwrap() as *mut Box<dyn NodeTrait> };
             let node = self.node_storage.get_node_mut(id).unwrap();
             let mut world = WorldViewForNode {
                 extension_store: &mut self.extension_store,
@@ -160,10 +156,17 @@ impl Root {
         if event_type != EventType::None {
             info!("RootNode Event data: {:?}", event_data);
 
-            let mut ctx = SystemContext::new_event(&event_data, self.data.clone());
-            self.data
-                .borrow_mut()
-                .system_store
+            let mut world = WorldViewForSystems {
+                relations: &mut self.relations,
+
+                node_storage: &mut self.node_storage,
+                dirty_tracker: &mut self.dirty_tracker,
+                extension_store: &mut self.extension_store,
+                resource_store: &mut self.resource_store,
+            };
+
+            let mut ctx = SystemContext::new_event(&event_data, &mut world);
+            self.system_store
                 .run_systems_for_type(crate::types::UpdateType::Event(event_type), &mut ctx);
             ctx.run_commands();
         }
@@ -173,65 +176,64 @@ impl Root {
 
     fn update(&mut self) {
         // Update Nodes marked dirty
-        let ids: Vec<NodeId> = self
-            .data
-            .borrow()
-            .dirty_tracker
-            .iter_update()
-            .copied()
-            .collect();
+        let ids: Vec<NodeId> = self.dirty_tracker.iter_update().copied().collect();
         for id in ids {
-            let mut ctx = SystemContext::new(self.data.clone());
-            let system_store =
-                { (self.data.borrow_mut().system_store.as_mut()) as *mut SystemStore };
-            unsafe {
-                (*system_store).run_systems_for_node_with_type(
-                    crate::types::UpdateType::ConstantUpdate,
-                    id,
-                    &mut ctx,
-                );
-            }
+            let mut world = WorldViewForSystems {
+                relations: &mut self.relations,
+
+                dirty_tracker: &mut self.dirty_tracker,
+                extension_store: &mut self.extension_store,
+                node_storage: &mut self.node_storage,
+                resource_store: &mut self.resource_store,
+            };
+
+            let mut ctx = SystemContext::new(&mut world);
+            self.system_store.run_systems_for_node_with_type(
+                crate::types::UpdateType::ConstantUpdate,
+                id,
+                &mut ctx,
+            );
             ctx.run_commands();
         }
-        self.data.borrow_mut().dirty_tracker.clear_update();
+        self.dirty_tracker.clear_update();
 
         // Update Nodes registered for constant update
         // TODO: Add a check to see if there are any systems registered for constant update
-        let mut ctx = SystemContext::new(self.data.clone());
-        let system_store = { (self.data.borrow_mut().system_store.as_mut()) as *mut SystemStore };
-        unsafe {
-            (*system_store)
-                .run_systems_for_type(crate::types::UpdateType::ConstantUpdate, &mut ctx);
-        }
+        let mut world = WorldViewForSystems {
+            relations: &mut self.relations,
+
+            dirty_tracker: &mut self.dirty_tracker,
+            extension_store: &mut self.extension_store,
+            node_storage: &mut self.node_storage,
+            resource_store: &mut self.resource_store,
+        };
+        let mut ctx = SystemContext::new(&mut world);
+        self.system_store
+            .run_systems_for_type(crate::types::UpdateType::ConstantUpdate, &mut ctx);
         ctx.run_commands();
     }
     fn render_node(&mut self, id: NodeId) {
-        let size = self
-            .data
-            .borrow()
-            .node_storage
-            .get_data(id)
-            .unwrap()
-            .get_size();
+        let size = self.node_storage.get_data(id).unwrap().get_size();
         if let Some(size) = size {
             info!("RootNode Render node begins: {}", id);
 
             let mut node_buffer = Buffer::new(size.0, size.1);
-            let mut ctx = SystemContext::new_render(&mut node_buffer, self.data.clone());
+            let mut world = WorldViewForSystems {
+                relations: &mut self.relations,
 
-            let system_store =
-                { (self.data.borrow_mut().system_store.as_mut()) as *mut SystemStore };
-            unsafe {
-                (*system_store).run_systems_for_node_with_type(
-                    crate::types::UpdateType::Render,
-                    id,
-                    &mut ctx,
-                );
-            }
+                dirty_tracker: &mut self.dirty_tracker,
+                extension_store: &mut self.extension_store,
+                node_storage: &mut self.node_storage,
+                resource_store: &mut self.resource_store,
+            };
+            let mut ctx = SystemContext::new_render(&mut node_buffer, &mut world);
+            self.system_store.run_systems_for_node_with_type(
+                crate::types::UpdateType::Render,
+                id,
+                &mut ctx,
+            );
 
             let position = self
-                .data
-                .borrow_mut()
                 .node_storage
                 .get_data(id)
                 .unwrap()
@@ -245,8 +247,6 @@ impl Root {
     }
     fn render_flip(&mut self) {
         let ids: Vec<NodeId> = self
-            .data
-            .borrow()
             .relations
             .traverse(&0, tree_ds::prelude::TraversalStrategy::PreOrder)
             .unwrap()
@@ -260,17 +260,11 @@ impl Root {
         }
 
         self.renderer.render_flip(&mut self.buffer);
-        self.data.borrow_mut().dirty_tracker.clear_render();
+        self.dirty_tracker.clear_render();
     }
 
     fn render(&mut self) {
-        let ids: Vec<NodeId> = self
-            .data
-            .borrow()
-            .dirty_tracker
-            .iter_render()
-            .copied()
-            .collect();
+        let ids: Vec<NodeId> = self.dirty_tracker.iter_render().copied().collect();
 
         for id in ids {
             info!("Apparently id {} is marked dirty", id);
@@ -278,7 +272,7 @@ impl Root {
         }
 
         self.renderer.render(&mut self.buffer);
-        self.data.borrow_mut().dirty_tracker.clear_render();
+        self.dirty_tracker.clear_render();
     }
 
     pub fn run(&mut self) {
@@ -297,18 +291,16 @@ impl Root {
 
     // Functions for Developers
     pub fn create_node(&mut self, class: &str) -> NodeBuilder {
-        NodeBuilder::new(
-            self.nodeid_gen.borrow_mut().next(),
-            class,
-            self.data.clone(),
-        )
+        todo!()
+        // NodeBuilder::new(
+        //     self.nodeid_gen.borrow_mut().next(),
+        //     class,
+        //     self.data.clone(),
+        // )
     }
 
     pub fn add_resource<T: Resource>(&mut self, res: T) {
-        self.data
-            .borrow_mut()
-            .resource_store
-            .add_resource(Box::new(res));
+        self.resource_store.add_resource(Box::new(res));
     }
 
     pub fn bind_extension_to_classes<T: Extension>(
@@ -316,20 +308,13 @@ impl Root {
         classes: Vec<&str>,
         extension: Box<T>,
     ) {
-        let ext_id = self.data.borrow_mut().extension_store.get_id();
-        self.data
-            .borrow_mut()
-            .extension_store
-            .add_extension(ext_id, extension);
+        let ext_id = self.extension_store.get_id();
+        self.extension_store.add_extension(ext_id, extension);
 
         for class in classes {
-            let id = self.data.borrow_mut().node_storage.get_id(class).cloned();
+            let id = self.node_storage.get_id(class).cloned();
             if let Some(id) = id {
-                _ = self
-                    .data
-                    .borrow_mut()
-                    .extension_store
-                    .bind_extension::<T>(id, ext_id);
+                _ = self.extension_store.bind_extension::<T>(id, ext_id);
             }
         }
     }

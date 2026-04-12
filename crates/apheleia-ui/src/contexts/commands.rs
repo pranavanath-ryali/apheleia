@@ -26,7 +26,7 @@ pub struct MarkUpdateDirty(pub NodeId);
 impl ContextCommand for SetSize {
     fn execute(
         self: Box<Self>,
-        rootnode_data: std::rc::Rc<std::cell::RefCell<crate::world::World>>,
+        rootnode_data: std::rc::Rc<std::cell::RefCell<crate::world::WorldViewForSystems>>,
     ) {
         rootnode_data
             .borrow_mut()
@@ -39,7 +39,7 @@ impl ContextCommand for SetSize {
 impl ContextCommand for SetPosition {
     fn execute(
         self: Box<Self>,
-        rootnode_data: std::rc::Rc<std::cell::RefCell<crate::world::World>>,
+        rootnode_data: std::rc::Rc<std::cell::RefCell<crate::world::WorldViewForSystems>>,
     ) {
         rootnode_data
             .borrow_mut()

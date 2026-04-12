@@ -11,13 +11,12 @@ pub struct WorldViewForNode<'a> {
     pub resource_store: &'a mut ResourceStore,
 }
 
-pub struct World<'a> {
+pub struct WorldViewForSystems<'a> {
     pub relations: &'a mut Tree<NodeId, NodeId>,
 
     pub node_storage: &'a mut NodeStore,
     pub extension_store: &'a mut ExtensionStore,
     pub dirty_tracker: &'a mut DirtyTracker,
-    pub system_store: &'a mut SystemStore,
     pub resource_store: &'a mut ResourceStore,
 }
 
