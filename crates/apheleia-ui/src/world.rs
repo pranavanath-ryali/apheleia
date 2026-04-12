@@ -5,7 +5,7 @@ use crate::{
     resources::store::ResourceStore, systems::store::SystemStore, types::NodeId,
 };
 
-pub struct SystemView<'a> {
+pub(crate) struct SystemView<'a> {
     pub relations: &'a Tree<NodeId, NodeId>,
 
     pub node_storage: &'a NodeStore,

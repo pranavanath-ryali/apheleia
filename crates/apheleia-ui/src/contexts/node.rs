@@ -1,19 +1,11 @@
-use std::{cell::RefCell, mem, rc::Rc};
-
-use apheleia_core::types::Vector2;
-
-use crate::{
-    contexts::traits::ContextCommand,
-    resources::traits::Resource,
-    types::{NodeId, System, UpdateType},
-};
+use crate::{contexts::traits::ContextCommand, types::NodeId};
 
 pub struct NodeContext {
     id: NodeId,
     commands: Vec<Box<dyn ContextCommand>>,
 }
 impl NodeContext {
-    pub fn new(id: NodeId) -> NodeContext {
+    pub(crate) fn new(id: NodeId) -> NodeContext {
         Self {
             id,
             commands: vec![],
@@ -28,7 +20,7 @@ impl NodeContext {
         self.commands.push(command);
     }
 
-    pub fn get_commands(&mut self) -> &mut Vec<Box<dyn ContextCommand>> {
+    pub(crate) fn get_commands(&mut self) -> &mut Vec<Box<dyn ContextCommand>> {
         &mut self.commands
     }
 

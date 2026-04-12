@@ -67,7 +67,8 @@ impl ContextCommand for CreateNode {
 }
 impl ContextCommand for AddExtensionToId {
     fn execute(self: Box<Self>, world: &mut crate::world::WorldViewForCommands) {
-        world.extension_store.add_extension(self.0, self.1);
+        let ext_id = world.extension_store.get_id();
+        world.extension_store.add_extension(ext_id, self.1);
     }
 }
 impl ContextCommand for HookSystemToId {

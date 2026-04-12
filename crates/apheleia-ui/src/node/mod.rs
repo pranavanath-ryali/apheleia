@@ -3,7 +3,7 @@ use std::any::Any;
 use crate::{contexts::node::NodeContext, node::traits::NodeTrait};
 
 pub mod data;
-pub mod store;
+pub(crate) mod store;
 pub mod traits;
 
 pub struct EmptyNode;

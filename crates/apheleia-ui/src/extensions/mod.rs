@@ -1,2 +1,2 @@
-pub mod store;
+pub(crate) mod store;
 pub mod traits;

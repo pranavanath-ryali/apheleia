@@ -3,13 +3,7 @@ use std::{cell::RefCell, mem, rc::Rc};
 use apheleia_core::{buffer::Buffer, types::Vector2};
 
 use crate::{
-    contexts::{
-        commands::{SetPosition, SetSize},
-        traits::ContextCommand,
-    },
-    extensions::traits::Extension,
-    node::traits::NodeTrait,
-    resources::traits::Resource,
+    contexts::traits::ContextCommand,
     types::{EventData, NodeId},
     world::SystemView,
 };
@@ -30,7 +24,7 @@ impl<'a> SystemContext<'a> {
         self.id.unwrap()
     }
 
-    pub fn new(world: &'a mut SystemView<'a>) -> Self {
+    pub(crate) fn new(world: &'a mut SystemView<'a>) -> Self {
         Self {
             id: None,
             event_data: None,
@@ -40,7 +34,7 @@ impl<'a> SystemContext<'a> {
         }
     }
 
-    pub fn new_event(event_data: &'a EventData, world: &'a mut SystemView<'a>) -> Self {
+    pub(crate) fn new_event(event_data: &'a EventData, world: &'a mut SystemView<'a>) -> Self {
         Self {
             id: None,
             event_data: Some(event_data),
@@ -50,7 +44,7 @@ impl<'a> SystemContext<'a> {
         }
     }
 
-    pub fn new_render(buffer: &'a mut Buffer, world: &'a mut SystemView<'a>) -> Self {
+    pub(crate) fn new_render(buffer: &'a mut Buffer, world: &'a mut SystemView<'a>) -> Self {
         Self {
             id: None,
             event_data: None,
@@ -64,8 +58,19 @@ impl<'a> SystemContext<'a> {
         self.commands.push(command);
     }
 
-    pub fn get_commands(&mut self) -> &mut Vec<Box<dyn ContextCommand>> {
+    pub(crate) fn get_commands(&mut self) -> &mut Vec<Box<dyn ContextCommand>> {
         &mut self.commands
+    }
+
+    pub fn get_event_data(&mut self) -> &EventData {
+        self.event_data
+            .expect("SystemContext.get_event_data() is used outside of event context.")
+    }
+
+    pub fn get_buffer(&mut self) -> &mut Buffer {
+        self.buffer
+            .as_mut()
+            .expect("SystemContext.get_buffer() is used outside of render context.")
     }
 
     // ExtensionStore Functions
@@ -185,11 +190,5 @@ impl<'a> SystemContext<'a> {
     // }
     // pub fn set_size(&mut self, size: Vector2) {
     //     self.add_command(Box::new(SetSize(self.get_id(), size)));
-    // }
-
-    // pub fn get_buffer(&mut self) -> &mut Buffer {
-    //     self.buffer
-    //         .as_mut()
-    //         .expect("SystemContext.get_buffer() is used outside of render context.")
     // }
 }

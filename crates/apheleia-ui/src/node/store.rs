@@ -14,7 +14,7 @@ pub struct NodeStore {
     class_id: HashMap<String, NodeId>,
 }
 impl NodeStore {
-    pub fn add_node(
+    pub(crate) fn add_node(
         &mut self,
         id: NodeId,
         class: Option<String>,
@@ -63,12 +63,5 @@ impl NodeStore {
 
     pub fn get_id(&self, class: &str) -> Option<&NodeId> {
         self.class_id.get(class)
-    }
-
-    pub fn iter_id_data(&self) -> std::collections::hash_map::Iter<'_, usize, NodeData> {
-        self.id_data.iter()
-    }
-    pub fn iter_id_data_mut(&mut self) -> std::collections::hash_map::IterMut<'_, usize, NodeData> {
-        self.id_data.iter_mut()
     }
 }
