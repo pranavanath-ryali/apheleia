@@ -304,7 +304,7 @@ impl Root {
     // Functions for Developers
     pub fn create_node(&mut self, f: impl FnOnce(NodeBuilder) -> NodeBuilder) {
         let mut builder = f(NodeBuilder::new(self.nodeid_gen.borrow_mut().next()));
-        self.run_commands(take(builder.get_commands()));
+        self.run_commands(builder.build());
     }
 
     // pub fn create_node<'a>(&mut self, class: &str) -> &'a mut NodeBuilder {

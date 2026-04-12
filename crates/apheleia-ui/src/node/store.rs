@@ -14,16 +14,18 @@ pub struct NodeStore {
     class_id: HashMap<String, NodeId>,
 }
 impl NodeStore {
-    pub fn add_node<T: NodeTrait>(
+    pub fn add_node(
         &mut self,
         id: NodeId,
-        class: &str,
-        node: Box<T>,
+        class: Option<String>,
+        node: Box<dyn NodeTrait>,
         data: NodeData,
     ) {
         self.id_nodes.insert(id, node);
         self.id_data.insert(id, data);
-        self.class_id.insert(class.to_string(), id);
+        if let Some(class) = class {
+            self.class_id.insert(class, id);
+        }
     }
 
     pub fn get_node_as<T: NodeTrait>(&self, id: NodeId) -> Option<&T> {

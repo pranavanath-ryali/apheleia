@@ -5,8 +5,6 @@ members = [
 	"crates/apheleia-ui",
     "crates/apheleia-widgets",
 
-	"examples/e1_hello_world",
-
 	"tests/core-hello-world",
 	"tests/ui-hello-world", "crates/apheleia-widgets",
 ]

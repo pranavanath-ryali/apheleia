@@ -11,17 +11,52 @@
 // };
 
 use apheleia_core::types::Vector2;
+use tree_ds::prelude::Node;
 
 use crate::{
     contexts::traits::ContextCommand,
-    types::{DirtyRenderLevel, NodeId},
+    node::{data::NodeData, traits::NodeTrait},
+    types::NodeId,
 };
+
+pub struct CreateNode {
+    pub id: NodeId,
+    pub class: Option<String>,
+    pub parent_class: Option<String>,
+
+    pub position: Vector2,
+    pub size: Option<Vector2>,
+
+    pub node: Box<dyn NodeTrait>,
+}
 
 pub struct SetSize(pub NodeId, pub Vector2);
 pub struct SetPosition(pub NodeId, pub Vector2);
 
-pub struct MarkRenderDirty(pub NodeId, pub DirtyRenderLevel);
-pub struct MarkUpdateDirty(pub NodeId);
+// pub struct MarkRenderDirty(pub NodeId, pub DirtyRenderLevel);
+// pub struct MarkUpdateDirty(pub NodeId);
+
+impl ContextCommand for CreateNode {
+    fn execute(self: Box<Self>, world: &mut crate::world::WorldViewForCommands) {
+        let node_data = NodeData::new(self.position, self.size);
+        if let Some(parent_class) = self.parent_class {
+            let parent_id = world
+                .node_storage
+                .get_id(&parent_class)
+                .unwrap_or_else(|| panic!("No Node found with class: {}", parent_class));
+
+            _ = world
+                .relations
+                .add_node(Node::new(self.id, None), Some(parent_id));
+        } else {
+            _ = world.relations.add_node(Node::new(self.id, None), Some(&0));
+        }
+
+        world
+            .node_storage
+            .add_node(self.id, self.class, self.node, node_data);
+    }
+}
 
 impl ContextCommand for SetSize {
     fn execute(self: Box<Self>, world: &mut crate::world::WorldViewForCommands) {

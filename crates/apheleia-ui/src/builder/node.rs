@@ -1,20 +1,20 @@
-use std::{cell::RefCell, rc::Rc};
+use std::mem::{replace, take};
 
 use apheleia_core::types::Vector2;
-use tree_ds::prelude::Node;
 
 use crate::{
-    contexts::traits::ContextCommand,
-    extensions::traits::Extension,
-    node::{data::NodeData, traits::NodeTrait},
-    types::{NodeId, System, UpdateType},
+    contexts::{commands::CreateNode, traits::ContextCommand},
+    node::{EmptyNode, data::NodeData, traits::NodeTrait},
+    types::NodeId,
 };
 
 pub struct NodeBuilder {
     id: NodeId,
     class: Option<String>,
-    parent_id: NodeId,
-    data: NodeData,
+    parent_class: Option<String>,
+    position: Vector2,
+    size: Option<Vector2>,
+    node: Box<dyn NodeTrait>,
 
     commands: Vec<Box<dyn ContextCommand>>,
 }
@@ -23,31 +23,50 @@ impl NodeBuilder {
         NodeBuilder {
             id,
             class: None,
-            parent_id: 0,
-            data: NodeData::default(),
+            parent_class: None,
+            position: Vector2(0, 0),
+            size: None,
+            node: Box::new(EmptyNode),
 
             commands: vec![],
         }
     }
 
+    pub fn with_class(&mut self, class: &str) -> &mut Self {
+        self.class = Some(class.to_string());
+        self
+    }
+
+    pub fn set_parent(&mut self, parent: &str) -> &mut Self {
+        self.parent_class = Some(parent.to_string());
+        self
+    }
+
     pub fn set_position(&mut self, position: Vector2) -> &mut Self {
-        self.data.set_position(position);
+        self.position = position;
         self
     }
 
     pub fn set_size(&mut self, size: Vector2) -> &mut Self {
-        self.data.set_size(size);
+        self.size = Some(size);
         self
     }
 
-    // pub fn set_parent(&mut self, parent: &str) -> &mut Self {
-    //     if let Some(parent_id) = self.world.node_storage.get_id(parent) {
-    //         self.parent_id = *parent_id;
-    //     } else {
-    //         panic!("Node of class '{}' doesn't exist.", { parent });
-    //     }
-    //     self
-    // }
+    pub(crate) fn build(&mut self) -> Vec<Box<dyn ContextCommand>> {
+        let mut commands: Vec<Box<dyn ContextCommand>> = vec![];
+
+        commands.push(Box::new(CreateNode {
+            id: self.id,
+            class: take(&mut self.class),
+            parent_class: take(&mut self.parent_class),
+            position: self.position,
+            size: self.size,
+            node: replace(&mut self.node, Box::new(EmptyNode)),
+        }));
+        commands.append(&mut self.commands);
+
+        commands
+    }
 
     // pub fn extension<T: Extension>(&mut self, extension: Box<T>) -> &mut Self {
     //     {
@@ -83,7 +102,4 @@ impl NodeBuilder {
     //         .node_storage
     //         .add_node(self.id, &self.class, Box::new(node), self.data);
     // }
-    pub fn get_commands(&mut self) -> &mut Vec<Box<dyn ContextCommand>> {
-        &mut self.commands
-    }
 }
