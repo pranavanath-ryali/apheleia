@@ -3,8 +3,14 @@ use std::{cell::RefCell, mem, rc::Rc};
 use apheleia_core::{buffer::Buffer, types::Vector2};
 
 use crate::{
-    contexts::traits::ContextCommand,
-    types::{EventData, NodeId},
+    contexts::{
+        commands::{MarkRenderDirty, MarkUpdateDirty, SetPosition, SetSize},
+        traits::ContextCommand,
+    },
+    extensions::traits::Extension,
+    node::traits::NodeTrait,
+    resources::traits::Resource,
+    types::{DirtyRenderLevel, EventData, NodeId},
     world::SystemView,
 };
 
@@ -74,88 +80,66 @@ impl<'a> SystemContext<'a> {
     }
 
     // ExtensionStore Functions
-    // pub fn get_extension<E: Extension>(&self) -> &E {
-    //     return unsafe {
-    //         &*(self
-    //             .rootnode_data
-    //             .borrow()
-    //             .extension_store
-    //             .get_extension::<E>(self.get_id()) as *const E)
-    //     };
-    // }
-    // pub fn get_extension_mut<E: Extension>(&mut self) -> &mut E {
-    //     return unsafe {
-    //         &mut *(self
-    //             .rootnode_data
-    //             .borrow_mut()
-    //             .extension_store
-    //             .get_extension_mut::<E>(self.get_id()) as *mut E)
-    //     };
-    // }
+    pub fn get_extension<E: Extension>(&self) -> &E {
+        self.world.extension_store.get_extension::<E>(self.get_id())
+    }
+    pub fn get_extension_mut<E: Extension>(&mut self) -> &mut E {
+        self.world
+            .extension_store
+            .get_extension_mut::<E>(self.get_id())
+    }
 
     // // ResourceStore Functions
-    // pub fn get_resource<R: Resource>(&self) -> &R {
-    //     return unsafe {
-    //         &*(self
-    //             .rootnode_data
-    //             .borrow()
-    //             .resource_store
-    //             .get_resource::<R>()
-    //             .unwrap() as *const R)
-    //     };
-    // }
-    // pub fn get_resource_mut<R: Resource>(&mut self) -> &mut R {
-    //     return unsafe {
-    //         &mut *(self
-    //             .rootnode_data
-    //             .borrow_mut()
-    //             .resource_store
-    //             .get_resource_mut::<R>()
-    //             .unwrap() as *mut R)
-    //     };
-    // }
+    pub fn get_resource<R: Resource>(&self) -> &R {
+        self.world
+            .resource_store
+            .get_resource::<R>()
+            .expect("No Resource Found")
+    }
+    pub fn get_resource_mut<R: Resource>(&mut self) -> &mut R {
+        self.world
+            .resource_store
+            .get_resource_mut::<R>()
+            .expect("No Resource Found")
+    }
 
     // // DirtyTracker Functions
-    // pub fn mark_render_dirty(&mut self) {
-    //     self.rootnode_data
-    //         .borrow_mut()
-    //         .dirty_tracker
-    //         .add_render(self.get_id());
-    // }
-    // pub fn mark_update_dirty(&mut self) {
-    //     self.rootnode_data
-    //         .borrow_mut()
-    //         .dirty_tracker
-    //         .add_update(self.get_id());
-    // }
+    pub fn mark_render_dirty(&mut self, dirty_level: DirtyRenderLevel) {
+        self.add_command(Box::new(MarkRenderDirty(self.get_id(), dirty_level)));
+    }
+    pub fn mark_update_dirty(&mut self) {
+        self.add_command(Box::new(MarkUpdateDirty(self.get_id())));
+    }
 
-    // pub fn mark_render_dirty_for_node(&mut self, class: &str) {
-    //     if let Some(id) = self.rootnode_data.borrow().node_storage.get_id(class) {
-    //         self.rootnode_data
-    //             .borrow_mut()
-    //             .dirty_tracker
-    //             .add_render(*id);
-    //     }
-    // }
-    // pub fn mark_update_dirty_for_node(&mut self, class: &str) {
-    //     if let Some(id) = self.rootnode_data.borrow().node_storage.get_id(class) {
-    //         self.rootnode_data
-    //             .borrow_mut()
-    //             .dirty_tracker
-    //             .add_update(*id);
-    //     }
-    // }
+    pub fn mark_render_dirty_for_node(&mut self, class: &str, dirty_level: DirtyRenderLevel) {
+        let id = self
+            .world
+            .node_storage
+            .get_id(class)
+            .unwrap_or_else(|| panic!("No Node found with class: {}", class));
+
+        self.add_command(Box::new(MarkRenderDirty(*id, dirty_level)));
+    }
+    pub fn mark_update_dirty_for_node(&mut self, class: &str) {
+        let id = self
+            .world
+            .node_storage
+            .get_id(class)
+            .unwrap_or_else(|| panic!("No Node found with class: {}", class));
+
+        self.add_command(Box::new(MarkUpdateDirty(*id)));
+    }
 
     // // NodeStore Functions
     // pub fn get_node<T: NodeTrait>(&self) -> &T {
-    //     return unsafe {
-    //         &*(self
-    //             .rootnode_data
-    //             .borrow()
-    //             .node_storage
-    //             .get_node_as::<T>(self.get_id())
-    //             .unwrap() as *const T)
-    //     };
+    //     // return unsafe {
+    //     //     &*(self
+    //     //         .rootnode_data
+    //     //         .borrow()
+    //     //         .node_storage
+    //     //         .get_node_as::<T>(self.get_id())
+    //     //         .unwrap() as *const T)
+    //     // };
     // }
     // pub fn get_node_mut<T: NodeTrait>(&mut self) -> &mut T {
     //     return unsafe {
@@ -168,27 +152,25 @@ impl<'a> SystemContext<'a> {
     //     };
     // }
 
-    // pub fn get_position(&self) -> Vector2 {
-    //     self.rootnode_data
-    //         .borrow()
-    //         .node_storage
-    //         .get_data(self.get_id())
-    //         .unwrap()
-    //         .get_position()
-    // }
-    // pub fn set_position(&mut self, position: Vector2) {
-    //     self.add_command(Box::new(SetPosition(self.get_id(), position)));
-    // }
+    pub fn get_position(&self) -> Vector2 {
+        self.world
+            .node_storage
+            .get_data(self.get_id())
+            .unwrap()
+            .get_position()
+    }
+    pub fn set_position(&mut self, position: Vector2) {
+        self.add_command(Box::new(SetPosition(self.get_id(), position)));
+    }
 
-    // pub fn get_size(&self) -> Option<Vector2> {
-    //     self.rootnode_data
-    //         .borrow()
-    //         .node_storage
-    //         .get_data(self.get_id())
-    //         .unwrap()
-    //         .get_size()
-    // }
-    // pub fn set_size(&mut self, size: Vector2) {
-    //     self.add_command(Box::new(SetSize(self.get_id(), size)));
-    // }
+    pub fn get_size(&self) -> Option<Vector2> {
+        self.world
+            .node_storage
+            .get_data(self.get_id())
+            .unwrap()
+            .get_size()
+    }
+    pub fn set_size(&mut self, size: Vector2) {
+        self.add_command(Box::new(SetSize(self.get_id(), size)));
+    }
 }

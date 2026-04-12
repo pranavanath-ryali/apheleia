@@ -17,7 +17,7 @@ use crate::{
     contexts::traits::ContextCommand,
     extensions::traits::Extension,
     node::{data::NodeData, traits::NodeTrait},
-    types::{NodeId, System, UpdateType},
+    types::{DirtyRenderLevel, NodeId, System, UpdateType},
 };
 
 pub struct CreateNode {
@@ -41,8 +41,8 @@ pub struct HookSystemToId {
 pub struct SetSize(pub NodeId, pub Vector2);
 pub struct SetPosition(pub NodeId, pub Vector2);
 
-// pub struct MarkRenderDirty(pub NodeId, pub DirtyRenderLevel);
-// pub struct MarkUpdateDirty(pub NodeId);
+pub struct MarkRenderDirty(pub NodeId, pub DirtyRenderLevel);
+pub struct MarkUpdateDirty(pub NodeId);
 
 impl ContextCommand for CreateNode {
     fn execute(self: Box<Self>, world: &mut crate::world::WorldViewForCommands) {
@@ -95,6 +95,31 @@ impl ContextCommand for SetPosition {
             .get_data_mut(self.0)
             .unwrap_or_else(|| panic!("Node not found with ID: {}", self.0))
             .set_position(self.1);
+    }
+}
+
+impl ContextCommand for MarkRenderDirty {
+    fn execute(self: Box<Self>, world: &mut crate::world::WorldViewForCommands) {
+        match self.1 {
+            DirtyRenderLevel::SimpleDirty => world.dirty_tracker.add_render(self.0),
+            DirtyRenderLevel::SubtreeDirty => {
+                for id in world
+                    .relations
+                    .get_subtree(&self.0, None)
+                    .unwrap()
+                    .traverse(&self.0, tree_ds::prelude::TraversalStrategy::PreOrder)
+                    .unwrap()
+                    .iter()
+                {
+                    world.dirty_tracker.add_render(*id);
+                }
+            }
+        }
+    }
+}
+impl ContextCommand for MarkUpdateDirty {
+    fn execute(self: Box<Self>, world: &mut crate::world::WorldViewForCommands) {
+        world.dirty_tracker.add_update(self.0);
     }
 }
 
