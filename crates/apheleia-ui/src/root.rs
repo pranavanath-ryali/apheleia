@@ -307,32 +307,36 @@ impl Root {
     }
 
     // Functions for Developers
-    pub fn create_node(&mut self, class: &str) -> NodeBuilder {
-        todo!()
-        // NodeBuilder::new(
-        //     self.nodeid_gen.borrow_mut().next(),
-        //     class,
-        //     self.data.clone(),
-        // )
-    }
+    // pub fn create_node<'a>(&mut self, class: &str) -> &'a mut NodeBuilder {
+    //     let mut world = WorldViewForBuilder {
+    //         relations: &mut self.relations,
+    //         node_storage: &mut self.node_storage,
+    //         extension_store: &mut self.extension_store,
+    //         system_store: &mut self.system_store,
+    //         resource_store: &mut self.resource_store,
+    //     };
+    //     let mut builder = NodeBuilder::new(self.nodeid_gen.borrow_mut().next(), class);
 
-    pub fn add_resource<T: Resource>(&mut self, res: T) {
-        self.resource_store.add_resource(Box::new(res));
-    }
+    //     &mut builder
+    // }
 
-    pub fn bind_extension_to_classes<T: Extension>(
-        &mut self,
-        classes: Vec<&str>,
-        extension: Box<T>,
-    ) {
-        let ext_id = self.extension_store.get_id();
-        self.extension_store.add_extension(ext_id, extension);
+    // pub fn add_resource<T: Resource>(&mut self, res: T) {
+    //     self.resource_store.add_resource(Box::new(res));
+    // }
 
-        for class in classes {
-            let id = self.node_storage.get_id(class).cloned();
-            if let Some(id) = id {
-                _ = self.extension_store.bind_extension::<T>(id, ext_id);
-            }
-        }
-    }
+    // pub fn bind_extension_to_classes<T: Extension>(
+    //     &mut self,
+    //     classes: Vec<&str>,
+    //     extension: Box<T>,
+    // ) {
+    //     let ext_id = self.extension_store.get_id();
+    //     self.extension_store.add_extension(ext_id, extension);
+
+    //     for class in classes {
+    //         let id = self.node_storage.get_id(class).cloned();
+    //         if let Some(id) = id {
+    //             _ = self.extension_store.bind_extension::<T>(id, ext_id);
+    //         }
+    //     }
+    // }
 }
