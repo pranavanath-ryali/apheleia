@@ -76,6 +76,16 @@ impl<'a> SystemContext<'a> {
             .expect("SystemContext.get_buffer() is used outside of render context.")
     }
 
+    // Relations
+    pub fn get_children_ids(&mut self) -> Vec<NodeId> {
+        self.world
+            .relations
+            .get_node_by_id(&self.get_id())
+            .unwrap()
+            .get_children_ids()
+            .unwrap_or_default()
+    }
+
     // ExtensionStore Functions
     // pub fn add_extension<E: Extension>(&mut self, extension: E) {
     //     self.world
