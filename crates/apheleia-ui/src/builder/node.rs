@@ -3,9 +3,13 @@ use std::mem::{replace, take};
 use apheleia_core::types::Vector2;
 
 use crate::{
-    contexts::{commands::CreateNode, traits::ContextCommand},
-    node::{EmptyNode, data::NodeData, traits::NodeTrait},
-    types::NodeId,
+    contexts::{
+        commands::{AddExtensionToId, CreateNode, HookSystemToId},
+        traits::ContextCommand,
+    },
+    extensions::traits::Extension,
+    node::{EmptyNode, traits::NodeTrait},
+    types::{NodeId, System, UpdateType},
 };
 
 pub struct NodeBuilder {
@@ -32,23 +36,39 @@ impl NodeBuilder {
         }
     }
 
-    pub fn with_class(&mut self, class: &str) -> &mut Self {
+    pub fn with_class(mut self, class: &str) -> Self {
         self.class = Some(class.to_string());
         self
     }
 
-    pub fn set_parent(&mut self, parent: &str) -> &mut Self {
+    pub fn set_parent(mut self, parent: &str) -> Self {
         self.parent_class = Some(parent.to_string());
         self
     }
 
-    pub fn set_position(&mut self, position: Vector2) -> &mut Self {
+    pub fn set_position(mut self, position: Vector2) -> Self {
         self.position = position;
         self
     }
 
-    pub fn set_size(&mut self, size: Vector2) -> &mut Self {
+    pub fn set_size(mut self, size: Vector2) -> Self {
         self.size = Some(size);
+        self
+    }
+
+    pub fn add_extension(mut self, extension: Box<dyn Extension>) -> Self {
+        self.commands
+            .push(Box::new(AddExtensionToId(self.id, extension)));
+        self
+    }
+
+    pub fn add_system(mut self, update_type: UpdateType, priority: isize, system: System) -> Self {
+        self.commands.push(Box::new(HookSystemToId {
+            id: self.id,
+            update_type,
+            priority,
+            system,
+        }));
         self
     }
 
@@ -67,39 +87,4 @@ impl NodeBuilder {
 
         commands
     }
-
-    // pub fn extension<T: Extension>(&mut self, extension: Box<T>) -> &mut Self {
-    //     {
-    //         let ext_id = self.world.extension_store.get_id();
-    //         self.world.extension_store.add_extension(ext_id, extension);
-    //         _ = self
-    //             .world
-    //             .extension_store
-    //             .bind_extension::<T>(self.id, ext_id);
-    //     }
-    //     self
-    // }
-
-    // pub fn add_system(
-    //     &mut self,
-    //     update_type: UpdateType,
-    //     priority: isize,
-    //     system: System,
-    // ) -> &mut Self {
-    //     self.world
-    //         .system_store
-    //         .add_system(self.id, update_type, priority, system);
-    //     self
-    // }
-
-    // pub fn build<T: NodeTrait>(&mut self, node: T) {
-    //     _ = self
-    //         .world
-    //         .relations
-    //         .add_node(Node::new(self.id, None), Some(&self.parent_id));
-
-    //     self.world
-    //         .node_storage
-    //         .add_node(self.id, &self.class, Box::new(node), self.data);
-    // }
 }

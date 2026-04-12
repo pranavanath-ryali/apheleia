@@ -15,8 +15,9 @@ use tree_ds::prelude::Node;
 
 use crate::{
     contexts::traits::ContextCommand,
+    extensions::traits::Extension,
     node::{data::NodeData, traits::NodeTrait},
-    types::NodeId,
+    types::{NodeId, System, UpdateType},
 };
 
 pub struct CreateNode {
@@ -28,6 +29,13 @@ pub struct CreateNode {
     pub size: Option<Vector2>,
 
     pub node: Box<dyn NodeTrait>,
+}
+pub struct AddExtensionToId(pub NodeId, pub Box<dyn Extension>);
+pub struct HookSystemToId {
+    pub id: NodeId,
+    pub update_type: UpdateType,
+    pub priority: isize,
+    pub system: System,
 }
 
 pub struct SetSize(pub NodeId, pub Vector2);
@@ -55,6 +63,18 @@ impl ContextCommand for CreateNode {
         world
             .node_storage
             .add_node(self.id, self.class, self.node, node_data);
+    }
+}
+impl ContextCommand for AddExtensionToId {
+    fn execute(self: Box<Self>, world: &mut crate::world::WorldViewForCommands) {
+        world.extension_store.add_extension(self.0, self.1);
+    }
+}
+impl ContextCommand for HookSystemToId {
+    fn execute(self: Box<Self>, world: &mut crate::world::WorldViewForCommands) {
+        world
+            .systems_store
+            .add_system(self.id, self.update_type, self.priority, self.system);
     }
 }
 

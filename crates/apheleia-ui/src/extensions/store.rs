@@ -23,7 +23,7 @@ impl ExtensionStore {
         self.id_generator.next()
     }
 
-    pub fn add_extension<T: Extension>(&mut self, id: ExtensionId, extension: Box<T>) {
+    pub fn add_extension(&mut self, id: ExtensionId, extension: Box<dyn Extension>) {
         self.extensions_storage.entry(id).or_insert(extension);
     }
 
