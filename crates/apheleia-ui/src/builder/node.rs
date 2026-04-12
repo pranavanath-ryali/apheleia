@@ -23,7 +23,7 @@ pub struct NodeBuilder {
     commands: Vec<Box<dyn ContextCommand>>,
 }
 impl NodeBuilder {
-    pub fn new(id: NodeId) -> Self {
+    pub(crate) fn new(id: NodeId) -> Self {
         NodeBuilder {
             id,
             class: None,
