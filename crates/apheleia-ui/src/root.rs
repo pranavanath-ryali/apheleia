@@ -214,7 +214,7 @@ impl Root {
         // Update Nodes registered for constant update
         // TODO: Add a check to see if there are any systems registered for constant update
         let mut world = SystemView {
-            relations: &mut self.relations,
+            relations: &self.relations,
 
             node_storage: &self.node_storage,
             extension_store: &mut self.extension_store,
