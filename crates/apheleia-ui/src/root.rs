@@ -27,7 +27,7 @@ pub struct Root {
     pub height: u16,
     running: bool,
 
-    nodeid_gen: Rc<RefCell<IdGenerator<NodeId>>>,
+    nodeid_gen: IdGenerator<NodeId>,
     // data: Rc<RefCell<World>>,
     relations: Tree<NodeId, NodeId>,
 
@@ -55,7 +55,7 @@ impl Default for Root {
             width,
             height,
 
-            nodeid_gen: Rc::new(RefCell::new(IdGenerator::<NodeId>::new(0))),
+            nodeid_gen: IdGenerator::<NodeId>::new(0),
 
             relations,
 
@@ -304,7 +304,7 @@ impl Root {
 
     // Functions for Developers
     pub fn create_node(&mut self, f: impl FnOnce(NodeBuilder) -> NodeBuilder) {
-        let mut builder = f(NodeBuilder::new(self.nodeid_gen.borrow_mut().next()));
+        let mut builder = f(NodeBuilder::new(self.nodeid_gen.next()));
         self.run_commands(builder.build());
     }
 
