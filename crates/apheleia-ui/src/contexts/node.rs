@@ -2,9 +2,10 @@ use apheleia_core::types::Vector2;
 
 use crate::{
     contexts::{
-        commands::{HookSystemToId, SetPosition, SetSize},
+        commands::{AddExtensionToId, HookSystemToId, SetPosition, SetSize},
         traits::ContextCommand,
     },
+    extensions::traits::Extension,
     types::{NodeId, System, UpdateType},
 };
 
@@ -37,6 +38,13 @@ impl NodeContext {
 
     pub(crate) fn get_commands(&mut self) -> &mut Vec<Box<dyn ContextCommand>> {
         &mut self.commands
+    }
+
+    pub fn add_extension<E: Extension>(&mut self, extension: E) {
+        self.add_command(Box::new(AddExtensionToId(
+            self.get_id(),
+            Box::new(extension),
+        )));
     }
 
     pub fn add_system(&mut self, update_type: UpdateType, priority: isize, system: System) {

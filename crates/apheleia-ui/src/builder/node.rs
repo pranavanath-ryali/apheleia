@@ -36,7 +36,7 @@ impl NodeBuilder {
         }
     }
 
-    pub fn with_class(mut self, class: &str) -> Self {
+    pub fn set_class(mut self, class: &str) -> Self {
         self.class = Some(class.to_string());
         self
     }
@@ -69,6 +69,11 @@ impl NodeBuilder {
             priority,
             system,
         }));
+        self
+    }
+
+    pub fn node<N: NodeTrait>(mut self, node: N) -> Self {
+        self.node = Box::new(node);
         self
     }
 

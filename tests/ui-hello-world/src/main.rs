@@ -129,16 +129,22 @@
 //     root.run();
 // }
 
-use apheleia_ui::{contexts::system::SystemContext, root::Root, types::UpdateType};
-
-fn test_system(ctx: &mut SystemContext) {
-    println!("YAY");
-}
+use apheleia_ui::{Vector2, contexts::system::SystemContext, root::Root, types::UpdateType};
+use apheleia_widgets::label::LabelNode;
 
 fn main() {
     let mut root = Root::default();
 
-    root.create_node(|builder| builder.add_system(UpdateType::ConstantUpdate, 0, test_system));
+    root.create_node(|builder| {
+        builder
+            .set_class("scrolling_text")
+            .set_size(Vector2(10, 1))
+            .node(LabelNode::new("HelloThereMyNameIsAPHELEIA").set_overflow(
+                apheleia_widgets::label::TextOverflow::Scroll(
+                    apheleia_widgets::label::ScrollingTextParams { scroll_step: 0.5 },
+                ),
+            ))
+    });
 
     root.run();
 }

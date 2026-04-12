@@ -77,6 +77,11 @@ impl<'a> SystemContext<'a> {
     }
 
     // ExtensionStore Functions
+    // pub fn add_extension<E: Extension>(&mut self, extension: E) {
+    //     self.world
+    //         .extension_store
+    //         .add_extension(self.get_id(), Box::new(extension));
+    // }
     pub fn get_extension<E: Extension>(&self) -> &E {
         self.world.extension_store.get_extension::<E>(self.get_id())
     }
@@ -86,7 +91,7 @@ impl<'a> SystemContext<'a> {
             .get_extension_mut::<E>(self.get_id())
     }
 
-    // // ResourceStore Functions
+    // ResourceStore Functions
     pub fn get_resource<R: Resource>(&self) -> &R {
         self.world
             .resource_store
@@ -100,7 +105,7 @@ impl<'a> SystemContext<'a> {
             .expect("No Resource Found")
     }
 
-    // // DirtyTracker Functions
+    // DirtyTracker Functions
     pub fn mark_render_dirty(&mut self, dirty_level: DirtyRenderLevel) {
         self.add_command(Box::new(MarkRenderDirty(self.get_id(), dirty_level)));
     }
