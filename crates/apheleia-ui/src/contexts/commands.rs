@@ -10,6 +10,46 @@
 //     types::{DirtyRenderLevel, EventType, NodeId, UpdateTypeNode},
 // };
 
+use apheleia_core::types::Vector2;
+
+use crate::{
+    contexts::traits::ContextCommand,
+    types::{DirtyRenderLevel, NodeId},
+};
+
+pub struct SetSize(pub NodeId, pub Vector2);
+pub struct SetPosition(pub NodeId, pub Vector2);
+
+pub struct MarkRenderDirty(pub NodeId, pub DirtyRenderLevel);
+pub struct MarkUpdateDirty(pub NodeId);
+
+impl ContextCommand for SetSize {
+    fn execute(
+        self: Box<Self>,
+        rootnode_data: std::rc::Rc<std::cell::RefCell<crate::world::World>>,
+    ) {
+        rootnode_data
+            .borrow_mut()
+            .node_storage
+            .get_data_mut(self.0)
+            .unwrap_or_else(|| panic!("Node not found with ID: {}", self.0))
+            .set_size(self.1);
+    }
+}
+impl ContextCommand for SetPosition {
+    fn execute(
+        self: Box<Self>,
+        rootnode_data: std::rc::Rc<std::cell::RefCell<crate::world::World>>,
+    ) {
+        rootnode_data
+            .borrow_mut()
+            .node_storage
+            .get_data_mut(self.0)
+            .unwrap_or_else(|| panic!("Node not found with ID: {}", self.0))
+            .set_position(self.1);
+    }
+}
+
 // pub struct SetSize(pub Vector2);
 // pub struct SetSizeForNode(pub String, pub Vector2);
 

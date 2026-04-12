@@ -73,7 +73,7 @@ impl NodeContext {
     pub(crate) fn run_commands(&mut self) {
         let commands = mem::take(&mut self.commands);
         for command in commands {
-            command.execute(self.get_id(), self.rootnode_data.clone());
+            command.execute(self.rootnode_data.clone());
         }
     }
 

@@ -3,7 +3,10 @@ use std::{cell::RefCell, mem, rc::Rc};
 use apheleia_core::{buffer::Buffer, types::Vector2};
 
 use crate::{
-    contexts::traits::ContextCommand,
+    contexts::{
+        commands::{SetPosition, SetSize},
+        traits::ContextCommand,
+    },
     extensions::traits::Extension,
     node::traits::NodeTrait,
     resources::traits::Resource,
@@ -57,10 +60,14 @@ impl<'a> SystemContext<'a> {
         }
     }
 
+    pub fn add_command(&mut self, command: Box<dyn ContextCommand>) {
+        self.commands.push(command);
+    }
+
     pub(crate) fn run_commands(&mut self) {
         let commands = mem::take(&mut self.commands);
         for command in commands {
-            command.execute(self.get_id(), self.rootnode_data.clone());
+            command.execute(self.rootnode_data.clone());
         }
     }
 
@@ -168,12 +175,13 @@ impl<'a> SystemContext<'a> {
             .get_position()
     }
     pub fn set_position(&mut self, position: Vector2) {
-        self.rootnode_data
-            .borrow_mut()
-            .node_storage
-            .get_data_mut(self.get_id())
-            .unwrap()
-            .set_position(position);
+        self.add_command(Box::new(SetPosition(self.get_id(), position)));
+        // self.rootnode_data
+        //     .borrow_mut()
+        //     .node_storage
+        //     .get_data_mut(self.get_id())
+        //     .unwrap()
+        //     .set_position(position);
     }
 
     pub fn get_size(&self) -> Option<Vector2> {
@@ -185,12 +193,13 @@ impl<'a> SystemContext<'a> {
             .get_size()
     }
     pub fn set_size(&mut self, size: Vector2) {
-        self.rootnode_data
-            .borrow_mut()
-            .node_storage
-            .get_data_mut(self.get_id())
-            .unwrap()
-            .set_size(size);
+        self.add_command(Box::new(SetSize(self.get_id(), size)));
+        // self.rootnode_data
+        //     .borrow_mut()
+        //     .node_storage
+        //     .get_data_mut(self.get_id())
+        //     .unwrap()
+        //     .set_size(size);
     }
 
     pub fn get_buffer(&mut self) -> &mut Buffer {
