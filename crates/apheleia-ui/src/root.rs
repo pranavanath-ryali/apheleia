@@ -116,14 +116,11 @@ impl Root {
             .collect();
 
         for id in ids {
-            let node = self.node_storage.get_node_mut(id).unwrap();
-            let mut world = WorldViewForNode {
-                extension_store: &mut self.extension_store,
-                system_store: &mut self.system_store,
-                resource_store: &mut self.resource_store,
-            };
-            let mut ctx = NodeContext::new(id, &mut world);
-            node.initial_setup(&mut ctx);
+            let mut ctx = NodeContext::new(id);
+            self.node_storage
+                .get_node_mut(id)
+                .unwrap()
+                .initial_setup(&mut ctx);
 
             let commands = take(ctx.get_commands());
             self.run_commands(commands);

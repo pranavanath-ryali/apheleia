@@ -9,17 +9,14 @@ use crate::{
     world::WorldViewForNode,
 };
 
-pub struct NodeContext<'a> {
+pub struct NodeContext {
     id: NodeId,
-    rootnode_data: &'a mut WorldViewForNode<'a>,
-
     commands: Vec<Box<dyn ContextCommand>>,
 }
-impl<'a> NodeContext<'a> {
-    pub fn new(id: NodeId, rootnode_data: &'a mut WorldViewForNode<'a>) -> NodeContext {
+impl NodeContext {
+    pub fn new(id: NodeId) -> NodeContext {
         Self {
             id,
-            rootnode_data,
             commands: vec![],
         }
     }
