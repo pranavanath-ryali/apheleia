@@ -58,6 +58,9 @@ impl<'a> SystemContext<'a> {
     }
 
     pub fn add_command(&mut self, command: Box<dyn ContextCommand>) {
+        if self.buffer.is_some() {
+            panic!("Command added during render");
+        }
         self.commands.push(command);
     }
 
