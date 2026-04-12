@@ -1,35 +1,21 @@
-use tree_ds::prelude::{Node, Tree};
+use tree_ds::prelude::Tree;
 
 use crate::{
     dirty_tracker::DirtyTracker, extensions::store::ExtensionStore, node::store::NodeStore,
     resources::store::ResourceStore, systems::store::SystemStore, types::NodeId,
 };
 
-pub struct BuilderView<'a> {
-    pub relations: &'a mut Tree<NodeId, NodeId>,
-
-    pub node_storage: &'a mut NodeStore,
-    pub extension_store: &'a mut ExtensionStore,
-    pub system_store: &'a mut SystemStore,
-    pub resource_store: &'a mut ResourceStore,
-}
-
-pub struct WorldViewForNode<'a> {
-    pub extension_store: &'a mut ExtensionStore,
-    pub system_store: &'a mut SystemStore,
-    pub resource_store: &'a mut ResourceStore,
-}
-
 pub struct SystemView<'a> {
-    pub relations: &'a mut Tree<NodeId, NodeId>,
+    pub relations: &'a Tree<NodeId, NodeId>,
 
-    pub node_storage: &'a mut NodeStore,
+    pub node_storage: &'a NodeStore,
     pub extension_store: &'a mut ExtensionStore,
-    pub dirty_tracker: &'a mut DirtyTracker,
     pub resource_store: &'a mut ResourceStore,
 }
 
 pub struct WorldViewForCommands<'a> {
+    pub relations: &'a mut Tree<NodeId, NodeId>,
+
     pub node_storage: &'a mut NodeStore,
     pub systems_store: &'a mut SystemStore,
     pub extension_store: &'a mut ExtensionStore,

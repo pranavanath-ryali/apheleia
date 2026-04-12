@@ -18,7 +18,7 @@ use crate::{
     resources::{store::ResourceStore, traits::Resource},
     systems::store::SystemStore,
     types::{EventData, EventType, NodeId},
-    world::{BuilderView, SystemView, WorldViewForCommands, WorldViewForNode},
+    world::{SystemView, WorldViewForCommands},
 };
 
 pub struct Root {
@@ -94,6 +94,8 @@ impl Root {
     fn run_commands(&mut self, commands: Vec<Box<dyn ContextCommand>>) {
         for command in commands {
             command.execute(&mut WorldViewForCommands {
+                relations: &mut self.relations,
+
                 node_storage: &mut self.node_storage,
                 systems_store: &mut self.system_store,
                 extension_store: &mut self.extension_store,
@@ -168,10 +170,9 @@ impl Root {
             info!("RootNode Event data: {:?}", event_data);
 
             let mut world = SystemView {
-                relations: &mut self.relations,
+                relations: &self.relations,
 
-                node_storage: &mut self.node_storage,
-                dirty_tracker: &mut self.dirty_tracker,
+                node_storage: &self.node_storage,
                 extension_store: &mut self.extension_store,
                 resource_store: &mut self.resource_store,
             };
@@ -191,11 +192,10 @@ impl Root {
         let ids: Vec<NodeId> = self.dirty_tracker.iter_update().copied().collect();
         for id in ids {
             let mut world = SystemView {
-                relations: &mut self.relations,
+                relations: &self.relations,
 
-                dirty_tracker: &mut self.dirty_tracker,
+                node_storage: &self.node_storage,
                 extension_store: &mut self.extension_store,
-                node_storage: &mut self.node_storage,
                 resource_store: &mut self.resource_store,
             };
 
@@ -215,9 +215,8 @@ impl Root {
         let mut world = SystemView {
             relations: &mut self.relations,
 
-            dirty_tracker: &mut self.dirty_tracker,
+            node_storage: &self.node_storage,
             extension_store: &mut self.extension_store,
-            node_storage: &mut self.node_storage,
             resource_store: &mut self.resource_store,
         };
         let mut ctx = SystemContext::new(&mut world);
@@ -233,11 +232,10 @@ impl Root {
 
             let mut node_buffer = Buffer::new(size.0, size.1);
             let mut world = SystemView {
-                relations: &mut self.relations,
+                relations: &self.relations,
 
-                dirty_tracker: &mut self.dirty_tracker,
+                node_storage: &self.node_storage,
                 extension_store: &mut self.extension_store,
-                node_storage: &mut self.node_storage,
                 resource_store: &mut self.resource_store,
             };
             let mut ctx = SystemContext::new_render(&mut node_buffer, &mut world);
@@ -304,6 +302,11 @@ impl Root {
     }
 
     // Functions for Developers
+    pub fn create_node(&mut self, f: impl FnOnce(NodeBuilder) -> NodeBuilder) {
+        let mut builder = f(NodeBuilder::new(self.nodeid_gen.borrow_mut().next()));
+        self.run_commands(take(builder.get_commands()));
+    }
+
     // pub fn create_node<'a>(&mut self, class: &str) -> &'a mut NodeBuilder {
     //     let mut world = WorldViewForBuilder {
     //         relations: &mut self.relations,

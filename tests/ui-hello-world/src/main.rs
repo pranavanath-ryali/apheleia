@@ -94,6 +94,8 @@ fn main() {
     }
     let mut root = Root::default();
 
+    root.create_node(|builder| {});
+
     // root.add_resource(TestRes {
     //     message: "HELLO".to_string(),
     // });
@@ -103,12 +105,12 @@ fn main() {
     //     // .build(EmptyNode);
     //     .build(TestNode(false, "Hello".to_string()));
 
-    root.create_node("label").set_size(Vector2(20, 5)).build(
-        LabelNode::new("Hello Surya Bitch. YOU FUCKING IDIOT")
-            .set_overflow(label::TextOverflow::Scroll(ScrollingTextParams))
-            .set_horizontal_align(label::HorizontalAlignment::Left)
-            .set_vertical_align(label::VerticalAlignment::Top),
-    );
+    // root.create_node("label").set_size(Vector2(20, 5)).build(
+    //     LabelNode::new("Hello Surya Bitch. YOU FUCKING IDIOT")
+    //         .set_overflow(label::TextOverflow::Scroll(ScrollingTextParams))
+    //         .set_horizontal_align(label::HorizontalAlignment::Left)
+    //         .set_vertical_align(label::VerticalAlignment::Top),
+    // );
 
     // root.create_node("child_node")
     //     .set_position(Vector2(1, 5))

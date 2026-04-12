@@ -19,7 +19,7 @@ pub struct SystemContext<'a> {
     event_data: Option<&'a EventData>,
     buffer: Option<&'a mut Buffer>,
 
-    rootnode_data: &'a mut SystemView<'a>,
+    world: &'a mut SystemView<'a>,
     commands: Vec<Box<dyn ContextCommand>>,
 }
 impl<'a> SystemContext<'a> {
@@ -30,32 +30,32 @@ impl<'a> SystemContext<'a> {
         self.id.unwrap()
     }
 
-    pub fn new(rootnode_data: &'a mut SystemView<'a>) -> Self {
+    pub fn new(world: &'a mut SystemView<'a>) -> Self {
         Self {
             id: None,
             event_data: None,
             buffer: None,
-            rootnode_data,
+            world,
             commands: vec![],
         }
     }
 
-    pub fn new_event(event_data: &'a EventData, rootnode_data: &'a mut SystemView<'a>) -> Self {
+    pub fn new_event(event_data: &'a EventData, world: &'a mut SystemView<'a>) -> Self {
         Self {
             id: None,
             event_data: Some(event_data),
             buffer: None,
-            rootnode_data,
+            world,
             commands: vec![],
         }
     }
 
-    pub fn new_render(buffer: &'a mut Buffer, rootnode_data: &'a mut SystemView<'a>) -> Self {
+    pub fn new_render(buffer: &'a mut Buffer, world: &'a mut SystemView<'a>) -> Self {
         Self {
             id: None,
             event_data: None,
             buffer: Some(buffer),
-            rootnode_data,
+            world,
             commands: vec![],
         }
     }
