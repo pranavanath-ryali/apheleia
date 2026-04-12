@@ -1,4 +1,4 @@
-use std::{cell::RefCell, error::Error, io::stdout, mem::take, rc::Rc, time::Duration};
+use std::{error::Error, io::stdout, mem::take, time::Duration};
 
 use apheleia_core::{buffer::Buffer, renderer::Renderer, types::Vector2};
 use crossterm::{
