@@ -1,5 +1,3 @@
-use std::{cell::RefCell, mem, rc::Rc};
-
 use apheleia_core::{buffer::Buffer, types::Vector2};
 
 use crate::{
@@ -8,7 +6,6 @@ use crate::{
         traits::ContextCommand,
     },
     extensions::traits::Extension,
-    node::traits::NodeTrait,
     resources::traits::Resource,
     types::{DirtyRenderLevel, EventData, NodeId},
     world::SystemView,
