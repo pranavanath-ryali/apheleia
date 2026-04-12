@@ -320,9 +320,9 @@ impl Root {
     //     &mut builder
     // }
 
-    // pub fn add_resource<T: Resource>(&mut self, res: T) {
-    //     self.resource_store.add_resource(Box::new(res));
-    // }
+    pub fn add_resource<T: Resource>(&mut self, res: T) {
+        self.resource_store.add_resource(Box::new(res));
+    }
 
     // pub fn bind_extension_to_classes<T: Extension>(
     //     &mut self,
