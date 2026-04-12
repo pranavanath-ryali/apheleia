@@ -12,9 +12,9 @@ use crate::{
     builder::node::NodeBuilder,
     contexts::{node::NodeContext, system::SystemContext, traits::ContextCommand},
     dirty_tracker::DirtyTracker,
-    extensions::{store::ExtensionStore, traits::Extension},
+    extensions::store::ExtensionStore,
     id_generator::{IdGenerator, IdGeneratorTrait},
-    node::{store::NodeStore, traits::NodeTrait},
+    node::store::NodeStore,
     resources::{store::ResourceStore, traits::Resource},
     systems::store::SystemStore,
     types::{EventData, EventType, NodeId},
@@ -118,7 +118,8 @@ impl Root {
             .collect();
 
         for id in ids {
-            let mut ctx = NodeContext::new(id);
+            let data = self.node_storage.get_data(id).unwrap();
+            let mut ctx = NodeContext::new(id, data.position, data.size);
             self.node_storage
                 .get_node_mut(id)
                 .unwrap()
