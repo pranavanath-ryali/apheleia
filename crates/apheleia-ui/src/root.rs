@@ -11,13 +11,14 @@ use tree_ds::prelude::{Node, Tree};
 use crate::{
     builder::node::NodeBuilder,
     contexts::{node::NodeContext, system::SystemContext},
-    extensions::traits::Extension,
+    dirty_tracker::DirtyTracker,
+    extensions::{store::ExtensionStore, traits::Extension},
     id_generator::{IdGenerator, IdGeneratorTrait},
-    node::traits::NodeTrait,
-    resources::traits::Resource,
+    node::{store::NodeStore, traits::NodeTrait},
+    resources::{store::ResourceStore, traits::Resource},
     systems::store::SystemStore,
     types::{EventData, EventType, NodeId},
-    world::World,
+    world::{World, WorldViewForNode},
 };
 
 pub struct Root {
@@ -27,7 +28,14 @@ pub struct Root {
     running: bool,
 
     nodeid_gen: Rc<RefCell<IdGenerator<NodeId>>>,
-    data: Rc<RefCell<World>>,
+    // data: Rc<RefCell<World>>,
+    relations: Tree<NodeId, NodeId>,
+
+    node_storage: NodeStore,
+    extension_store: ExtensionStore,
+    dirty_tracker: DirtyTracker,
+    system_store: SystemStore,
+    resource_store: ResourceStore,
 
     buffer: Buffer,
     renderer: Renderer,
@@ -48,7 +56,14 @@ impl Default for Root {
             height,
 
             nodeid_gen: Rc::new(RefCell::new(IdGenerator::<NodeId>::new(0))),
-            data: Rc::new(RefCell::new(World::default())),
+
+            relations,
+
+            node_storage: NodeStore::default(),
+            extension_store: ExtensionStore::default(),
+            dirty_tracker: DirtyTracker::default(),
+            system_store: SystemStore::default(),
+            resource_store: ResourceStore::default(),
 
             buffer: Buffer::new(width, height),
             renderer: Renderer {
@@ -83,8 +98,6 @@ impl Root {
         info!("RootNode inital_setup started");
 
         let ids: Vec<NodeId> = self
-            .data
-            .borrow()
             .relations
             .traverse(&0, tree_ds::prelude::TraversalStrategy::PreOrder)
             .unwrap()
@@ -94,23 +107,19 @@ impl Root {
             .collect();
 
         for id in ids {
-            let node = {
-                self.data
-                    .borrow_mut()
-                    .node_storage
-                    .get_node_mut(id)
-                    .unwrap() as *mut Box<dyn NodeTrait>
+            // let node = { self.node_storage.get_node_mut(id).unwrap() as *mut Box<dyn NodeTrait> };
+            let node = self.node_storage.get_node_mut(id).unwrap();
+            let mut world = WorldViewForNode {
+                extension_store: &mut self.extension_store,
+                system_store: &mut self.system_store,
+                resource_store: &mut self.resource_store,
             };
-            let mut ctx = NodeContext::new(id, self.data.clone());
-            unsafe {
-                (*node).initial_setup(&mut ctx);
-            }
+            let mut ctx = NodeContext::new(id, &mut world);
+            node.initial_setup(&mut ctx);
             ctx.run_commands();
 
             let global_position = self.calculate_global_position(id);
-            self.data
-                .borrow_mut()
-                .node_storage
+            self.node_storage
                 .get_data_mut(id)
                 .unwrap()
                 .set_global_position(global_position);

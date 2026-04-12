@@ -5,28 +5,44 @@ use crate::{
     resources::store::ResourceStore, systems::store::SystemStore, types::NodeId,
 };
 
-pub struct World {
-    pub relations: Tree<NodeId, NodeId>,
-
-    pub node_storage: Box<NodeStore>,
-    pub extension_store: Box<ExtensionStore>,
-    pub dirty_tracker: Box<DirtyTracker>,
-    pub system_store: Box<SystemStore>,
-    pub resource_store: Box<ResourceStore>,
+pub struct WorldViewForNode<'a> {
+    pub extension_store: &'a mut ExtensionStore,
+    pub system_store: &'a mut SystemStore,
+    pub resource_store: &'a mut ResourceStore,
 }
-impl Default for World {
-    fn default() -> Self {
-        let mut relations: Tree<NodeId, NodeId> = Tree::new(None);
-        _ = relations.add_node(Node::new(0, None), None);
 
-        Self {
-            relations,
+pub struct World<'a> {
+    pub relations: &'a mut Tree<NodeId, NodeId>,
 
-            node_storage: Box::new(NodeStore::default()),
-            extension_store: Box::new(ExtensionStore::default()),
-            dirty_tracker: Box::new(DirtyTracker::default()),
-            system_store: Box::new(SystemStore::default()),
-            resource_store: Box::new(ResourceStore::default()),
-        }
-    }
+    pub node_storage: &'a mut NodeStore,
+    pub extension_store: &'a mut ExtensionStore,
+    pub dirty_tracker: &'a mut DirtyTracker,
+    pub system_store: &'a mut SystemStore,
+    pub resource_store: &'a mut ResourceStore,
 }
+
+// pub struct World {
+//     pub relations: Tree<NodeId, NodeId>,
+
+//     pub node_storage: Box<NodeStore>,
+//     pub extension_store: Box<ExtensionStore>,
+//     pub dirty_tracker: Box<DirtyTracker>,
+//     pub system_store: Box<SystemStore>,
+//     pub resource_store: Box<ResourceStore>,
+// }
+// impl Default for World {
+// fn default() -> Self {
+//     let mut relations: Tree<NodeId, NodeId> = Tree::new(None);
+//     _ = relations.add_node(Node::new(0, None), None);
+
+//     Self {
+//         relations,
+
+//         node_storage: Box::new(NodeStore::default()),
+//         extension_store: Box::new(ExtensionStore::default()),
+//         dirty_tracker: Box::new(DirtyTracker::default()),
+//         system_store: Box::new(SystemStore::default()),
+//         resource_store: Box::new(ResourceStore::default()),
+//     }
+// }
+// }
