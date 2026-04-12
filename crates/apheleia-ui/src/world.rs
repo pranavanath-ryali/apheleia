@@ -5,7 +5,7 @@ use crate::{
     resources::store::ResourceStore, systems::store::SystemStore, types::NodeId,
 };
 
-pub struct WorldViewForBuilder<'a> {
+pub struct BuilderView<'a> {
     pub relations: &'a mut Tree<NodeId, NodeId>,
 
     pub node_storage: &'a mut NodeStore,
@@ -20,7 +20,7 @@ pub struct WorldViewForNode<'a> {
     pub resource_store: &'a mut ResourceStore,
 }
 
-pub struct WorldViewForSystems<'a> {
+pub struct SystemView<'a> {
     pub relations: &'a mut Tree<NodeId, NodeId>,
 
     pub node_storage: &'a mut NodeStore,

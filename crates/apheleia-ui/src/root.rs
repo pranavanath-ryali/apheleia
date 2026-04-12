@@ -18,7 +18,7 @@ use crate::{
     resources::{store::ResourceStore, traits::Resource},
     systems::store::SystemStore,
     types::{EventData, EventType, NodeId},
-    world::{WorldViewForBuilder, WorldViewForCommands, WorldViewForNode, WorldViewForSystems},
+    world::{BuilderView, SystemView, WorldViewForCommands, WorldViewForNode},
 };
 
 pub struct Root {
@@ -170,7 +170,7 @@ impl Root {
         if event_type != EventType::None {
             info!("RootNode Event data: {:?}", event_data);
 
-            let mut world = WorldViewForSystems {
+            let mut world = SystemView {
                 relations: &mut self.relations,
 
                 node_storage: &mut self.node_storage,
@@ -193,7 +193,7 @@ impl Root {
         // Update Nodes marked dirty
         let ids: Vec<NodeId> = self.dirty_tracker.iter_update().copied().collect();
         for id in ids {
-            let mut world = WorldViewForSystems {
+            let mut world = SystemView {
                 relations: &mut self.relations,
 
                 dirty_tracker: &mut self.dirty_tracker,
@@ -215,7 +215,7 @@ impl Root {
 
         // Update Nodes registered for constant update
         // TODO: Add a check to see if there are any systems registered for constant update
-        let mut world = WorldViewForSystems {
+        let mut world = SystemView {
             relations: &mut self.relations,
 
             dirty_tracker: &mut self.dirty_tracker,
@@ -235,7 +235,7 @@ impl Root {
             info!("RootNode Render node begins: {}", id);
 
             let mut node_buffer = Buffer::new(size.0, size.1);
-            let mut world = WorldViewForSystems {
+            let mut world = SystemView {
                 relations: &mut self.relations,
 
                 dirty_tracker: &mut self.dirty_tracker,

@@ -7,11 +7,11 @@ use crate::{
     extensions::traits::Extension,
     node::{data::NodeData, traits::NodeTrait},
     types::{NodeId, System, UpdateType},
-    world::WorldViewForBuilder,
+    world::BuilderView,
 };
 
 pub struct NodeBuilder<'a> {
-    rootnode_data: &'a mut WorldViewForBuilder<'a>,
+    rootnode_data: &'a mut BuilderView<'a>,
 
     id: NodeId,
     class: String,
@@ -19,7 +19,7 @@ pub struct NodeBuilder<'a> {
     data: NodeData,
 }
 impl<'a> NodeBuilder<'a> {
-    pub fn new(id: NodeId, class: &str, rootnode_data: &'a mut WorldViewForBuilder<'a>) -> Self {
+    pub fn new(id: NodeId, class: &str, rootnode_data: &'a mut BuilderView<'a>) -> Self {
         NodeBuilder {
             rootnode_data,
 
