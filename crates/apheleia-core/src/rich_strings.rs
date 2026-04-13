@@ -46,6 +46,23 @@ impl RichString {
             current_style: Style::default(),
         }
     }
+
+    pub fn slice(&self, start: usize, end: usize) -> Self {
+        assert!(
+            start <= end && end <= self.i_text.len(),
+            "Range out of bounds"
+        );
+
+        // Accumalate styles till start
+        let style = Style::default();
+        for (i, j) in self.ij_markup.iter() {
+            if *i > end - 1 {
+                break;
+            }
+        }
+
+        todo!()
+    }
 }
 
 pub struct RichStringIter<'a> {
