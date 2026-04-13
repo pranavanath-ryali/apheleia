@@ -60,12 +60,7 @@ impl<'a> Iterator for RichStringIter<'a> {
     fn next(&mut self) -> Option<Self::Item> {
         if let Some(index) = self.i_text_iter.next() {
             let c = self.chars.get(*index).expect("Unexpected char not found.");
-            let markup: Option<(usize, usize)> = self.ij_markup.iter().find_map(|(i, j)| {
-                if i > index {
-                    return None;
-                }
-                Some((*i, *j))
-            });
+            let markup: Option<&(usize, usize)> = self.ij_markup.iter().rfind(|(i, _)| i <= index);
             let style = match markup {
                 Some(markup) => {
                     let markup_text = self.chars[markup.0..markup.1].iter().collect::<String>();
@@ -114,7 +109,6 @@ fn map_markup_index(text: &str) -> Vec<(usize, usize)> {
         }
     }
 
-    ij_markup.reverse();
     ij_markup
 }
 
@@ -171,7 +165,7 @@ mod rich_string_test {
 
         println!("Rich String Text: {}", rich_str.text);
 
-        assert_eq!(ij_markup, vec![(14, 15), (6, 9)]);
+        assert_eq!(ij_markup, vec![(6, 9), (14, 15)]);
     }
 
     #[test]
