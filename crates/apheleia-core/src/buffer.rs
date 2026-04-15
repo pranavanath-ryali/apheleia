@@ -67,8 +67,7 @@ impl Buffer {
                     continue;
                 }
 
-                if offset_x + x as u16 >= self.size.0 || offset_y + y as u16 > self.size.1 {
-                    println!("DROPPED");
+                if offset_x + x as u16 >= self.size.0 || offset_y + y as u16 >= self.size.1 {
                     continue;
                 }
 

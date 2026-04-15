@@ -173,6 +173,7 @@ fn render(ctx: &mut SystemContext) {
                     // text += c.to_string().repeat(len).as_str();
                 }
                 TextOverflow::Scroll(_) => {
+                    // println!("\n\n\rI: {}", ext.scroll_i);
                     text = ext.text.slice(ext.scroll_i, ext.scroll_i + size.0 as usize);
                     // text = ext
                     //     .text

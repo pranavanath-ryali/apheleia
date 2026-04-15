@@ -140,13 +140,15 @@ fn main() {
     root.create_node(|builder| {
         builder
             .set_class("scrolling_text")
-            .set_size(Vector2(10, 1))
+            .set_size(Vector2(4, 1))
             .node(
-                LabelNode::new(RichString::new("0123456789012346789")).set_overflow(
-                    apheleia_widgets::label::TextOverflow::Scroll(ScrollingTextParams {
-                        scroll_step: 0.125,
-                    }),
-                ),
+                // LabelNode::new(RichString::new("</fg:blue/>0123456</fg:red/>7890123456789"))
+                LabelNode::new(RichString::new(
+                    "</fg:blue/>0123456</reverse/>7890123456789",
+                ))
+                .set_overflow(apheleia_widgets::label::TextOverflow::Scroll(
+                    ScrollingTextParams { scroll_step: 0.125 },
+                )),
             )
         // .node(LabelNode::new("Hello World. <fg:red>This Text is <under_lined>RED. <fg:blue>This Text is <slow_blink>BLUE").set_overflow(
         //     apheleia_widgets::label::TextOverflow::Scroll(

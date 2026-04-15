@@ -70,14 +70,15 @@ impl RichString {
         let mut started = false;
         for rich_text in self.rich_texts.iter() {
             if start >= offset && start < rich_text.text.len() + offset {
-                if end >= offset && end < rich_text.text.len() + offset {
+                if end > offset && end < rich_text.text.len() + offset {
+                    // println!("END: {}; OFFSET: {}; START: {}", end, offset, start);
                     texts.push({
                         RichText {
                             text: rich_text
                                 .text
                                 .split_at(start - offset)
                                 .1
-                                .split_at(end - offset - start)
+                                .split_at(end - start)
                                 .0
                                 .to_string(),
                             style: rich_text.style,
