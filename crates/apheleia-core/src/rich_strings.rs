@@ -24,6 +24,22 @@ impl RichString {
         }
     }
 
+    pub fn len(&self) -> usize {
+        let mut len = 0_usize;
+        for text in self.rich_texts.iter() {
+            len += text.text.len();
+        }
+        len
+    }
+
+    pub fn is_empty(&self) -> bool {
+        if self.len() == 0 {
+            return true;
+        }
+
+        false
+    }
+
     pub fn iter(&self) -> RichStringIter<'_> {
         let chars: Vec<char> = self.rich_texts[0].text.chars().collect();
         let mut texts_iter = self.rich_texts.iter();

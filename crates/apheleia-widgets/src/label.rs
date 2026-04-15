@@ -55,9 +55,9 @@ pub struct LabelNode {
     pub vertical_alignment: VerticalAlignment,
 }
 impl LabelNode {
-    pub fn new(text: &str) -> Self {
+    pub fn new(text: RichString) -> Self {
         Self {
-            text: text.to_string(),
+            text,
 
             overflow: TextOverflow::Ellipses(3, '.'),
             horizontal_alignment: HorizontalAlignment::Left,
