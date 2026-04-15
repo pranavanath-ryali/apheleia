@@ -139,7 +139,7 @@ fn scroll_update(ctx: &mut SystemContext) {
 }
 
 fn render(ctx: &mut SystemContext) {
-    let mut text: String;
+    let mut text: RichString;
     let mut position = Vector2(0, 0);
 
     {
@@ -147,7 +147,7 @@ fn render(ctx: &mut SystemContext) {
         let ext = ctx.get_extension::<LabelExtension>();
 
         if ext.text.len() <= size.0 as usize {
-            text = ext.text.to_string();
+            text = ext.text;
             match ext.horizontal_alignment {
                 HorizontalAlignment::Left => position.0 = 0,
                 HorizontalAlignment::Center => {
@@ -158,15 +158,17 @@ fn render(ctx: &mut SystemContext) {
         } else {
             match ext.overflow {
                 TextOverflow::DoNothing => {
-                    text = ext.text.to_string().split_at(size.0 as usize).0.to_string();
+                    // text = ext.text.to_string().split_at(size.0 as usize).0.to_string();
+                    text = ext.text.slice(0, size.0 as usize);
                 }
                 TextOverflow::Ellipses(len, c) => {
-                    text = ext
-                        .text
-                        .to_string()
-                        .split_at(size.0 as usize - len)
-                        .0
-                        .to_string();
+                    text = ext.text.slice(0, size.0 as usize - len);
+                    // text = ext
+                    //     .text
+                    //     .to_string()
+                    //     .split_at(size.0 as usize - len)
+                    //     .0
+                    //     .to_string();
                     text += c.to_string().repeat(len).as_str();
                 }
                 TextOverflow::Scroll(_) => {
