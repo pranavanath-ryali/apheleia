@@ -2,13 +2,13 @@ use std::{ops::Add, slice::Iter, vec::IntoIter};
 
 use crate::style::Style;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 struct RichText {
     pub text: String,
     pub style: Style,
 }
 
-#[derive(Debug, Default, PartialEq)]
+#[derive(Debug, Default, PartialEq, Clone)]
 pub struct RichString {
     rich_texts: Vec<RichText>,
 }
@@ -40,10 +40,10 @@ impl RichString {
         false
     }
 
-    pub fn add_text(&mut self, text: &str, style: Style) {
+    pub fn add_text(&mut self, text: &str, style: Option<Style>) {
         self.rich_texts.push(RichText {
             text: text.to_string(),
-            style,
+            style: style.unwrap_or_default(),
         });
     }
 

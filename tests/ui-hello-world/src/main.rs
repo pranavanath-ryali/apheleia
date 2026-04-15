@@ -129,8 +129,10 @@
 //     root.run();
 // }
 
-use apheleia_ui::{Vector2, contexts::system::SystemContext, root::Root, types::UpdateType};
-use apheleia_widgets::label::LabelNode;
+use apheleia_ui::{
+    RichString, Vector2, contexts::system::SystemContext, root::Root, types::UpdateType,
+};
+use apheleia_widgets::label::{LabelNode, ScrollingTextParams};
 
 fn main() {
     let mut root = Root::default();
@@ -138,12 +140,19 @@ fn main() {
     root.create_node(|builder| {
         builder
             .set_class("scrolling_text")
-            .set_size(Vector2(5, 1))
-            .node(LabelNode::new("Hello World. <fg:red>This Text is <under_lined>RED. <fg:blue>This Text is <slow_blink>BLUE").set_overflow(
-                apheleia_widgets::label::TextOverflow::Scroll(
-                    apheleia_widgets::label::ScrollingTextParams { scroll_step: 0.5 },
+            .set_size(Vector2(10, 1))
+            .node(
+                LabelNode::new(RichString::new("0123456789012346789")).set_overflow(
+                    apheleia_widgets::label::TextOverflow::Scroll(ScrollingTextParams {
+                        scroll_step: 0.125,
+                    }),
                 ),
-            ))
+            )
+        // .node(LabelNode::new("Hello World. <fg:red>This Text is <under_lined>RED. <fg:blue>This Text is <slow_blink>BLUE").set_overflow(
+        //     apheleia_widgets::label::TextOverflow::Scroll(
+        //         apheleia_widgets::label::ScrollingTextParams { scroll_step: 0.5 },
+        //     ),
+        // ))
     });
 
     root.run();

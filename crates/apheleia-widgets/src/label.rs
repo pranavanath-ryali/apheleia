@@ -147,7 +147,7 @@ fn render(ctx: &mut SystemContext) {
         let ext = ctx.get_extension::<LabelExtension>();
 
         if ext.text.len() <= size.0 as usize {
-            text = ext.text;
+            text = ext.text.clone();
             match ext.horizontal_alignment {
                 HorizontalAlignment::Left => position.0 = 0,
                 HorizontalAlignment::Center => {
@@ -163,23 +163,25 @@ fn render(ctx: &mut SystemContext) {
                 }
                 TextOverflow::Ellipses(len, c) => {
                     text = ext.text.slice(0, size.0 as usize - len);
+                    text.add_text(c.to_string().repeat(len).as_str(), None);
                     // text = ext
                     //     .text
                     //     .to_string()
                     //     .split_at(size.0 as usize - len)
                     //     .0
                     //     .to_string();
-                    text += c.to_string().repeat(len).as_str();
+                    // text += c.to_string().repeat(len).as_str();
                 }
                 TextOverflow::Scroll(_) => {
-                    text = ext
-                        .text
-                        .to_string()
-                        .split_at(ext.scroll_i)
-                        .1
-                        .split_at(size.0 as usize)
-                        .0
-                        .to_string();
+                    text = ext.text.slice(ext.scroll_i, ext.scroll_i + size.0 as usize);
+                    // text = ext
+                    //     .text
+                    //     .to_string()
+                    //     .split_at(ext.scroll_i)
+                    //     .1
+                    //     .split_at(size.0 as usize)
+                    //     .0
+                    //     .to_string();
                 }
             }
         }
@@ -191,5 +193,7 @@ fn render(ctx: &mut SystemContext) {
     }
 
     ctx.get_buffer()
-        .write_string(position.0, position.1, text, None);
+        .write_rich_string(position.0, position.1, text);
+    // ctx.get_buffer()
+    //     .write_string(position.0, position.1, text, None);
 }
