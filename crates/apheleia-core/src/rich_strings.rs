@@ -1,132 +1,165 @@
-use std::{
-    collections::{BTreeSet, btree_set},
-    vec,
-};
+use std::{slice::Iter, vec::IntoIter};
 
 use crate::style::Style;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
+struct RichText {
+    pub text: String,
+    pub style: Style,
+}
+
+#[derive(Debug, Default, PartialEq)]
 pub struct RichString {
-    text: String,
-    i_text: BTreeSet<usize>,
-    ij_markup: Vec<(usize, usize)>,
+    rich_texts: Vec<RichText>,
 }
 impl RichString {
     pub fn new(text: &str) -> Self {
         Self {
-            text: text.to_string(),
-            i_text: map_text_index(text),
-            ij_markup: map_markup_index(text),
+            rich_texts: parse_string(text),
         }
     }
     pub fn to_rich(text: &str, style: Style) -> Self {
-        let text = format!(
-            "<{}{}{}>{}",
-            style.get_fg_markup(),
-            style.get_bg_markup(),
-            style.get_style_markup(),
-            text
-        )
-        .to_string();
-        let i_text = map_text_index(text.as_str());
-        let ij_markup = map_markup_index(text.as_str());
-
         Self {
-            text,
-            i_text,
-            ij_markup,
+            rich_texts: parse_string(text),
         }
     }
 
     pub fn iter(&self) -> RichStringIter<'_> {
+        let chars: Vec<char> = self.rich_texts[0].text.chars().collect();
+        let mut texts_iter = self.rich_texts.iter();
+        texts_iter.next();
         RichStringIter {
-            chars: self.text.chars().collect(),
-            i_text_iter: self.i_text.iter(),
-            ij_markup: &self.ij_markup,
-            current_style: Style::default(),
+            current_iter: RichTextIter {
+                chars: chars.into_iter(),
+                style: self.rich_texts[0].style,
+            },
+            rich_texts: texts_iter,
         }
     }
 
     pub fn slice(&self, start: usize, end: usize) -> Self {
-        assert!(
-            start <= end && end <= self.i_text.len(),
-            "Range out of bounds"
-        );
+        let mut offset = 0_usize;
+        let mut texts: Vec<RichText> = vec![];
+        let mut started = false;
+        for rich_text in self.rich_texts.iter() {
+            if start >= offset && start < rich_text.text.len() + offset {
+                if end >= offset && end < rich_text.text.len() + offset {
+                    texts.push({
+                        RichText {
+                            text: rich_text
+                                .text
+                                .split_at(start - offset)
+                                .1
+                                .split_at(end - offset - start)
+                                .0
+                                .to_string(),
+                            style: rich_text.style,
+                        }
+                    });
 
-        // Accumalate styles till start
-        let style = Style::default();
-        for (i, j) in self.ij_markup.iter() {
-            if *i > end - 1 {
+                    break;
+                }
+
+                started = true;
+                texts.push(RichText {
+                    text: rich_text.text.split_at(start - offset).1.to_string(),
+                    style: rich_text.style,
+                });
+                offset += rich_text.text.len();
+                continue;
+            }
+
+            if end >= offset && end < rich_text.text.len() + offset {
+                let text = rich_text.text.split_at(end - offset).0.to_string();
+                if !text.is_empty() {
+                    texts.push(RichText {
+                        text,
+                        style: rich_text.style,
+                    });
+                }
                 break;
             }
+
+            if started {
+                texts.push(RichText {
+                    text: rich_text.text.to_string(),
+                    style: rich_text.style,
+                });
+            }
+            offset += rich_text.text.len();
         }
 
-        todo!()
+        RichString { rich_texts: texts }
     }
 }
 
-pub struct RichStringIter<'a> {
-    chars: Vec<char>,
-    i_text_iter: btree_set::Iter<'a, usize>,
-    ij_markup: &'a Vec<(usize, usize)>,
-    current_style: Style,
+struct RichTextIter {
+    chars: IntoIter<char>,
+    style: Style,
 }
-impl<'a> Iterator for RichStringIter<'a> {
+impl Iterator for RichTextIter {
     type Item = (char, Style);
 
     fn next(&mut self) -> Option<Self::Item> {
-        if let Some(index) = self.i_text_iter.next() {
-            let c = self.chars.get(*index).expect("Unexpected char not found.");
-            let markup: Option<&(usize, usize)> = self.ij_markup.iter().rfind(|(i, _)| i <= index);
-            let style = match markup {
-                Some(markup) => {
-                    let markup_text = self.chars[markup.0..markup.1].iter().collect::<String>();
-                    Style::from_markup(markup_text.as_str())
-                }
-                None => Style::default(),
-            };
-
-            self.current_style.update(style);
-
-            return Some((*c, self.current_style));
+        if let Some(c) = self.chars.next() {
+            return Some((c, self.style));
         }
         None
     }
 }
 
-fn map_text_index(text: &str) -> BTreeSet<usize> {
-    let mut i_text: BTreeSet<usize> = BTreeSet::new();
-
-    let mut is_in_tag = false;
-    for (i, c) in text.chars().enumerate() {
-        match c {
-            '<' => is_in_tag = true,
-            '>' => is_in_tag = false,
-            _ => {
-                if !is_in_tag {
-                    i_text.insert(i);
-                }
-            }
-        }
-    }
-
-    i_text
+pub struct RichStringIter<'a> {
+    rich_texts: Iter<'a, RichText>,
+    current_iter: RichTextIter,
 }
-fn map_markup_index(text: &str) -> Vec<(usize, usize)> {
-    let mut ij_markup: Vec<(usize, usize)> = vec![];
+impl<'a> Iterator for RichStringIter<'a> {
+    type Item = (char, Style);
 
-    let mut start: usize = 0;
-    for (i, c) in text.chars().enumerate() {
-        match c {
-            '<' => start = i,
-            '>' => {
-                ij_markup.push((start + 1, i));
-            }
-            _ => (),
+    fn next(&mut self) -> Option<Self::Item> {
+        if let Some(item) = self.current_iter.next() {
+            return Some(item);
+        }
+
+        if let Some(text) = self.rich_texts.next() {
+            let chars: Vec<char> = text.text.chars().collect();
+            self.current_iter = RichTextIter {
+                chars: chars.into_iter(),
+                style: text.style,
+            };
+
+            return self.current_iter.next();
+        }
+
+        None
+    }
+}
+
+fn parse_string(text: &str) -> Vec<RichText> {
+    let mut rich_texts: Vec<RichText> = vec![];
+    let mut current_style = Style::default();
+    for token in text.split("</") {
+        let t: Vec<&str> = token.split("/>").collect();
+        if t.len() > 1 {
+            current_style.update(Style::from_markup(t[0]));
+            let text = t[1].to_string();
+
+            rich_texts.push(RichText {
+                text,
+                style: current_style,
+            });
+
+            continue;
+        }
+
+        if !t[0].is_empty() {
+            rich_texts.push(RichText {
+                text: t[0].to_string(),
+                style: current_style,
+            });
         }
     }
 
-    ij_markup
+    rich_texts
 }
 
 #[cfg(test)]
@@ -138,56 +171,24 @@ mod rich_string_test {
     use super::*;
 
     #[test]
-    fn test_to_rich() {
-        let rich_str = RichString::to_rich(
-            "HelloWorld",
-            Style {
-                fg: crossterm::style::Color::Green,
-                bg: crossterm::style::Color::Red,
-                flags: StyleFlags::BOLD,
-            },
-        );
-
+    fn test_parse_text() {
+        let rich_str = parse_string("</fg:blue;bold;under_lined/>HELLO");
         assert_eq!(
-            rich_str.text,
-            "<fg:green;bg:red;bold;>HelloWorld".to_string()
+            rich_str,
+            vec![RichText {
+                text: "HELLO".to_string(),
+                style: Style {
+                    fg: Color::Blue,
+                    flags: StyleFlags::UNDER_LINED | StyleFlags::BOLD,
+                    ..Default::default()
+                }
+            }]
         );
-    }
-
-    #[test]
-    fn test_map_text_index() {
-        let rich_str0 = RichString::new("Hello<red>Wor<i>ld");
-        let rich_str1 = RichString::to_rich(
-            "Hello<red>Wor<i>ld",
-            Style {
-                flags: StyleFlags::BOLD,
-                ..Default::default()
-            },
-        );
-
-        let i_text0: Vec<usize> = rich_str0.i_text.into_iter().collect();
-        let i_text1: Vec<usize> = rich_str1.i_text.into_iter().collect();
-
-        println!("Rich String 0 Text: {}", rich_str0.text);
-        println!("Rich String 1 Text: {}", rich_str1.text);
-
-        assert_eq!(i_text0, vec![0, 1, 2, 3, 4, 10, 11, 12, 16, 17]);
-        assert_eq!(i_text1, vec![7, 8, 9, 10, 11, 17, 18, 19, 23, 24]);
-    }
-
-    #[test]
-    fn test_map_markup_index() {
-        let rich_str = RichString::new("Hello<red>Wor<i>ld");
-        let ij_markup: Vec<(usize, usize)> = rich_str.ij_markup;
-
-        println!("Rich String Text: {}", rich_str.text);
-
-        assert_eq!(ij_markup, vec![(6, 9), (14, 15)]);
     }
 
     #[test]
     fn test_richstring_iter() {
-        let rich_str = RichString::new("<bold;fg: red; bg: white>H<bg:blue;italic>H");
+        let rich_str = RichString::new("</bold;fg: red; bg: white/>H</bg:blue;italic/>A");
         let vec: Vec<(char, Style)> = rich_str.iter().collect();
 
         assert_eq!(
@@ -202,7 +203,7 @@ mod rich_string_test {
                     }
                 ),
                 (
-                    'H',
+                    'A',
                     Style {
                         fg: Color::Red,
                         bg: Color::Blue,
@@ -210,6 +211,57 @@ mod rich_string_test {
                     }
                 ),
             ]
+        );
+    }
+
+    #[test]
+    fn test_richstring_slice() {
+        let rich_str = RichString::new("</fg:red/>HELLO</bg:blue/>WORLD");
+        assert_eq!(
+            rich_str.slice(2, 7),
+            RichString {
+                rich_texts: vec![
+                    RichText {
+                        text: "LLO".to_string(),
+                        style: Style {
+                            fg: Color::Red,
+                            ..Default::default()
+                        }
+                    },
+                    RichText {
+                        text: "WO".to_string(),
+                        style: Style {
+                            fg: Color::Red,
+                            bg: Color::Blue,
+                            ..Default::default()
+                        }
+                    }
+                ]
+            }
+        );
+        assert_eq!(
+            rich_str.slice(2, 5),
+            RichString {
+                rich_texts: vec![RichText {
+                    text: "LLO".to_string(),
+                    style: Style {
+                        fg: Color::Red,
+                        ..Default::default()
+                    }
+                },]
+            }
+        );
+        assert_eq!(
+            rich_str.slice(2, 3),
+            RichString {
+                rich_texts: vec![RichText {
+                    text: "L".to_string(),
+                    style: Style {
+                        fg: Color::Red,
+                        ..Default::default()
+                    }
+                },]
+            }
         );
     }
 }
