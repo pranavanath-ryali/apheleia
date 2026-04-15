@@ -1,4 +1,4 @@
-use std::{slice::Iter, vec::IntoIter};
+use std::{ops::Add, slice::Iter, vec::IntoIter};
 
 use crate::style::Style;
 
@@ -38,6 +38,17 @@ impl RichString {
         }
 
         false
+    }
+
+    pub fn add_text(&mut self, text: &str, style: Style) {
+        self.rich_texts.push(RichText {
+            text: text.to_string(),
+            style,
+        });
+    }
+
+    pub fn append(&mut self, rich_str: &mut RichString) {
+        self.rich_texts.append(&mut rich_str.rich_texts);
     }
 
     pub fn iter(&self) -> RichStringIter<'_> {
