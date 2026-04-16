@@ -106,7 +106,8 @@ impl Renderer {
         }
 
         _ = self.stdout.flush();
-        info!("RENDERER's UPDATE CALLED");
+        buf.clear_diff();
+        info!("RENDERER's UPDATE ENDED");
     }
 
     pub fn quit(&mut self) {
