@@ -16,8 +16,11 @@ name = "apheleia-core"
 version = "0.1.0"
 dependencies = [
  "bitflags",
+ "chrono",
  "crossterm",
+ "fern",
  "indexmap",
+ "log",
 ]
 
 [[package]]

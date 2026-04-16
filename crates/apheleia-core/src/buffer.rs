@@ -18,6 +18,7 @@ impl Default for Cell {
     }
 }
 
+#[derive(Debug)]
 pub struct Buffer {
     size: (u16, u16),
     cells: Vec<Vec<Cell>>,

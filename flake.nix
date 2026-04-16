@@ -14,6 +14,8 @@
 				clippy
 				rust-analyzer
 				lldb
+				rustup
+				gdb
 				perf
 			];
 

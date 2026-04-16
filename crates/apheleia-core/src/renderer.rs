@@ -9,6 +9,7 @@ use crossterm::{
     },
     terminal::{Clear, disable_raw_mode, enable_raw_mode},
 };
+use log::info;
 
 use crate::{
     buffer::Buffer,
@@ -65,6 +66,7 @@ impl Renderer {
     }
 
     pub fn render(&mut self, buf: &mut Buffer) {
+        info!("RENDERER's UPDATE CALLED");
         for (y, map) in buf.get_diffed_cells().iter() {
             let mut batch_text = String::new();
             let mut style = Style::default();
@@ -92,6 +94,8 @@ impl Renderer {
                     style = cell.style;
                     batch_text.clear();
                     batch_text.push(cell.c);
+
+                    continue;
                 }
 
                 offset += 1;
@@ -102,6 +106,7 @@ impl Renderer {
         }
 
         _ = self.stdout.flush();
+        info!("RENDERER's UPDATE CALLED");
     }
 
     pub fn quit(&mut self) {
@@ -117,6 +122,15 @@ fn queue_batch(
     text: &String,
     style: Style,
 ) -> Result<(), Error> {
+    if text.is_empty() {
+        return Ok(());
+    }
+
+    info!("BATCH QUEUE INFO:");
+    info!("x: {}; y: {}", x, y);
+    info!("text: {}", text);
+    info!("style: {:?}", style);
+
     queue!(stdout, SetAttribute(Attribute::Reset))?;
 
     queue!(stdout, MoveTo(x, y))?;

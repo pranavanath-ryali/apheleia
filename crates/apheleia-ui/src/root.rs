@@ -118,6 +118,8 @@ impl Root {
             .collect();
 
         for id in ids {
+            info!("RootNode inital_setup: Initializing NodeID: {}", id);
+
             let data = self.node_storage.get_data(id).unwrap();
             let mut ctx = NodeContext::new(id, data.position, data.size);
             self.node_storage
@@ -140,6 +142,7 @@ impl Root {
 
     fn event(&mut self) -> Result<(), Box<dyn Error>> {
         info!("RootNode event started");
+
         // TODO: Implement event function
         let mut event_type: EventType = EventType::None;
         let mut event_data: EventData = EventData::None;
@@ -252,6 +255,9 @@ impl Root {
                 .unwrap()
                 .get_global_position()
                 .unwrap_or(Vector2(0, 0));
+
+            info!("RootNodeBuffer ID: {}; BUFFER: {:?}", id, node_buffer);
+
             self.buffer
                 .render_buffer(position.0, position.1, &mut node_buffer);
 

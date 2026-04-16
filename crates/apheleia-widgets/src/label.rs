@@ -133,8 +133,8 @@ fn scroll_update(ctx: &mut SystemContext) {
             } else {
                 ext.scroll_i -= 1;
             }
+            ctx.mark_render_dirty(apheleia_ui::types::DirtyRenderLevel::SimpleDirty);
         }
-        ctx.mark_render_dirty(apheleia_ui::types::DirtyRenderLevel::SimpleDirty);
     }
 }
 

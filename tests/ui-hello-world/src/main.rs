@@ -130,17 +130,22 @@
 // }
 
 use apheleia_ui::{
-    RichString, Vector2, contexts::system::SystemContext, root::Root, types::UpdateType,
+    RichString, Vector2, contexts::system::SystemContext, root::Root, setup_logger,
+    types::UpdateType,
 };
 use apheleia_widgets::label::{LabelNode, ScrollingTextParams};
 
 fn main() {
+    if cfg!(debug_assertions) {
+        _ = setup_logger();
+    }
+
     let mut root = Root::default();
 
     root.create_node(|builder| {
         builder
             .set_class("scrolling_text")
-            .set_size(Vector2(4, 1))
+            .set_size(Vector2(3, 1))
             .node(
                 // LabelNode::new(RichString::new("</fg:blue/>0123456</fg:red/>7890123456789"))
                 LabelNode::new(RichString::new(
