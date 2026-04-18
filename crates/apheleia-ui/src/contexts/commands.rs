@@ -23,6 +23,7 @@ use crate::{
 pub struct CreateNode {
     pub id: NodeId,
     pub class: Option<String>,
+    pub parent_id: Option<NodeId>,
     pub parent_class: Option<String>,
 
     pub position: Vector2,
@@ -47,7 +48,11 @@ pub struct MarkUpdateDirty(pub NodeId);
 impl ContextCommand for CreateNode {
     fn execute(self: Box<Self>, world: &mut crate::world::WorldViewForCommands) {
         let node_data = NodeData::new(self.position, self.size);
-        if let Some(parent_class) = self.parent_class {
+        if let Some(parent_id) = self.parent_id {
+            _ = world
+                .relations
+                .add_node(Node::new(self.id, None), Some(&parent_id));
+        } else if let Some(parent_class) = self.parent_class {
             let parent_id = world
                 .node_storage
                 .get_id(&parent_class)

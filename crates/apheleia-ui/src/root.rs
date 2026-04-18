@@ -1,4 +1,4 @@
-use std::{error::Error, io::stdout, mem::take, time::Duration};
+use std::{cell::RefCell, error::Error, io::stdout, mem::take, rc::Rc, time::Duration};
 
 use apheleia_core::{buffer::Buffer, renderer::Renderer, types::Vector2};
 use crossterm::{
@@ -27,7 +27,7 @@ pub struct Root {
     pub height: u16,
     running: bool,
 
-    nodeid_gen: IdGenerator<NodeId>,
+    id_generator: Rc<RefCell<IdGenerator<NodeId>>>,
     // data: Rc<RefCell<World>>,
     relations: Tree<NodeId, NodeId>,
 
@@ -55,7 +55,7 @@ impl Default for Root {
             width,
             height,
 
-            nodeid_gen: IdGenerator::<NodeId>::new(0),
+            id_generator: Rc::new(RefCell::new(IdGenerator::<NodeId>::new(0))),
 
             relations,
 
@@ -310,7 +310,8 @@ impl Root {
 
     // Functions for Developers
     pub fn create_node(&mut self, f: impl FnOnce(NodeBuilder) -> NodeBuilder) {
-        let mut builder = f(NodeBuilder::new(self.nodeid_gen.next()));
+        let id = self.id_generator.borrow_mut().next();
+        let mut builder = f(NodeBuilder::new(id, self.id_generator.clone()));
         self.run_commands(builder.build());
     }
 
