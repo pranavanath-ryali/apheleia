@@ -7,7 +7,9 @@ use crossterm::{
         Attribute, Attributes, Print, SetAttribute, SetAttributes, SetBackgroundColor,
         SetForegroundColor,
     },
-    terminal::{Clear, disable_raw_mode, enable_raw_mode},
+    terminal::{
+        Clear, EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode,
+    },
 };
 use log::info;
 
@@ -29,13 +31,14 @@ impl Renderer {
     }
 
     pub fn init(&mut self) {
-        _ = enable_raw_mode();
         _ = execute!(self.stdout, cursor::Hide);
-        _ = execute!(self.stdout, Clear(crossterm::terminal::ClearType::All));
+        _ = execute!(self.stdout, EnterAlternateScreen);
+        _ = enable_raw_mode();
     }
 
     pub fn render_flip(&mut self, buf: &mut Buffer) {
         _ = execute!(self.stdout, Clear(crossterm::terminal::ClearType::All));
+        _ = execute!(self.stdout, cursor::Hide);
 
         for y in 0..self.size.1 {
             let mut batch_text = String::new();
@@ -111,8 +114,9 @@ impl Renderer {
     }
 
     pub fn quit(&mut self) {
-        _ = execute!(self.stdout, cursor::Show);
         _ = disable_raw_mode();
+        _ = execute!(self.stdout, cursor::Show);
+        _ = execute!(self.stdout, LeaveAlternateScreen);
     }
 }
 

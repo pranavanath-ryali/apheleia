@@ -108,6 +108,8 @@ impl Root {
     fn initial_setup(&mut self) {
         info!("RootNode inital_setup started");
 
+        self.renderer.init();
+
         let ids: Vec<NodeId> = self
             .relations
             .traverse(&0, tree_ds::prelude::TraversalStrategy::PreOrder)
@@ -306,6 +308,8 @@ impl Root {
             self.update();
             self.render();
         }
+
+        self.renderer.quit();
     }
 
     // Functions for Developers

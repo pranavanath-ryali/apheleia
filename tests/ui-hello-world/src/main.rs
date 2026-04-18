@@ -134,12 +134,13 @@ use apheleia::{
     label::{LabelNode, ScrollingTextParams, TextOverflow},
     rich_strings::RichString,
     root::Root,
+    setup_logger,
 };
 
 fn main() {
-    // if cfg!(debug_assertions) {
-    //     _ = setup_logger();
-    // }
+    if cfg!(debug_assertions) {
+        _ = setup_logger();
+    }
 
     let mut root = Root::default();
 
