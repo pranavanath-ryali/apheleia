@@ -8,6 +8,7 @@ use apheleia_ui::{
 #[derive(Clone, Copy)]
 pub struct ScrollingTextParams {
     pub scroll_step: f32,
+    pub wait_step: f32,
 }
 
 #[derive(Clone, Copy)]
@@ -40,6 +41,8 @@ pub struct LabelExtension {
     pub scroll_i: usize,
     pub scroll_dir: isize,
     pub scroll_counter: f32,
+
+    pub wait: bool,
 }
 impl Extension for LabelExtension {
     fn as_any(&self) -> &dyn std::any::Any {
@@ -91,6 +94,7 @@ impl NodeTrait for LabelNode {
             scroll_i: 0,
             scroll_dir: 1,
             scroll_counter: 0.0,
+            wait: false,
         });
         ctx.add_system(apheleia_ui::types::UpdateType::Render, 0, render);
         if let TextOverflow::Scroll(_) = self.overflow {
@@ -117,24 +121,37 @@ fn scroll_update(ctx: &mut SystemContext) {
     if let TextOverflow::Scroll(scroll_params) = ext.overflow
         && ext.text.len() >= size.0 as usize
     {
-        ext.scroll_counter += scroll_params.scroll_step;
-        if ext.scroll_counter >= 1.0 {
-            ext.scroll_counter = 0.0;
+        if ext.wait {
+            ext.scroll_counter += scroll_params.wait_step;
+            if ext.scroll_counter >= 1.0 {
+                ext.scroll_counter = 0.0;
+                ext.wait = false;
+            }
+            return;
+        }
 
-            if ext.scroll_dir == 1 {
-                ext.scroll_i += 1;
-                if ext.scroll_i >= ext.text.len() - size.0 as usize {
-                    ext.scroll_i = ext.text.len() - size.0 as usize;
-                    ext.scroll_dir = -1;
-                }
-            } else if ext.scroll_i == 0 {
+        ext.scroll_counter += scroll_params.scroll_step;
+        if ext.scroll_counter < 1.0 {
+            return;
+        }
+
+        ext.scroll_counter = 0.0;
+        if ext.scroll_dir == 1 {
+            ext.scroll_i += 1;
+            if ext.scroll_i == ext.text.len() - size.0 as usize {
+                ext.scroll_dir = -1;
+                ext.wait = true;
+            }
+        } else if ext.scroll_dir == -1 {
+            if ext.scroll_i == 1 {
+                ext.scroll_i = 0;
                 ext.scroll_dir = 1;
-                ext.scroll_i = 1;
+                ext.wait = true;
             } else {
                 ext.scroll_i -= 1;
             }
-            ctx.mark_render_dirty(apheleia_ui::types::DirtyRenderLevel::SimpleDirty);
         }
+        ctx.mark_render_dirty(apheleia_ui::types::DirtyRenderLevel::SimpleDirty);
     }
 }
 

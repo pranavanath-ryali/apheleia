@@ -136,23 +136,26 @@ use apheleia_ui::{
 use apheleia_widgets::label::{LabelNode, ScrollingTextParams};
 
 fn main() {
-    if cfg!(debug_assertions) {
-        _ = setup_logger();
-    }
+    // if cfg!(debug_assertions) {
+    //     _ = setup_logger();
+    // }
 
     let mut root = Root::default();
 
     root.create_node(|builder| {
         builder
             .set_class("scrolling_text")
-            .set_size(Vector2(3, 1))
+            .set_size(Vector2(7, 1))
             .node(
                 // LabelNode::new(RichString::new("</fg:blue/>0123456</fg:red/>7890123456789"))
                 LabelNode::new(RichString::new(
                     "</fg:blue/>0123456</reverse/>7890123456789",
                 ))
                 .set_overflow(apheleia_widgets::label::TextOverflow::Scroll(
-                    ScrollingTextParams { scroll_step: 0.125 },
+                    ScrollingTextParams {
+                        scroll_step: 0.25,
+                        wait_step: 0.125,
+                    },
                 )),
             )
         // .node(LabelNode::new("Hello World. <fg:red>This Text is <under_lined>RED. <fg:blue>This Text is <slow_blink>BLUE").set_overflow(
