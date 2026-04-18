@@ -165,20 +165,31 @@ fn parse_color(text: &str) -> Color {
                     let mut iter = params[1..params.len() - 1].split(',').map(|t| t.trim());
                     let r: u8 = iter
                         .next()
-                        .expect("Expected atleast 3 parameters")
+                        .expect("Expected 3 parameters")
                         .parse()
                         .expect("No a valid u8 number");
                     let g: u8 = iter
                         .next()
-                        .expect("Expected atleast 3 parameters")
+                        .expect("Expected 3 parameters")
                         .parse()
                         .expect("No a valid u8 number");
                     let b: u8 = iter
                         .next()
-                        .expect("Expected atleast 3 parameters")
+                        .expect("Expected 3 parameters")
                         .parse()
                         .expect("No a valid u8 number");
                     return Color::Rgb { r, g, b };
+                }
+            } else if text.starts_with("ansi") {
+                let params = text.split_at(4).1.trim();
+                if params.starts_with('(') && params.ends_with(')') {
+                    let mut iter = params[1..params.len() - 1].split(',').map(|t| t.trim());
+                    let v: u8 = iter
+                        .next()
+                        .expect("Expected 1 parameter")
+                        .parse()
+                        .expect("No a valid u8 number");
+                    return Color::AnsiValue(v);
                 }
             }
             Color::Reset
@@ -207,7 +218,7 @@ fn get_markup_for_color(color: Color) -> String {
         Color::Grey => "grey".to_string(),
 
         Color::Rgb { r, g, b } => format!("rgb({},{},{})", r, g, b).to_string(),
-        Color::AnsiValue(v) => todo!(),
+        Color::AnsiValue(v) => format!("ansi({})", v).to_string(),
         // Color::Rgb { r, g, b } => text = format!("rgb({}, {}, {})", r, g, b),
         // Color::AnsiValue(v) => text = format!("ansi({})", v),
     };
