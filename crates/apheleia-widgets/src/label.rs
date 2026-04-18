@@ -23,6 +23,7 @@ pub enum HorizontalAlignment {
     Left,
     Center,
     Right,
+    Justify,
 }
 #[derive(Clone, Copy)]
 pub enum VerticalAlignment {
@@ -171,6 +172,11 @@ fn render(ctx: &mut SystemContext) {
                     position.0 = (size.0 / 2) - (ext.text.len() / 2) as u16
                 }
                 HorizontalAlignment::Right => position.0 = size.0 - ext.text.len() as u16,
+                HorizontalAlignment::Justify => {
+                    todo!()
+                    // TODO: Justify
+                    // Seems complicated since we also have to account for styling
+                }
             }
         } else {
             match ext.overflow {

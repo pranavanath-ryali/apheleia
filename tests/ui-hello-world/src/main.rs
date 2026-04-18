@@ -149,7 +149,7 @@ fn main() {
             .node(
                 // LabelNode::new(RichString::new("</fg:blue/>0123456</fg:red/>7890123456789"))
                 LabelNode::new(RichString::new(
-                    "</fg:blue/>0123456</reverse/>7890123456789",
+                    "</fg:blue/>01234567890123 </bg:red/> </bg:black/> 456789",
                 ))
                 .set_overflow(apheleia_widgets::label::TextOverflow::Scroll(
                     ScrollingTextParams {
