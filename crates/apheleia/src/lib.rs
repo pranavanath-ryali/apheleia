@@ -1,4 +1,5 @@
 // This exists to purely reexport all necessary and usable components of this crate
+// TODO: Rewrite this entire crate
 
 pub use apheleia_core::{
     Color, buffer, rich_strings,
