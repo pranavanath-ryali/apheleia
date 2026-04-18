@@ -4,7 +4,8 @@ version.workspace = true
 edition.workspace = true
 
 [dependencies]
-apheleia-core = { path = "../apheleia-core", version = "0.1.0" }
+apheleia-core.workspace = true
+
 crossterm = "0.29.0"
 indexmap = "2.2.2"
 tree-ds = "0.2.0"

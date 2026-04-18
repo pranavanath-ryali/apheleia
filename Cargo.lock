@@ -12,6 +12,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "apheleia"
+version = "0.1.0"
+dependencies = [
+ "apheleia-core",
+ "apheleia-macros",
+ "apheleia-ui",
+ "apheleia-widgets",
+]
+
+[[package]]
 name = "apheleia-core"
 version = "0.1.0"
 dependencies = [
@@ -581,9 +591,7 @@ dependencies = [
 name = "ui-hello-world"
 version = "0.1.0"
 dependencies = [
- "apheleia-core",
- "apheleia-ui",
- "apheleia-widgets",
+ "apheleia",
 ]
 
 [[package]]

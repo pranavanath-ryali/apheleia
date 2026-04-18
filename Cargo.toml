@@ -1,15 +1,14 @@
+[workspace]
+resolver = "2"
+members = [ "crates/*",  "tests/*" ]
+
 [workspace.package]
 version = "0.1.0"
 edition = "2024"
 
-[workspace]
-resolver = "2"
-members = [
-	"crates/apheleia-core",
-	"crates/apheleia-ui",
-    "crates/apheleia-widgets",
-    "crates/apheleia-macros",
-
-	"tests/core-hello-world",
-	"tests/ui-hello-world",
-]
+[workspace.dependencies]
+apheleia-core = { path = "crates/apheleia-core" }
+apheleia-ui = { path = "crates/apheleia-ui" }
+apheleia-macros = { path = "crates/apheleia-macros" }
+apheleia-widgets = { path = "crates/apheleia-widgets" }
+apheleia = { path = "crates/apheleia" }

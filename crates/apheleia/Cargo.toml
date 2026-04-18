@@ -1,8 +1,10 @@
 [package]
-name = "apheleia-widgets"
+name = "apheleia"
 version.workspace = true
 edition.workspace = true
 
 [dependencies]
+apheleia-core.workspace = true
 apheleia-ui.workspace = true
 apheleia-macros.workspace = true
+apheleia-widgets.workspace = true

@@ -153,12 +153,10 @@ fn main() {
                 LabelNode::new(RichString::new(
                     "</fg:ansi(5)/>Hoeianrstoeiarnoitenarietniello",
                 ))
-                .set_overflow(apheleia_widgets::label::TextOverflow::Scroll(
-                    ScrollingTextParams {
-                        scroll_step: 0.25,
-                        wait_step: 0.125,
-                    },
-                )),
+                .set_overflow(Scroll(ScrollingTextParams {
+                    scroll_step: 0.25,
+                    wait_step: 0.125,
+                })),
             )
             .create_child(|b| {
                 b.set_position(Vector2(0, 1))
