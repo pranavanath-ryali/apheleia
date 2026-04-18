@@ -1,10 +1,7 @@
 use std::mem::take;
 
 use apheleia_macros::Extension;
-use apheleia_ui::{
-    RichString, Vector2, contexts::system::SystemContext, node::traits::NodeTrait,
-    resources::traits::Resource,
-};
+use apheleia_ui::{RichString, Vector2, contexts::system::SystemContext, node::traits::NodeTrait};
 
 #[derive(Clone, Copy)]
 pub struct ScrollingTextParams {
@@ -47,13 +44,6 @@ pub struct LabelExtension {
 
     pub wait: bool,
 }
-
-// impl Extension for LabelExtension {}
-// impl Extension for LabelExtension {
-//     fn as_any(&self) -> &dyn std::any::Any {
-//         self
-//     }
-// }
 
 pub struct LabelNode {
     pub text: RichString,
@@ -161,7 +151,7 @@ fn scroll_update(ctx: &mut SystemContext) {
 }
 
 fn render(ctx: &mut SystemContext) {
-    let mut text: RichString;
+    let text: RichString;
     let mut position = Vector2(0, 0);
 
     {
@@ -183,45 +173,26 @@ fn render(ctx: &mut SystemContext) {
                 }
             }
         } else {
-            match ext.overflow {
-                TextOverflow::DoNothing => {
-                    // text = ext.text.to_string().split_at(size.0 as usize).0.to_string();
-                    text = ext.text.slice(0, size.0 as usize);
-                }
+            text = match ext.overflow {
+                TextOverflow::DoNothing => ext.text.slice(0, size.0 as usize),
                 TextOverflow::Ellipses(len, c) => {
-                    text = ext.text.slice(0, size.0 as usize - len);
+                    let mut text = ext.text.slice(0, size.0 as usize - len);
                     text.add_text(c.to_string().repeat(len).as_str(), None);
-                    // text = ext
-                    //     .text
-                    //     .to_string()
-                    //     .split_at(size.0 as usize - len)
-                    //     .0
-                    //     .to_string();
-                    // text += c.to_string().repeat(len).as_str();
+                    text
                 }
                 TextOverflow::Scroll(_) => {
-                    // println!("\n\n\rI: {}", ext.scroll_i);
-                    text = ext.text.slice(ext.scroll_i, ext.scroll_i + size.0 as usize);
-                    // text = ext
-                    //     .text
-                    //     .to_string()
-                    //     .split_at(ext.scroll_i)
-                    //     .1
-                    //     .split_at(size.0 as usize)
-                    //     .0
-                    //     .to_string();
+                    ext.text.slice(ext.scroll_i, ext.scroll_i + size.0 as usize)
                 }
-            }
+            };
         }
-        match ext.vertical_alignment {
-            VerticalAlignment::Top => position.1 = 0,
-            VerticalAlignment::Center => position.1 = size.1 / 2,
-            VerticalAlignment::Bottom => position.1 = size.1 - 1,
-        }
+
+        position.1 = match ext.vertical_alignment {
+            VerticalAlignment::Top => 0,
+            VerticalAlignment::Center => size.1 / 2,
+            VerticalAlignment::Bottom => size.1 - 1,
+        };
     }
 
     ctx.get_buffer()
         .write_rich_string(position.0, position.1, text);
-    // ctx.get_buffer()
-    //     .write_string(position.0, position.1, text, None);
 }
