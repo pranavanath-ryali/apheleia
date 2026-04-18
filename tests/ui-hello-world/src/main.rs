@@ -131,10 +131,13 @@
 
 use apheleia_core::style::Style;
 use apheleia_ui::{
-    RichString, Vector2, contexts::system::SystemContext, root::Root, setup_logger,
-    types::UpdateType,
+    RichString, Vector2, contexts::system::SystemContext, extensions::traits::Extension,
+    root::Root, setup_logger, types::UpdateType,
 };
 use apheleia_widgets::label::{LabelNode, ScrollingTextParams};
+
+pub struct test();
+impl Extension for test {}
 
 fn main() {
     // if cfg!(debug_assertions) {
@@ -148,12 +151,15 @@ fn main() {
             .set_class("scrolling_text")
             .set_size(Vector2(7, 1))
             .node(
-                LabelNode::new(RichString::new("</fg:ansi(5)/>Hello")).set_overflow(
-                    apheleia_widgets::label::TextOverflow::Scroll(ScrollingTextParams {
+                LabelNode::new(RichString::new(
+                    "</fg:ansi(5)/>Hoeianrstoeiarnoitenarietniello",
+                ))
+                .set_overflow(apheleia_widgets::label::TextOverflow::Scroll(
+                    ScrollingTextParams {
                         scroll_step: 0.25,
                         wait_step: 0.125,
-                    }),
-                ),
+                    },
+                )),
             )
         // .node(LabelNode::new("Hello World. <fg:red>This Text is <under_lined>RED. <fg:blue>This Text is <slow_blink>BLUE").set_overflow(
         //     apheleia_widgets::label::TextOverflow::Scroll(

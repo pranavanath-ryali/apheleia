@@ -1,9 +1,7 @@
 use std::mem::take;
 
-use apheleia_ui::{
-    RichString, Vector2, contexts::system::SystemContext, extensions::traits::Extension,
-    node::traits::NodeTrait,
-};
+use apheleia_macros::Extension;
+use apheleia_ui::{RichString, Vector2, contexts::system::SystemContext, node::traits::NodeTrait};
 
 #[derive(Clone, Copy)]
 pub struct ScrollingTextParams {
@@ -32,6 +30,7 @@ pub enum VerticalAlignment {
     Bottom,
 }
 
+#[derive(Extension)]
 pub struct LabelExtension {
     pub text: RichString,
 
@@ -45,11 +44,13 @@ pub struct LabelExtension {
 
     pub wait: bool,
 }
-impl Extension for LabelExtension {
-    fn as_any(&self) -> &dyn std::any::Any {
-        self
-    }
-}
+
+// impl Extension for LabelExtension {}
+// impl Extension for LabelExtension {
+//     fn as_any(&self) -> &dyn std::any::Any {
+//         self
+//     }
+// }
 
 pub struct LabelNode {
     pub text: RichString,
