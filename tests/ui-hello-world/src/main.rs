@@ -146,9 +146,8 @@ fn main() {
 
     let mut root = Root::default();
 
-    root.create_node(|builder| {
-        builder
-            .set_position(Vector2(10, 3))
+    root.create_node(|b| {
+        b.set_position(Vector2(10, 3))
             .set_size(Vector2(10, 1))
             .node(
                 LabelNode::new(RichString::new(
@@ -161,11 +160,15 @@ fn main() {
                     },
                 )),
             )
-            .create_child(|builder| {
-                builder
-                    .set_position(Vector2(0, 1))
+            .create_child(|b| {
+                b.set_position(Vector2(0, 1))
                     .set_size(Vector2(20, 1))
                     .node(LabelNode::new(RichString::new("Hello World")))
+                    .create_child(|b| {
+                        b.set_position(Vector2(1, 1))
+                            .set_size(Vector2(5, 1))
+                            .node(LabelNode::new(RichString::new("Another child")))
+                    })
             })
     });
 
