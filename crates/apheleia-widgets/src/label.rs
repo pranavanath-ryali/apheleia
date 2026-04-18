@@ -1,7 +1,10 @@
 use std::mem::take;
 
 use apheleia_macros::Extension;
-use apheleia_ui::{RichString, Vector2, contexts::system::SystemContext, node::traits::NodeTrait};
+use apheleia_ui::{
+    RichString, Vector2, contexts::system::SystemContext, node::traits::NodeTrait,
+    resources::traits::Resource,
+};
 
 #[derive(Clone, Copy)]
 pub struct ScrollingTextParams {
