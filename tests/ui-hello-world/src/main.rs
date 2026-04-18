@@ -129,6 +129,7 @@
 //     root.run();
 // }
 
+use apheleia_core::style::Style;
 use apheleia_ui::{
     RichString, Vector2, contexts::system::SystemContext, root::Root, setup_logger,
     types::UpdateType,
@@ -148,8 +149,16 @@ fn main() {
             .set_size(Vector2(7, 1))
             .node(
                 // LabelNode::new(RichString::new("</fg:blue/>0123456</fg:red/>7890123456789"))
-                LabelNode::new(RichString::new(
-                    "</fg:blue/>01234567890123 </bg:red/> </bg:black/> 456789",
+                LabelNode::new(RichString::to_rich(
+                    "Hello World",
+                    Style {
+                        fg: apheleia_core::Color::Rgb {
+                            r: 255,
+                            g: 100,
+                            b: 50,
+                        },
+                        ..Default::default()
+                    },
                 ))
                 .set_overflow(apheleia_widgets::label::TextOverflow::Scroll(
                     ScrollingTextParams {

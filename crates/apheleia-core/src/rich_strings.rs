@@ -20,7 +20,16 @@ impl RichString {
     }
     pub fn to_rich(text: &str, style: Style) -> Self {
         Self {
-            rich_texts: parse_string(text),
+            rich_texts: parse_string(
+                format!(
+                    "</fg:{};bg:{};{}/>{}",
+                    style.get_fg_markup(),
+                    style.get_bg_markup(),
+                    style.get_flags_markup(),
+                    text
+                )
+                .as_str(),
+            ),
         }
     }
 

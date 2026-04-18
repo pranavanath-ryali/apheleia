@@ -100,7 +100,7 @@ impl Style {
         format!("bg:{};", get_markup_for_color(self.bg))
     }
 
-    pub fn get_style_markup(&self) -> String {
+    pub fn get_flags_markup(&self) -> String {
         let mut text: String = "".to_string();
 
         if self.flags.contains(StyleFlags::BOLD) {
@@ -158,7 +158,31 @@ fn parse_color(text: &str) -> Color {
         "white" => Color::White,
         "grey" => Color::Grey,
 
-        _ => Color::Reset,
+        text => {
+            if text.starts_with("rgb") {
+                let params = text.split_at(3).1.trim();
+                if params.starts_with('(') && params.ends_with(')') {
+                    let mut iter = params[1..params.len() - 1].split(',').map(|t| t.trim());
+                    let r: u8 = iter
+                        .next()
+                        .expect("Expected atleast 3 parameters")
+                        .parse()
+                        .expect("No a valid u8 number");
+                    let g: u8 = iter
+                        .next()
+                        .expect("Expected atleast 3 parameters")
+                        .parse()
+                        .expect("No a valid u8 number");
+                    let b: u8 = iter
+                        .next()
+                        .expect("Expected atleast 3 parameters")
+                        .parse()
+                        .expect("No a valid u8 number");
+                    return Color::Rgb { r, g, b };
+                }
+            }
+            Color::Reset
+        }
     }
 }
 
@@ -182,7 +206,7 @@ fn get_markup_for_color(color: Color) -> String {
         Color::White => "white".to_string(),
         Color::Grey => "grey".to_string(),
 
-        Color::Rgb { r, g, b } => todo!(),
+        Color::Rgb { r, g, b } => format!("rgb({}, {}, {})", r, g, b).to_string(),
         Color::AnsiValue(v) => todo!(),
         // Color::Rgb { r, g, b } => text = format!("rgb({}, {}, {})", r, g, b),
         // Color::AnsiValue(v) => text = format!("ansi({})", v),
@@ -204,7 +228,7 @@ mod style_tests {
 
         assert_eq!(style_opts.get_fg_markup(), "fg:cyan;");
         assert_eq!(style_opts.get_bg_markup(), "bg:dark_blue;");
-        assert_eq!(style_opts.get_style_markup(), "bold;italic;reverse;")
+        assert_eq!(style_opts.get_flags_markup(), "bold;italic;reverse;")
     }
 
     #[test]
