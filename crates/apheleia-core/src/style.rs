@@ -206,7 +206,7 @@ fn get_markup_for_color(color: Color) -> String {
         Color::White => "white".to_string(),
         Color::Grey => "grey".to_string(),
 
-        Color::Rgb { r, g, b } => format!("rgb({}, {}, {})", r, g, b).to_string(),
+        Color::Rgb { r, g, b } => format!("rgb({},{},{})", r, g, b).to_string(),
         Color::AnsiValue(v) => todo!(),
         // Color::Rgb { r, g, b } => text = format!("rgb({}, {}, {})", r, g, b),
         // Color::AnsiValue(v) => text = format!("ansi({})", v),

@@ -22,7 +22,7 @@ impl RichString {
         Self {
             rich_texts: parse_string(
                 format!(
-                    "</fg:{};bg:{};{}/>{}",
+                    "</{};{};{}/>{}",
                     style.get_fg_markup(),
                     style.get_bg_markup(),
                     style.get_flags_markup(),
