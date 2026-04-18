@@ -3,6 +3,7 @@
 pub use apheleia_core::{
     Color, buffer, rich_strings,
     style::{Style, StyleFlags},
+    types::Vector2,
 };
 pub use apheleia_macros::{Extension, Resource};
 pub use apheleia_ui::{
@@ -10,6 +11,6 @@ pub use apheleia_ui::{
     extensions::traits::Extension,
     node::traits::NodeTrait,
     resources::traits::Resource,
-    root,
+    root, setup_logger,
 };
 pub use apheleia_widgets::*;

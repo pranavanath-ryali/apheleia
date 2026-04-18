@@ -129,15 +129,12 @@
 //     root.run();
 // }
 
-use apheleia_core::style::Style;
-use apheleia_ui::{
-    RichString, Vector2, contexts::system::SystemContext, extensions::traits::Extension,
-    root::Root, setup_logger, types::UpdateType,
+use apheleia::{
+    Vector2,
+    label::{LabelNode, ScrollingTextParams, TextOverflow},
+    rich_strings::RichString,
+    root::Root,
 };
-use apheleia_widgets::label::{LabelNode, ScrollingTextParams};
-
-pub struct test();
-impl Extension for test {}
 
 fn main() {
     // if cfg!(debug_assertions) {
@@ -153,7 +150,7 @@ fn main() {
                 LabelNode::new(RichString::new(
                     "</fg:ansi(5)/>Hoeianrstoeiarnoitenarietniello",
                 ))
-                .set_overflow(Scroll(ScrollingTextParams {
+                .set_overflow(TextOverflow::Scroll(ScrollingTextParams {
                     scroll_step: 0.25,
                     wait_step: 0.125,
                 })),
