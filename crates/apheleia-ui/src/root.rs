@@ -90,6 +90,54 @@ impl Root {
 
         position
     }
+    fn calculate_global_size(&self, id: NodeId) -> Option<Vector2> {
+        let size = self
+            .node_storage
+            .get_data(id)
+            .unwrap()
+            .get_size()
+            .unwrap_or(Vector2(0, 0));
+        let mut global_size = size;
+        let parent_id = self.relations.get_ancestor_ids(&id).unwrap()[0];
+
+        if parent_id != 0 {
+            let parent_global_size = self
+                .node_storage
+                .get_data(parent_id)
+                .unwrap()
+                .get_global_size()
+                .unwrap_or(Vector2(0, 0));
+
+            if parent_global_size.0 == 0 && parent_global_size.1 == 0 {
+                return None;
+            }
+
+            let position = self.node_storage.get_data(id).unwrap().get_position();
+            if parent_global_size.0 != 0 && position.0 + size.0 > parent_global_size.0 - 1 {
+                if position.0 >= parent_global_size.0 {
+                    global_size.0 = 0;
+                } else {
+                    global_size.0 = parent_global_size.0 - position.0;
+                }
+            }
+            if parent_global_size.1 != 0 && position.1 + size.1 > parent_global_size.1 - 1 {
+                if position.1 >= parent_global_size.1 {
+                    global_size.1 = 0;
+                } else {
+                    global_size.1 = parent_global_size.1 - position.1;
+                }
+            }
+        }
+
+        info!(
+            "Calculated global size of Node: {} as size: {:?}",
+            id, global_size
+        );
+        if global_size.0 == 0 || global_size.1 == 0 {
+            return None;
+        }
+        Some(global_size)
+    }
 
     fn run_commands(&mut self, commands: Vec<Box<dyn ContextCommand>>) {
         for command in commands {
@@ -133,10 +181,11 @@ impl Root {
             self.run_commands(commands);
 
             let global_position = self.calculate_global_position(id);
-            self.node_storage
-                .get_data_mut(id)
-                .unwrap()
-                .set_global_position(global_position);
+            let global_size = self.calculate_global_size(id);
+            let data = self.node_storage.get_data_mut(id).unwrap();
+
+            data.set_global_position(global_position);
+            data.set_global_size(global_size);
         }
 
         info!("RootNode intial_setup ended");
@@ -232,10 +281,11 @@ impl Root {
         self.run_commands(commands);
     }
     fn render_node(&mut self, id: NodeId) {
-        let size = self.node_storage.get_data(id).unwrap().get_size();
-        if let Some(size) = size {
+        let size = self.node_storage.get_data(id).unwrap().get_global_size();
+        if let Some(global_size) = size {
             info!("RootNode Render node begins: {}", id);
 
+            let size = self.node_storage.get_data(id).unwrap().get_size().unwrap();
             let mut node_buffer = Buffer::new(size.0, size.1);
             let mut world = SystemView {
                 relations: &self.relations,
@@ -251,15 +301,15 @@ impl Root {
                 &mut ctx,
             );
 
+            node_buffer.shrink_size(global_size.0, global_size.1);
+
+            info!("RootNodeBuffer ID: {}; BUFFER: {:?}", id, node_buffer);
             let position = self
                 .node_storage
                 .get_data(id)
                 .unwrap()
                 .get_global_position()
-                .unwrap_or(Vector2(0, 0));
-
-            info!("RootNodeBuffer ID: {}; BUFFER: {:?}", id, node_buffer);
-
+                .unwrap();
             self.buffer
                 .render_buffer(position.0, position.1, &mut node_buffer);
 

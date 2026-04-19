@@ -146,19 +146,13 @@ fn main() {
 
     root.create_node(|b| {
         b.set_position(Vector2(10, 3))
-            .set_size(Vector2(10, 1))
-            .node(
-                LabelNode::new(RichString::new(
-                    "</fg:ansi(5)/>Hoeianrstoeiarnoitenarietniello",
-                ))
-                .set_overflow(TextOverflow::Scroll(ScrollingTextParams {
-                    scroll_step: 0.25,
-                    wait_step: 0.125,
-                })),
-            )
+            .set_size(Vector2(10, 3))
+            .node(LabelNode::new(RichString::new(
+                "</bg:ansi(5)/>Hoeianrstoeiarnoitenarietniello",
+            )))
             .create_child(|b| {
                 b.set_position(Vector2(0, 1))
-                    .set_size(Vector2(20, 1))
+                    .set_size(Vector2(20, 2))
                     .node(LabelNode::new(RichString::new("Hello World")))
                     .create_child(|b| {
                         b.set_position(Vector2(1, 1))

@@ -5,6 +5,7 @@ pub struct NodeData {
     pub global_positon: Option<Vector2>,
     pub position: Vector2,
     pub size: Option<Vector2>,
+    pub global_size: Option<Vector2>,
 }
 impl Default for NodeData {
     fn default() -> Self {
@@ -12,6 +13,7 @@ impl Default for NodeData {
             global_positon: None,
             position: Vector2(0, 0),
             size: None,
+            global_size: None,
         }
     }
 }
@@ -21,6 +23,7 @@ impl NodeData {
             global_positon: None,
             position,
             size,
+            global_size: None,
         }
     }
 
@@ -43,5 +46,12 @@ impl NodeData {
     }
     pub fn get_size(&self) -> Option<Vector2> {
         self.size
+    }
+
+    pub fn get_global_size(&self) -> Option<Vector2> {
+        self.global_size
+    }
+    pub fn set_global_size(&mut self, size: Option<Vector2>) {
+        self.global_size = size;
     }
 }

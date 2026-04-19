@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, mem::replace};
 
 use indexmap::IndexMap;
 
@@ -41,6 +41,32 @@ impl Buffer {
             cells,
             diffed_cells: HashMap::new(),
         }
+    }
+
+    pub fn shrink_size(&mut self, width: u16, height: u16) {
+        if self.size.0 > width && self.size.1 > height {
+            return;
+        }
+
+        let mut new_cells: Vec<Vec<Cell>> = vec![];
+        for (y, row) in self.cells.iter().enumerate() {
+            if y as u16 > height - 1 {
+                break;
+            }
+
+            let mut new_row: Vec<Cell> = vec![];
+            for (x, cell) in row.iter().enumerate() {
+                if x as u16 > width - 1 {
+                    break;
+                }
+
+                new_row.push(*cell);
+            }
+            new_cells.push(new_row);
+        }
+
+        self.size = (width, height);
+        self.cells = replace(&mut self.cells, new_cells);
     }
 
     pub fn write_string(&mut self, x: u16, y: u16, text: String, style: Option<Style>) {
