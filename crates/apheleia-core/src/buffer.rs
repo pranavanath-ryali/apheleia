@@ -113,6 +113,10 @@ impl Buffer {
                     continue;
                 }
 
+                if cell.c == ' ' && cell.style == Style::default() {
+                    continue;
+                }
+
                 self.cells[y + offset_y as usize][x + offset_x as usize] = *cell;
                 self.diffed_cells
                     .entry(y as u16 + offset_y)
