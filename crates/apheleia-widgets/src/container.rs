@@ -6,7 +6,7 @@ use apheleia_ui::{RichString, contexts::system::SystemContext, node::traits::Nod
 
 use crate::label::HorizontalAlignment;
 
-#[derive(Clone)]
+#[derive(Extension, Clone)]
 pub struct BorderStyle {
     pub horizontal: char,
     pub vertical: char,
@@ -17,11 +17,22 @@ pub struct BorderStyle {
 
     pub style: Style,
 }
+impl Default for BorderStyle {
+    fn default() -> Self {
+        Self {
+            horizontal: '─',
+            vertical: '│',
+            top_left: '┌',
+            top_right: '┐',
+            bottom_left: '└',
+            bottom_right: '┘',
+            style: Style::default(),
+        }
+    }
+}
 
 #[derive(Extension, Clone)]
 pub struct ContainerExtension {
-    pub border_style: Option<BorderStyle>,
-
     pub header_text: Option<RichString>,
     pub header_margin: u16,
     pub header_text_alignment: HorizontalAlignment,
@@ -33,16 +44,6 @@ pub struct ContainerExtension {
 impl Default for ContainerExtension {
     fn default() -> Self {
         Self {
-            border_style: Some(BorderStyle {
-                horizontal: '─',
-                vertical: '│',
-                top_left: '┌',
-                top_right: '┐',
-                bottom_left: '└',
-                bottom_right: '┘',
-                style: Style::default(),
-            }),
-
             header_text: None,
             header_margin: 0,
             header_text_alignment: HorizontalAlignment::Center,
@@ -54,18 +55,64 @@ impl Default for ContainerExtension {
     }
 }
 
-#[derive(Default)]
 pub struct ContainerNode {
-    pub extension: ContainerExtension,
+    pub border_style: Option<BorderStyle>,
+    pub container: Option<ContainerExtension>,
+}
+impl ContainerNode {
+    pub fn set_header(
+        mut self,
+        text: RichString,
+        margin: u16,
+        alignment: HorizontalAlignment,
+    ) -> Self {
+        let mut container = self.container.unwrap_or_default();
+        container.header_text = Some(text);
+        container.header_margin = margin;
+        container.header_text_alignment = alignment;
+
+        self.container = mem::take(&mut Some(container));
+
+        self
+    }
+    pub fn set_footer(
+        mut self,
+        text: RichString,
+        margin: u16,
+        alignment: HorizontalAlignment,
+    ) -> Self {
+        let mut container = self.container.unwrap_or_default();
+        container.footer_text = Some(text);
+        container.footer_margin = margin;
+        container.footer_text_alignment = alignment;
+
+        self.container = mem::take(&mut Some(container));
+
+        self
+    }
+}
+impl Default for ContainerNode {
+    fn default() -> Self {
+        Self {
+            border_style: Some(BorderStyle::default()),
+            container: None,
+        }
+    }
 }
 impl NodeTrait for ContainerNode {
     fn initial_setup(&mut self, ctx: &mut apheleia_ui::contexts::node::NodeContext) {
-        ctx.add_extension(mem::take(&mut self.extension));
-        ctx.add_system(
-            apheleia_ui::types::UpdateType::Render,
-            0,
-            container_render_border,
-        );
+        if let Some(border_style) = &mut self.border_style {
+            ctx.add_extension(mem::take(border_style));
+            ctx.add_system(
+                apheleia_ui::types::UpdateType::Render,
+                0,
+                container_render_border,
+            );
+        }
+        if let Some(container) = &mut self.container {
+            ctx.add_extension(mem::take(container));
+            // TODO: Create Label Nodes
+        }
     }
 
     fn as_any(&self) -> &dyn std::any::Any {
@@ -77,40 +124,39 @@ impl NodeTrait for ContainerNode {
 }
 
 fn container_render_border(ctx: &mut SystemContext) {
-    let border_style = match &ctx.get_extension::<ContainerExtension>().border_style {
-        Some(style) => style.clone(),
-        None => {
-            return;
-        }
-    };
-
+    let border_style = ctx.get_extension::<BorderStyle>().clone();
     let size = ctx.get_size().unwrap();
     let buffer = ctx.get_buffer();
 
+    // TopLeft
     buffer.write_string(
         0,
         0,
         border_style.top_left.to_string(),
         Some(border_style.style),
     );
+    // TopRight
     buffer.write_string(
         size.0 - 1,
         0,
         border_style.top_right.to_string(),
         Some(border_style.style),
     );
+    // BottomLeft
     buffer.write_string(
         0,
         size.1 - 1,
         border_style.bottom_left.to_string(),
         Some(border_style.style),
     );
+    // BottomRight
     buffer.write_string(
         size.0 - 1,
         size.1 - 1,
         border_style.bottom_right.to_string(),
         Some(border_style.style),
     );
+    // Top
     buffer.write_string(
         1,
         0,
@@ -120,6 +166,7 @@ fn container_render_border(ctx: &mut SystemContext) {
             .repeat(size.0 as usize - 2),
         Some(border_style.style),
     );
+    // Bottom
     buffer.write_string(
         1,
         size.1 - 1,
@@ -129,10 +176,12 @@ fn container_render_border(ctx: &mut SystemContext) {
             .repeat(size.0 as usize - 2),
         Some(border_style.style),
     );
+
     let mut vert_text = border_style.vertical.to_string();
     vert_text.push('\n');
     vert_text = vert_text.repeat(size.1 as usize - 2);
-
+    // Left
     buffer.write_string(0, 1, vert_text.to_string(), Some(border_style.style));
+    // Right
     buffer.write_string(size.0 - 1, 1, vert_text, Some(border_style.style));
 }
