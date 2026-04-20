@@ -9,12 +9,14 @@ use crate::{rich_strings::RichString, style::Style, types::Vector2};
 pub struct Cell {
     pub c: char,
     pub style: Style,
+    pub written: bool,
 }
 impl Default for Cell {
     fn default() -> Self {
         Self {
             c: ' ',
             style: Style::default(),
+            written: false,
         }
     }
 }
@@ -29,11 +31,7 @@ impl Buffer {
     pub fn new(width: u16, height: u16) -> Self {
         let mut cells: Vec<Vec<Cell>> = vec![];
         for _ in 0..height {
-            let rows: Vec<Cell> = [Cell {
-                c: ' ',
-                style: Style::default(),
-            }]
-            .repeat(width as usize);
+            let rows: Vec<Cell> = [Cell::default()].repeat(width as usize);
             cells.push(rows);
         }
 
@@ -98,6 +96,7 @@ impl Buffer {
 
             self.cells[y as usize + y_offset][x as usize + x_offset].c = c;
             self.cells[y as usize + y_offset][x as usize + x_offset].style = style;
+            self.cells[y as usize + y_offset][x as usize + x_offset].written = true;
             x_offset += 1;
         }
     }
@@ -113,7 +112,7 @@ impl Buffer {
                     continue;
                 }
 
-                if cell.c == ' ' && cell.style == Style::default() {
+                if !cell.written {
                     continue;
                 }
 
@@ -167,34 +166,39 @@ mod test_buffer {
                     c: 'H',
                     style: Style {
                         ..Default::default()
-                    }
+                    },
+                    written: true
                 },
                 Cell {
                     c: 'e',
                     style: Style {
                         ..Default::default()
-                    }
+                    },
+                    written: true
                 },
                 Cell {
                     c: 'l',
                     style: Style {
                         flags: StyleFlags::BOLD,
                         ..Default::default()
-                    }
+                    },
+                    written: true
                 },
                 Cell {
                     c: 'l',
                     style: Style {
                         flags: StyleFlags::BOLD,
                         ..Default::default()
-                    }
+                    },
+                    written: true
                 },
                 Cell {
                     c: 'o',
                     style: Style {
                         flags: StyleFlags::BOLD,
                         ..Default::default()
-                    }
+                    },
+                    written: true
                 },
             ]
         );
