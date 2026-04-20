@@ -172,7 +172,7 @@ impl Root {
             info!("RootNode inital_setup: Initializing NodeID: {}", id);
 
             let data = self.node_storage.get_data(id).unwrap();
-            let mut ctx = NodeContext::new(id, data.position, data.size);
+            let mut ctx = NodeContext::new(id, self.id_generator.clone(), data.position, data.size);
             self.node_storage
                 .get_node_mut(id)
                 .unwrap()

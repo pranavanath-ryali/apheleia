@@ -2,9 +2,9 @@ use std::mem;
 
 use apheleia_core::style::Style;
 use apheleia_macros::Extension;
-use apheleia_ui::{RichString, contexts::system::SystemContext, node::traits::NodeTrait};
+use apheleia_ui::{RichString, Vector2, contexts::system::SystemContext, node::traits::NodeTrait};
 
-use crate::label::HorizontalAlignment;
+use crate::label::{HorizontalAlignment, LabelNode};
 
 #[derive(Extension, Clone)]
 pub struct BorderStyle {
@@ -110,8 +110,9 @@ impl NodeTrait for ContainerNode {
             );
         }
         if let Some(container) = &mut self.container {
-            ctx.add_extension(mem::take(container));
-            // TODO: Create Label Nodes
+            let size = ctx.get_size().expect("No size given to container");
+            if let Some(header_text) = &mut container.header_text {}
+            if let Some(footer_text) = &mut container.footer_text {}
         }
     }
 

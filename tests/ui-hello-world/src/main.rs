@@ -166,7 +166,11 @@ fn main() {
     root.create_node(|builder| {
         builder
             .set_size(Vector2(70, 10))
-            .node(ContainerNode::default())
+            .node(ContainerNode::default().set_header(
+                RichString::new("Hello World"),
+                1,
+                apheleia::label::HorizontalAlignment::Left,
+            ))
     });
 
     root.run();

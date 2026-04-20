@@ -1,16 +1,21 @@
+use std::{cell::RefCell, rc::Rc};
+
 use apheleia_core::types::Vector2;
 
 use crate::{
+    builder::node::NodeBuilder,
     contexts::{
         commands::{AddExtensionToId, HookSystemToId, SetPosition, SetSize},
         traits::ContextCommand,
     },
     extensions::traits::Extension,
+    id_generator::{IdGenerator, IdGeneratorTrait},
     types::{NodeId, System, UpdateType},
 };
 
 pub struct NodeContext {
     id: NodeId,
+    id_generator: Rc<RefCell<IdGenerator<NodeId>>>,
 
     position: Vector2,
     size: Option<Vector2>,
@@ -18,9 +23,16 @@ pub struct NodeContext {
     commands: Vec<Box<dyn ContextCommand>>,
 }
 impl NodeContext {
-    pub(crate) fn new(id: NodeId, position: Vector2, size: Option<Vector2>) -> NodeContext {
+    pub(crate) fn new(
+        id: NodeId,
+        id_generator: Rc<RefCell<IdGenerator<NodeId>>>,
+        position: Vector2,
+        size: Option<Vector2>,
+    ) -> NodeContext {
         Self {
             id,
+            id_generator,
+
             position,
             size,
 
@@ -38,6 +50,12 @@ impl NodeContext {
 
     pub(crate) fn get_commands(&mut self) -> &mut Vec<Box<dyn ContextCommand>> {
         &mut self.commands
+    }
+
+    pub fn create_node(&mut self, f: impl FnOnce(NodeBuilder) -> NodeBuilder) {
+        let id = self.id_generator.borrow_mut().next();
+        let mut builder = f(NodeBuilder::new(id, self.id_generator.clone()));
+        self.commands.append(&mut builder.build());
     }
 
     pub fn add_extension<E: Extension>(&mut self, extension: E) {
