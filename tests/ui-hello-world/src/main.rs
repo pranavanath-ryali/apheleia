@@ -131,6 +131,7 @@
 
 use apheleia::{
     Vector2,
+    container::ContainerNode,
     label::{LabelNode, ScrollingTextParams, TextOverflow},
     rich_strings::RichString,
     root::Root,
@@ -144,22 +145,28 @@ fn main() {
 
     let mut root = Root::default();
 
-    root.create_node(|b| {
-        b.set_position(Vector2(10, 3))
-            .set_size(Vector2(10, 3))
-            .node(LabelNode::new(RichString::new(
-                "</bg:ansi(5)/>Hoeianrstoeiarnoitenarietniello",
-            )))
-            .create_child(|b| {
-                b.set_position(Vector2(0, 1))
-                    .set_size(Vector2(20, 2))
-                    .node(LabelNode::new(RichString::new("Hello World")))
-                    .create_child(|b| {
-                        b.set_position(Vector2(1, 1))
-                            .set_size(Vector2(5, 1))
-                            .node(LabelNode::new(RichString::new("Another child")))
-                    })
-            })
+    // root.create_node(|b| {
+    //     b.set_position(Vector2(10, 3))
+    //         .set_size(Vector2(10, 3))
+    //         .node(LabelNode::new(RichString::new(
+    //             "</bg:ansi(5)/>Hoeianrstoeiarnoitenarietniello",
+    //         )))
+    //         .create_child(|b| {
+    //             b.set_position(Vector2(0, 1))
+    //                 .set_size(Vector2(20, 2))
+    //                 .node(LabelNode::new(RichString::new("Hello World")))
+    //                 .create_child(|b| {
+    //                     b.set_position(Vector2(1, 1))
+    //                         .set_size(Vector2(5, 1))
+    //                         .node(LabelNode::new(RichString::new("Another child")))
+    //                 })
+    //         })
+    // });
+
+    root.create_node(|builder| {
+        builder
+            .set_size(Vector2(70, 10))
+            .node(ContainerNode::default())
     });
 
     root.run();

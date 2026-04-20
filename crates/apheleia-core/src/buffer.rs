@@ -2,7 +2,7 @@ use std::{collections::HashMap, mem::replace};
 
 use indexmap::IndexMap;
 
-use crate::{rich_strings::RichString, style::Style};
+use crate::{rich_strings::RichString, style::Style, types::Vector2};
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Cell {
@@ -41,6 +41,10 @@ impl Buffer {
             cells,
             diffed_cells: HashMap::new(),
         }
+    }
+
+    pub fn get_size(&self) -> Vector2 {
+        Vector2(self.size.0, self.size.1)
     }
 
     pub fn shrink_size(&mut self, width: u16, height: u16) {
