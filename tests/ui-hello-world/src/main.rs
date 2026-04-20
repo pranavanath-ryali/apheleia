@@ -142,7 +142,7 @@
 
 use apheleia::{
     Vector2,
-    container::ContainerNode,
+    container::{BorderStyle, ContainerNode},
     label::{LabelNode, ScrollingTextParams, TextOverflow},
     rich_strings::RichString,
     root::Root,
@@ -177,6 +177,10 @@ fn main() {
     root.create_node(|builder| {
         builder.set_size(Vector2(70, 10)).node(
             ContainerNode::default()
+                .border_style(Some(BorderStyle::rounded().with_style(apheleia::Style {
+                    fg: apheleia::Color::Blue,
+                    ..Default::default()
+                })))
                 .set_header(
                     1,
                     20,

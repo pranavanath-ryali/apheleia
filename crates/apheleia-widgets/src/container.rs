@@ -35,6 +35,60 @@ impl Default for BorderStyle {
         }
     }
 }
+impl BorderStyle {
+    pub fn boxed() -> Self {
+        Self {
+            horizontal: '─',
+            vertical: '│',
+            top_left: '┌',
+            top_right: '┐',
+            bottom_left: '└',
+            bottom_right: '┘',
+            style: Style::default(),
+        }
+    }
+
+    pub fn rounded() -> Self {
+        Self {
+            horizontal: '─',
+            vertical: '│',
+            top_left: '╭',
+            top_right: '╮',
+            bottom_left: '╰',
+            bottom_right: '╯',
+            style: Style::default(),
+        }
+    }
+
+    pub fn heavy() -> Self {
+        Self {
+            horizontal: '━',
+            vertical: '┃',
+            top_left: '┏',
+            top_right: '┓',
+            bottom_left: '┗',
+            bottom_right: '┛',
+            style: Style::default(),
+        }
+    }
+
+    pub fn double() -> Self {
+        Self {
+            horizontal: '═',
+            vertical: '║',
+            top_left: '╔',
+            top_right: '╗',
+            bottom_left: '╚',
+            bottom_right: '╝',
+            style: Style::default(),
+        }
+    }
+
+    pub fn with_style(mut self, style: Style) -> Self {
+        self.style = style;
+        self
+    }
+}
 
 #[derive(Extension, Clone)]
 pub struct ContainerExtension {
@@ -72,6 +126,11 @@ pub struct ContainerNode {
     pub footer_len: u16,
 }
 impl ContainerNode {
+    pub fn border_style(mut self, border_style: Option<BorderStyle>) -> Self {
+        self.border_style = border_style;
+        self
+    }
+
     pub fn set_header(mut self, margin: u16, len: u16, label: LabelNode) -> Self {
         self.header_margin = margin;
         self.header_len = len;
