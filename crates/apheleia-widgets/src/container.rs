@@ -7,7 +7,6 @@ use apheleia_ui::{
     contexts::{node::NodeContext, system::SystemContext},
     node::traits::NodeTrait,
 };
-use log::info;
 
 use crate::label::{HorizontalAlignment, LabelNode};
 
@@ -204,7 +203,6 @@ impl NodeTrait for ContainerNode {
                 };
             }
 
-            info!("Position: {:?}; Size: {:?}", label_pos, label_size);
             let node = mem::replace(label, LabelNode::new(RichString::new("")));
             ctx.create_node(|builder| {
                 builder
