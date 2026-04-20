@@ -74,6 +74,7 @@ impl Default for Root {
     }
 }
 impl Root {
+    // TODO: Add a test to see if these two following functions calculate the correct output
     fn calculate_global_position(&self, id: NodeId) -> Vector2 {
         let mut position = self.node_storage.get_data(id).unwrap().position;
         self.relations
