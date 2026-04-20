@@ -183,13 +183,19 @@ fn main() {
                 })))
                 .set_header(
                     1,
-                    20,
-                    LabelNode::new(RichString::new("</reverse/>Hello World")),
+                    15,
+                    LabelNode::new(RichString::new(
+                        "Hello World. DEV </fg:rgb(69,42,255)/>MADHAV IS SOO </slow_blink/>SEXY",
+                    ))
+                    .set_overflow(TextOverflow::Scroll(ScrollingTextParams {
+                        scroll_step: 0.25,
+                        wait_step: 0.125,
+                    })),
                 )
                 .set_footer(
                     1,
                     20,
-                    LabelNode::new(RichString::new("</reverse;italic/>BITCH"))
+                    LabelNode::new(RichString::new("</reverse;italic;slow_blink/>BITCH"))
                         .set_horizontal_align(apheleia::label::HorizontalAlignment::Center),
                 ),
         )

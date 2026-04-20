@@ -89,30 +89,6 @@ impl BorderStyle {
     }
 }
 
-#[derive(Extension, Clone)]
-pub struct ContainerExtension {
-    pub header_text: Option<RichString>,
-    pub header_margin: u16,
-    pub header_text_alignment: HorizontalAlignment,
-
-    pub footer_text: Option<RichString>,
-    pub footer_margin: u16,
-    pub footer_text_alignment: HorizontalAlignment,
-}
-impl Default for ContainerExtension {
-    fn default() -> Self {
-        Self {
-            header_text: None,
-            header_margin: 0,
-            header_text_alignment: HorizontalAlignment::Center,
-
-            footer_text: None,
-            footer_margin: 0,
-            footer_text_alignment: HorizontalAlignment::Center,
-        }
-    }
-}
-
 pub struct ContainerNode {
     pub border_style: Option<BorderStyle>,
 
