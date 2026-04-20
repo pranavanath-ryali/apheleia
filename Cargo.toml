@@ -12,3 +12,7 @@ apheleia-ui = { path = "crates/apheleia-ui" }
 apheleia-macros = { path = "crates/apheleia-macros" }
 apheleia-widgets = { path = "crates/apheleia-widgets" }
 apheleia = { path = "crates/apheleia" }
+
+log = "0.4"
+fern = "0.7"
+chrono = "0.4"

@@ -63,6 +63,9 @@ dependencies = [
  "apheleia-core",
  "apheleia-macros",
  "apheleia-ui",
+ "chrono",
+ "fern",
+ "log",
 ]
 
 [[package]]

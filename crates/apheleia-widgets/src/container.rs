@@ -2,7 +2,12 @@ use std::mem;
 
 use apheleia_core::style::Style;
 use apheleia_macros::Extension;
-use apheleia_ui::{RichString, Vector2, contexts::system::SystemContext, node::traits::NodeTrait};
+use apheleia_ui::{
+    RichString, Vector2,
+    contexts::{node::NodeContext, system::SystemContext},
+    node::traits::NodeTrait,
+};
+use log::info;
 
 use crate::label::{HorizontalAlignment, LabelNode};
 
@@ -57,36 +62,27 @@ impl Default for ContainerExtension {
 
 pub struct ContainerNode {
     pub border_style: Option<BorderStyle>,
-    pub container: Option<ContainerExtension>,
+
+    pub header_label: Option<LabelNode>,
+    pub header_margin: u16,
+    pub header_len: u16,
+
+    pub footer_label: Option<LabelNode>,
+    pub footer_margin: u16,
+    pub footer_len: u16,
 }
 impl ContainerNode {
-    pub fn set_header(
-        mut self,
-        text: RichString,
-        margin: u16,
-        alignment: HorizontalAlignment,
-    ) -> Self {
-        let mut container = self.container.unwrap_or_default();
-        container.header_text = Some(text);
-        container.header_margin = margin;
-        container.header_text_alignment = alignment;
-
-        self.container = mem::take(&mut Some(container));
+    pub fn set_header(mut self, margin: u16, len: u16, label: LabelNode) -> Self {
+        self.header_margin = margin;
+        self.header_len = len;
+        self.header_label = Some(label);
 
         self
     }
-    pub fn set_footer(
-        mut self,
-        text: RichString,
-        margin: u16,
-        alignment: HorizontalAlignment,
-    ) -> Self {
-        let mut container = self.container.unwrap_or_default();
-        container.footer_text = Some(text);
-        container.footer_margin = margin;
-        container.footer_text_alignment = alignment;
-
-        self.container = mem::take(&mut Some(container));
+    pub fn set_footer(mut self, margin: u16, len: u16, label: LabelNode) -> Self {
+        self.footer_margin = margin;
+        self.footer_len = len;
+        self.footer_label = Some(label);
 
         self
     }
@@ -95,7 +91,14 @@ impl Default for ContainerNode {
     fn default() -> Self {
         Self {
             border_style: Some(BorderStyle::default()),
-            container: None,
+
+            header_margin: 1,
+            header_len: 20,
+            header_label: None,
+
+            footer_margin: 1,
+            footer_len: 20,
+            footer_label: None,
         }
     }
 }
@@ -109,31 +112,92 @@ impl NodeTrait for ContainerNode {
                 container_render_border,
             );
         }
-        if let Some(container) = &mut self.container {
-            let size = ctx.get_size().expect("No size given to container");
-            if let Some(header_text) = &mut container.header_text {
-                ctx.create_node(|builder| {
-                    builder
-                        .set_position(Vector2(container.header_margin, 0))
-                        .set_size(Vector2(size.0 - (container.header_margin * 2), 1))
-                        .node(
-                            LabelNode::new(mem::take(header_text))
-                                .set_horizontal_align(container.header_text_alignment),
-                        )
-                });
+
+        fn setup_label(
+            ctx: &mut NodeContext,
+            container_size: Vector2,
+            label: &mut LabelNode,
+            label_margin: u16,
+            label_len: u16,
+            y: u16,
+        ) {
+            let label_pos: u16;
+            let label_size: u16;
+
+            if label_len > (container_size.0 - 1) - (2 * label_margin) {
+                label_pos = label_margin;
+                label_size = (container_size.0 - 1) - (2 * label_margin);
+            } else {
+                label_size = label_len;
+                match label.horizontal_alignment {
+                    HorizontalAlignment::Left => {
+                        label_pos = label_margin;
+                    }
+                    HorizontalAlignment::Center => {
+                        label_pos = (container_size.0 / 2) - (label_len / 2) - 2;
+                    }
+                    HorizontalAlignment::Right => {
+                        label_pos = (container_size.0 - 1) - label_margin - label_len;
+                    }
+                    HorizontalAlignment::Justify => {
+                        label_pos = label_margin;
+                    }
+                };
             }
-            if let Some(footer_text) = &mut container.footer_text {
-                ctx.create_node(|builder| {
-                    builder
-                        .set_position(Vector2(container.footer_margin, size.1 - 1))
-                        .set_size(Vector2(size.0 - (container.footer_margin * 2), 1))
-                        .node(
-                            LabelNode::new(mem::take(footer_text))
-                                .set_horizontal_align(container.footer_text_alignment),
-                        )
-                });
-            }
+
+            info!("Position: {:?}; Size: {:?}", label_pos, label_size);
+            let node = mem::replace(label, LabelNode::new(RichString::new("")));
+            ctx.create_node(|builder| {
+                builder
+                    .set_position(Vector2(label_pos, y))
+                    .set_size(Vector2(label_size, 1))
+                    .node(node)
+            });
         }
+
+        let size = ctx.get_size().expect("No size given to container");
+        if let Some(header_label) = &mut self.header_label {
+            setup_label(
+                ctx,
+                size,
+                header_label,
+                self.header_margin,
+                self.header_len,
+                0,
+            );
+        }
+        if let Some(footer_label) = &mut self.footer_label {
+            setup_label(
+                ctx,
+                size,
+                footer_label,
+                self.footer_margin,
+                self.footer_len,
+                size.1 - 1,
+            );
+        }
+
+        // if let Some(header_text) = &mut container.header_text {
+        //     ctx.create_node(|builder| {
+        //         builder
+        //             .set_position(Vector2(container.header_margin, 0))
+        //             .set_size(Vector2(size.0 - (container.header_margin * 2), 1))
+        //             .node(
+        //                 LabelNode::new(mem::take(header_text))
+        //                     .set_horizontal_align(container.header_text_alignment),
+        //             )
+        //     });
+        // }
+        // if let Some(footer_text) = &mut container.footer_text {
+        //     ctx.create_node(|builder| {
+        //         builder
+        //             .set_position(Vector2(container.footer_margin, size.1 - 1))
+        //             .set_size(Vector2(size.0 - (container.footer_margin * 2), 1))
+        //             .node(
+        //                 LabelNode::new(mem::take(footer_text))
+        //                     .set_horizontal_align(container.footer_text_alignment),
+        //             )
+        //     });
     }
 
     fn as_any(&self) -> &dyn std::any::Any {

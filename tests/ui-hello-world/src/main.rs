@@ -45,7 +45,18 @@
 //     //     if event.code == KeyCode::Char('a') {
 //     //         self.0 = true;
 
-//     //         ctx.add_command(Box::new(MarkRenderDirty(
+//     //         ctx.add_comman
+// fn test_render(ctx: &mut SystemContext) {
+//     let id = ctx.get_id();
+
+//     println!("YAY");
+
+//     // ctx.get_buffer()
+//     //     .write_line(0, 0, format!("ID: {}", id).as_str(), None);
+// }
+
+// struct TestNode(bool, String);
+// impl NodeTrait for TestNode {d(Box::new(MarkRenderDirty(
 //     //             ctx.get_id(),
 //     //             DirtyRenderLevel::SimpleDirty,
 //     //         )));
@@ -164,13 +175,20 @@ fn main() {
     // });
 
     root.create_node(|builder| {
-        builder
-            .set_size(Vector2(70, 10))
-            .node(ContainerNode::default().set_header(
-                RichString::new("Hello World"),
-                1,
-                apheleia::label::HorizontalAlignment::Left,
-            ))
+        builder.set_size(Vector2(70, 10)).node(
+            ContainerNode::default()
+                .set_header(
+                    1,
+                    20,
+                    LabelNode::new(RichString::new("</reverse/>Hello World")),
+                )
+                .set_footer(
+                    1,
+                    20,
+                    LabelNode::new(RichString::new("</reverse;italic/>BITCH"))
+                        .set_horizontal_align(apheleia::label::HorizontalAlignment::Center),
+                ),
+        )
     });
 
     root.run();
