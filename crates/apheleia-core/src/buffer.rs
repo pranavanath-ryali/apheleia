@@ -1,6 +1,7 @@
 use std::{collections::HashMap, mem::replace};
 
 use indexmap::IndexMap;
+use log::info;
 
 use crate::{rich_strings::RichString, style::Style, types::Vector2};
 
@@ -82,12 +83,22 @@ impl Buffer {
     }
 
     pub fn write_rich_string(&mut self, x: u16, y: u16, rich_string: RichString) {
-        for (offset, (c, style)) in rich_string.iter().enumerate() {
-            if x as usize + offset > self.size.0 as usize - 1 {
+        let mut y_offset = 0_usize;
+        let mut x_offset = 0_usize;
+        for (c, style) in rich_string.iter() {
+            if c == '\n' {
+                y_offset += 1;
+                x_offset = x_offset.saturating_sub(1);
+                continue;
+            }
+
+            if x as usize + x_offset > self.size.0 as usize - 1 {
                 break;
             }
-            self.cells[y as usize][x as usize + offset].c = c;
-            self.cells[y as usize][x as usize + offset].style = style;
+
+            self.cells[y as usize + y_offset][x as usize + x_offset].c = c;
+            self.cells[y as usize + y_offset][x as usize + x_offset].style = style;
+            x_offset += 1;
         }
     }
 

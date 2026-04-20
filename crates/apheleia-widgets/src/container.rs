@@ -129,4 +129,10 @@ fn container_render_border(ctx: &mut SystemContext) {
             .repeat(size.0 as usize - 2),
         Some(border_style.style),
     );
+    let mut vert_text = border_style.vertical.to_string();
+    vert_text.push('\n');
+    vert_text = vert_text.repeat(size.1 as usize - 2);
+
+    buffer.write_string(0, 1, vert_text.to_string(), Some(border_style.style));
+    buffer.write_string(size.0 - 1, 1, vert_text, Some(border_style.style));
 }
