@@ -11,6 +11,7 @@
 // };
 
 use apheleia_core::types::Vector2;
+use log::info;
 use tree_ds::prelude::Node;
 
 use crate::{
@@ -47,6 +48,7 @@ pub struct MarkUpdateDirty(pub NodeId);
 
 impl ContextCommand for CreateNode {
     fn execute(self: Box<Self>, world: &mut crate::world::WorldViewForCommands) {
+        info!("creating node: {}", self.id);
         let node_data = NodeData::new(self.position, self.size);
         if let Some(parent_id) = self.parent_id {
             _ = world
@@ -68,6 +70,7 @@ impl ContextCommand for CreateNode {
         world
             .node_storage
             .add_node(self.id, self.class, self.node, node_data);
+        world.dirty_tracker.add_setup(self.id);
     }
 }
 impl ContextCommand for AddExtensionToId {

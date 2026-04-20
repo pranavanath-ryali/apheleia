@@ -111,8 +111,28 @@ impl NodeTrait for ContainerNode {
         }
         if let Some(container) = &mut self.container {
             let size = ctx.get_size().expect("No size given to container");
-            if let Some(header_text) = &mut container.header_text {}
-            if let Some(footer_text) = &mut container.footer_text {}
+            if let Some(header_text) = &mut container.header_text {
+                ctx.create_node(|builder| {
+                    builder
+                        .set_position(Vector2(container.header_margin, 0))
+                        .set_size(Vector2(size.0 - (container.header_margin * 2), 1))
+                        .node(
+                            LabelNode::new(mem::take(header_text))
+                                .set_horizontal_align(container.header_text_alignment),
+                        )
+                });
+            }
+            if let Some(footer_text) = &mut container.footer_text {
+                ctx.create_node(|builder| {
+                    builder
+                        .set_position(Vector2(container.footer_margin, size.1 - 1))
+                        .set_size(Vector2(size.0 - (container.footer_margin * 2), 1))
+                        .node(
+                            LabelNode::new(mem::take(footer_text))
+                                .set_horizontal_align(container.footer_text_alignment),
+                        )
+                });
+            }
         }
     }
 

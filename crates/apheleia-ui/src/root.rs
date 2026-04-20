@@ -189,6 +189,31 @@ impl Root {
             data.set_global_size(global_size);
         }
 
+        if !self.dirty_tracker.is_setup_empty() {
+            let ids: Vec<NodeId> = self.dirty_tracker.iter_setup().copied().collect();
+            for id in ids {
+                info!("RootNode inital_setup: Initializing NodeID: {}", id);
+
+                let data = self.node_storage.get_data(id).unwrap();
+                let mut ctx =
+                    NodeContext::new(id, self.id_generator.clone(), data.position, data.size);
+                self.node_storage
+                    .get_node_mut(id)
+                    .unwrap()
+                    .initial_setup(&mut ctx);
+
+                let commands = take(ctx.get_commands());
+                self.run_commands(commands);
+
+                let global_position = self.calculate_global_position(id);
+                let global_size = self.calculate_global_size(id);
+                let data = self.node_storage.get_data_mut(id).unwrap();
+
+                data.set_global_position(global_position);
+                data.set_global_size(global_size);
+            }
+        }
+
         info!("RootNode intial_setup ended");
     }
 
