@@ -1,0 +1,11 @@
+[package]
+name = "simple_counter_app"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+apheleia.workspace = true
+
+log.workspace = true
+fern.workspace = true
+chrono.workspace = true

@@ -155,6 +155,7 @@ impl NodeTrait for ContainerNode {
             label_len: u16,
             y: u16,
         ) {
+            let id = ctx.get_id();
             let label_pos: u16;
             let label_size: u16;
 
@@ -168,7 +169,7 @@ impl NodeTrait for ContainerNode {
                         label_pos = label_margin;
                     }
                     HorizontalAlignment::Center => {
-                        label_pos = (container_size.0 / 2) - (label_len / 2) - 2;
+                        label_pos = (container_size.0 / 2) - (label_len / 2);
                     }
                     HorizontalAlignment::Right => {
                         label_pos = (container_size.0 - 1) - label_margin - label_len;
@@ -182,6 +183,7 @@ impl NodeTrait for ContainerNode {
             let node = mem::replace(label, LabelNode::new(RichString::new("")));
             ctx.create_node(|builder| {
                 builder
+                    .set_parent_id(id)
                     .set_position(Vector2(label_pos, y))
                     .set_size(Vector2(label_size, 1))
                     .node(node)

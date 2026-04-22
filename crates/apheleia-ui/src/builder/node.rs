@@ -75,6 +75,11 @@ impl NodeBuilder {
         self
     }
 
+    pub fn set_parent_id(mut self, parent_id: NodeId) -> Self {
+        self.parent_id = Some(parent_id);
+        self
+    }
+
     pub fn set_position(mut self, position: Vector2) -> Self {
         self.position = position;
         self

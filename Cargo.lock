@@ -540,6 +540,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "simple_counter_app"
+version = "0.1.0"
+dependencies = [
+ "apheleia",
+ "chrono",
+ "fern",
+ "log",
+]
+
+[[package]]
 name = "smallvec"
 version = "1.15.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"

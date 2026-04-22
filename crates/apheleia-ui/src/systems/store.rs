@@ -1,5 +1,6 @@
 use std::collections::{BTreeMap, HashMap};
 
+use log::info;
 use rustc_hash::FxHashMap;
 
 use crate::{
@@ -23,6 +24,10 @@ impl SystemStore {
         priority: isize,
         system: System,
     ) {
+        info!(
+            "added system for NodeID: {}, priority: {}, type: {:?}",
+            node_id, priority, update_type
+        );
         let id = self.id_generator.next();
         let map = self.updatetype_nodesystems.entry(update_type).or_default();
         let node_functions = map.entry(node_id).or_default();

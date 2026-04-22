@@ -19,7 +19,7 @@ pub enum EventType {
     Keys,
 }
 
-#[derive(Hash, PartialEq, Eq, Clone, Copy)]
+#[derive(Hash, PartialEq, Eq, Clone, Copy, Debug)]
 pub enum UpdateType {
     ConstantUpdate,
     Event(EventType),
