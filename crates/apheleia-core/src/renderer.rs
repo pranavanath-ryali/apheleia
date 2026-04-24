@@ -1,4 +1,4 @@
-use std::io::{Error, Stdout, Write, stdout};
+use std::io::{self, Error, Stdout, Write, stdout};
 
 use crossterm::{
     cursor::{self, MoveTo},
@@ -11,7 +11,6 @@ use crossterm::{
         Clear, EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode,
     },
 };
-use log::info;
 
 use crate::{
     buffer::Buffer,
@@ -31,15 +30,17 @@ impl Renderer {
         }
     }
 
-    pub fn init(&mut self) {
-        _ = execute!(self.stdout, cursor::Hide);
-        _ = execute!(self.stdout, EnterAlternateScreen);
-        _ = enable_raw_mode();
+    pub fn init(&mut self) -> io::Result<()> {
+        execute!(self.stdout, cursor::Hide)?;
+        execute!(self.stdout, EnterAlternateScreen)?;
+        enable_raw_mode()?;
+
+        Ok(())
     }
 
-    pub fn render_flip(&mut self, buf: &mut Buffer) {
-        _ = execute!(self.stdout, Clear(crossterm::terminal::ClearType::All));
-        _ = execute!(self.stdout, cursor::Hide);
+    pub fn render_flip(&mut self, buf: &mut Buffer) -> io::Result<()> {
+        execute!(self.stdout, Clear(crossterm::terminal::ClearType::All))?;
+        execute!(self.stdout, cursor::Hide)?;
 
         for y in 0..self.size.y {
             let mut batch_text = String::new();
@@ -54,7 +55,7 @@ impl Renderer {
                     continue;
                 }
 
-                _ = queue_batch(&mut self.stdout, start_x, y, &batch_text, style);
+                queue_batch(&mut self.stdout, start_x, y, &batch_text, style)?;
 
                 batch_text.clear();
                 batch_text.push(cell.c);
@@ -62,14 +63,16 @@ impl Renderer {
                 start_x = x;
             }
 
-            _ = queue_batch(&mut self.stdout, start_x, y, &batch_text, style);
+            queue_batch(&mut self.stdout, start_x, y, &batch_text, style)?;
         }
 
-        _ = self.stdout.flush();
+        self.stdout.flush()?;
         buf.clear_diff();
+
+        Ok(())
     }
 
-    pub fn render(&mut self, buf: &mut Buffer) {
+    pub fn render(&mut self, buf: &mut Buffer) -> io::Result<()> {
         for (y, map) in buf.get_diffed_cells().iter() {
             let mut batch_text = String::new();
             let mut style = Style::default();
@@ -78,7 +81,7 @@ impl Renderer {
 
             for (x, cell) in map.iter() {
                 if *x != start_x + offset + 1 {
-                    _ = queue_batch(&mut self.stdout, start_x, *y, &batch_text, style);
+                    queue_batch(&mut self.stdout, start_x, *y, &batch_text, style)?;
 
                     start_x = *x;
                     offset = 0;
@@ -90,7 +93,7 @@ impl Renderer {
                 }
 
                 if cell.style != style {
-                    _ = queue_batch(&mut self.stdout, start_x, *y, &batch_text, style);
+                    queue_batch(&mut self.stdout, start_x, *y, &batch_text, style)?;
 
                     start_x = *x;
                     offset = 0;
@@ -105,17 +108,21 @@ impl Renderer {
                 batch_text.push(cell.c);
             }
 
-            _ = queue_batch(&mut self.stdout, start_x, *y, &batch_text, style);
+            queue_batch(&mut self.stdout, start_x, *y, &batch_text, style)?;
         }
 
-        _ = self.stdout.flush();
+        self.stdout.flush()?;
         buf.clear_diff();
+
+        Ok(())
     }
 
-    pub fn quit(&mut self) {
-        _ = disable_raw_mode();
-        _ = execute!(self.stdout, cursor::Show);
-        _ = execute!(self.stdout, LeaveAlternateScreen);
+    pub fn quit(&mut self) -> io::Result<()> {
+        disable_raw_mode()?;
+        execute!(self.stdout, cursor::Show)?;
+        execute!(self.stdout, LeaveAlternateScreen)?;
+
+        Ok(())
     }
 }
 
@@ -141,7 +148,7 @@ fn queue_batch(
     Ok(())
 }
 
-fn queue_flags(stdout: &mut Stdout, flags: StyleFlags) -> Result<(), Error> {
+fn queue_flags(stdout: &mut Stdout, flags: StyleFlags) -> io::Result<()> {
     let mut attr = Attributes::default();
 
     if flags.contains(StyleFlags::BOLD) {
@@ -175,5 +182,6 @@ fn queue_flags(stdout: &mut Stdout, flags: StyleFlags) -> Result<(), Error> {
         attr.set(Attribute::SlowBlink);
     }
 
-    queue!(stdout, SetAttributes(attr))
+    queue!(stdout, SetAttributes(attr))?;
+    Ok(())
 }

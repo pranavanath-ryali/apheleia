@@ -1,5 +1,3 @@
-use std::{collections::HashMap, mem::replace};
-
 use indexmap::IndexMap;
 use rustc_hash::FxHashMap;
 
@@ -45,34 +43,6 @@ impl Buffer {
     pub fn get_size(&self) -> Vec2 {
         self.size
     }
-
-    // pub fn shrink_size(&mut self, width: u16, height: u16) {
-    // TODO: Reimplement this function to a more general resize function
-    // pub fn resize(&mut self, new_size: Vec2) {
-    //     if self.size.x > new_size.x && self.size.y > new_size.y {
-    //         return;
-    //     }
-
-    //     let mut new_cells: Vec<Vec<Cell>> = vec![];
-    //     for (y, row) in self.cells.iter().enumerate() {
-    //         if y as u16 > new_size.y - 1 {
-    //             break;
-    //         }
-
-    //         let mut new_row: Vec<Cell> = vec![];
-    //         for (x, cell) in row.iter().enumerate() {
-    //             if x as u16 > new_size.x - 1 {
-    //                 break;
-    //             }
-
-    //             new_row.push(*cell);
-    //         }
-    //         new_cells.push(new_row);
-    //     }
-
-    //     self.size = new_size;
-    //     self.cells = replace(&mut self.cells, new_cells);
-    // }
 
     pub fn resize(&mut self, new_size: Vec2) {
         if self.size.x > new_size.x {
