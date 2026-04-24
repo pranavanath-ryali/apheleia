@@ -16,16 +16,17 @@ use log::info;
 use crate::{
     buffer::Buffer,
     style::{Style, StyleFlags},
+    types::Vec2,
 };
 
 pub struct Renderer {
-    pub size: (u16, u16),
+    pub size: Vec2,
     pub stdout: Stdout,
 }
 impl Renderer {
-    pub fn new(width: u16, height: u16) -> Self {
+    pub fn new(size: Vec2) -> Self {
         Self {
-            size: (width, height),
+            size,
             stdout: stdout(),
         }
     }
@@ -40,13 +41,13 @@ impl Renderer {
         _ = execute!(self.stdout, Clear(crossterm::terminal::ClearType::All));
         _ = execute!(self.stdout, cursor::Hide);
 
-        for y in 0..self.size.1 {
+        for y in 0..self.size.y {
             let mut batch_text = String::new();
             let mut style = Style::default();
             let mut start_x = 0u16;
 
-            for x in 0..self.size.0 {
-                let cell = buf.get_cell(x, y);
+            for x in 0..self.size.x {
+                let cell = buf.get_cell(Vec2 { x, y });
 
                 if cell.style == style {
                     batch_text.push(cell.c);
