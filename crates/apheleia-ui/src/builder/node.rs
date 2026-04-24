@@ -4,7 +4,7 @@ use std::{
     rc::Rc,
 };
 
-use apheleia_core::types::Vector2;
+use apheleia_core::types::Vec2;
 
 use crate::{
     contexts::{
@@ -24,8 +24,8 @@ pub struct NodeBuilder {
     class: Option<String>,
     parent_id: Option<NodeId>,
     parent_class: Option<String>,
-    position: Vector2,
-    size: Option<Vector2>,
+    position: Vec2,
+    size: Option<Vec2>,
     node: Box<dyn NodeTrait>,
 
     commands: Vec<Box<dyn ContextCommand>>,
@@ -39,7 +39,7 @@ impl NodeBuilder {
             class: None,
             parent_id: None,
             parent_class: None,
-            position: Vector2(0, 0),
+            position: Vec2::zero(),
             size: None,
             node: Box::new(EmptyNode),
 
@@ -58,7 +58,7 @@ impl NodeBuilder {
             class: None,
             parent_id: Some(parent_id),
             parent_class: None,
-            position: Vector2(0, 0),
+            position: Vec2::zero(),
             size: None,
             node: Box::new(EmptyNode),
             commands: vec![],
@@ -80,12 +80,12 @@ impl NodeBuilder {
         self
     }
 
-    pub fn set_position(mut self, position: Vector2) -> Self {
+    pub fn set_position(mut self, position: Vec2) -> Self {
         self.position = position;
         self
     }
 
-    pub fn set_size(mut self, size: Vector2) -> Self {
+    pub fn set_size(mut self, size: Vec2) -> Self {
         self.size = Some(size);
         self
     }

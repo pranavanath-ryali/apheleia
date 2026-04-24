@@ -1,4 +1,4 @@
-use apheleia_core::{buffer::Buffer, types::Vector2};
+use apheleia_core::{buffer::Buffer, types::Vec2};
 
 use crate::{
     contexts::{
@@ -167,25 +167,25 @@ impl<'a> SystemContext<'a> {
     //     };
     // }
 
-    pub fn get_position(&self) -> Vector2 {
+    pub fn get_position(&self) -> Vec2 {
         self.world
             .node_storage
             .get_data(self.get_id())
             .unwrap()
             .get_position()
     }
-    pub fn set_position(&mut self, position: Vector2) {
+    pub fn set_position(&mut self, position: Vec2) {
         self.add_command(Box::new(SetPosition(self.get_id(), position)));
     }
 
-    pub fn get_size(&self) -> Option<Vector2> {
+    pub fn get_size(&self) -> Option<Vec2> {
         self.world
             .node_storage
             .get_data(self.get_id())
             .unwrap()
             .get_size()
     }
-    pub fn set_size(&mut self, size: Vector2) {
+    pub fn set_size(&mut self, size: Vec2) {
         self.add_command(Box::new(SetSize(self.get_id(), size)));
     }
 }

@@ -1,6 +1,6 @@
 use std::fmt;
 
-use apheleia_core::types::Vector2;
+use apheleia_core::types::Vec2;
 use crossterm::event::KeyEvent;
 
 use crate::contexts::system::SystemContext;
@@ -28,7 +28,7 @@ pub enum UpdateType {
 
 #[derive(fmt::Debug, Default)]
 pub enum EventData {
-    Resize(Vector2),
+    Resize(Vec2),
     Keys(KeyEvent),
 
     #[default]

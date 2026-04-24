@@ -3,7 +3,7 @@ use std::mem;
 use apheleia_core::style::Style;
 use apheleia_macros::Extension;
 use apheleia_ui::{
-    RichString, Vector2,
+    RichString, Vec2,
     contexts::{node::NodeContext, system::SystemContext},
     node::traits::NodeTrait,
 };
@@ -149,7 +149,7 @@ impl NodeTrait for ContainerNode {
 
         fn setup_label(
             ctx: &mut NodeContext,
-            container_size: Vector2,
+            container_size: Vec2,
             label: &mut LabelNode,
             label_margin: u16,
             label_len: u16,
@@ -159,9 +159,9 @@ impl NodeTrait for ContainerNode {
             let label_pos: u16;
             let label_size: u16;
 
-            if label_len > (container_size.0 - 1) - (2 * label_margin) {
+            if label_len > (container_size.x - 1) - (2 * label_margin) {
                 label_pos = label_margin;
-                label_size = (container_size.0 - 1) - (2 * label_margin);
+                label_size = (container_size.x - 1) - (2 * label_margin);
             } else {
                 label_size = label_len;
                 match label.horizontal_alignment {
@@ -169,10 +169,10 @@ impl NodeTrait for ContainerNode {
                         label_pos = label_margin;
                     }
                     HorizontalAlignment::Center => {
-                        label_pos = (container_size.0 / 2) - (label_len / 2);
+                        label_pos = (container_size.x / 2) - (label_len / 2);
                     }
                     HorizontalAlignment::Right => {
-                        label_pos = (container_size.0 - 1) - label_margin - label_len;
+                        label_pos = (container_size.x - 1) - label_margin - label_len;
                     }
                     HorizontalAlignment::Justify => {
                         label_pos = label_margin;
@@ -184,8 +184,11 @@ impl NodeTrait for ContainerNode {
             ctx.create_node(|builder| {
                 builder
                     .set_parent_id(id)
-                    .set_position(Vector2(label_pos, y))
-                    .set_size(Vector2(label_size, 1))
+                    .set_position(Vec2 { x: label_pos, y })
+                    .set_size(Vec2 {
+                        x: label_size,
+                        y: 1,
+                    })
                     .node(node)
             });
         }
@@ -208,7 +211,7 @@ impl NodeTrait for ContainerNode {
                 footer_label,
                 self.footer_margin,
                 self.footer_len,
-                size.1 - 1,
+                size.y - 1,
             );
         }
     }
@@ -228,58 +231,75 @@ fn container_render_border(ctx: &mut SystemContext) {
 
     // TopLeft
     buffer.write_string(
-        0,
-        0,
+        Vec2::zero(),
         border_style.top_left.to_string(),
         Some(border_style.style),
     );
     // TopRight
     buffer.write_string(
-        size.0 - 1,
-        0,
+        Vec2 {
+            x: size.x - 1,
+            y: 0,
+        },
         border_style.top_right.to_string(),
         Some(border_style.style),
     );
     // BottomLeft
     buffer.write_string(
-        0,
-        size.1 - 1,
+        Vec2 {
+            x: 0,
+            y: size.y - 1,
+        },
         border_style.bottom_left.to_string(),
         Some(border_style.style),
     );
     // BottomRight
     buffer.write_string(
-        size.0 - 1,
-        size.1 - 1,
+        Vec2 {
+            x: size.x - 1,
+            y: size.y - 1,
+        },
         border_style.bottom_right.to_string(),
         Some(border_style.style),
     );
     // Top
     buffer.write_string(
-        1,
-        0,
+        Vec2 { x: 1, y: 0 },
         border_style
             .horizontal
             .to_string()
-            .repeat(size.0 as usize - 2),
+            .repeat(size.x as usize - 2),
         Some(border_style.style),
     );
     // Bottom
     buffer.write_string(
-        1,
-        size.1 - 1,
+        Vec2 {
+            x: 1,
+            y: size.y - 1,
+        },
         border_style
             .horizontal
             .to_string()
-            .repeat(size.0 as usize - 2),
+            .repeat(size.x as usize - 2),
         Some(border_style.style),
     );
 
     let mut vert_text = border_style.vertical.to_string();
     vert_text.push('\n');
-    vert_text = vert_text.repeat(size.1 as usize - 2);
+    vert_text = vert_text.repeat(size.y as usize - 2);
     // Left
-    buffer.write_string(0, 1, vert_text.to_string(), Some(border_style.style));
+    buffer.write_string(
+        Vec2 { x: 0, y: 1 },
+        vert_text.to_string(),
+        Some(border_style.style),
+    );
     // Right
-    buffer.write_string(size.0 - 1, 1, vert_text, Some(border_style.style));
+    buffer.write_string(
+        Vec2 {
+            x: size.x - 1,
+            y: 1,
+        },
+        vert_text,
+        Some(border_style.style),
+    );
 }

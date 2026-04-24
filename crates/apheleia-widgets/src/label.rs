@@ -1,7 +1,7 @@
 use std::mem::take;
 
 use apheleia_macros::Extension;
-use apheleia_ui::{RichString, Vector2, contexts::system::SystemContext, node::traits::NodeTrait};
+use apheleia_ui::{RichString, Vec2, contexts::system::SystemContext, node::traits::NodeTrait};
 
 #[derive(Clone, Copy)]
 pub struct ScrollingTextParams {
@@ -114,7 +114,7 @@ fn scroll_update(ctx: &mut SystemContext) {
     let ext = ctx.get_extension_mut::<LabelExtension>();
 
     if let TextOverflow::Scroll(scroll_params) = ext.overflow
-        && ext.text.len() >= size.0 as usize
+        && ext.text.len() >= size.x as usize
     {
         if ext.wait {
             ext.scroll_counter += scroll_params.wait_step;
@@ -133,7 +133,7 @@ fn scroll_update(ctx: &mut SystemContext) {
         ext.scroll_counter = 0.0;
         if ext.scroll_dir == 1 {
             ext.scroll_i += 1;
-            if ext.scroll_i == ext.text.len() - size.0 as usize {
+            if ext.scroll_i == ext.text.len() - size.x as usize {
                 ext.scroll_dir = -1;
                 ext.wait = true;
             }
@@ -152,20 +152,20 @@ fn scroll_update(ctx: &mut SystemContext) {
 
 fn render(ctx: &mut SystemContext) {
     let text: RichString;
-    let mut position = Vector2(0, 0);
+    let mut position = Vec2::zero();
 
     {
         let size = ctx.get_size().expect("A size is expected for Label");
         let ext = ctx.get_extension::<LabelExtension>();
 
-        if ext.text.len() <= size.0 as usize {
+        if ext.text.len() <= size.x as usize {
             text = ext.text.clone();
             match ext.horizontal_alignment {
-                HorizontalAlignment::Left => position.0 = 0,
+                HorizontalAlignment::Left => position.x = 0,
                 HorizontalAlignment::Center => {
-                    position.0 = (size.0 / 2) - (ext.text.len() / 2) as u16
+                    position.x = (size.x / 2) - (ext.text.len() / 2) as u16
                 }
-                HorizontalAlignment::Right => position.0 = size.0 - ext.text.len() as u16,
+                HorizontalAlignment::Right => position.x = size.x - ext.text.len() as u16,
                 HorizontalAlignment::Justify => {
                     todo!()
                     // TODO: Justify
@@ -174,25 +174,24 @@ fn render(ctx: &mut SystemContext) {
             }
         } else {
             text = match ext.overflow {
-                TextOverflow::DoNothing => ext.text.slice(0, size.0 as usize),
+                TextOverflow::DoNothing => ext.text.slice(0, size.x as usize),
                 TextOverflow::Ellipses(len, c) => {
-                    let mut text = ext.text.slice(0, size.0 as usize - len);
+                    let mut text = ext.text.slice(0, size.x as usize - len);
                     text.add_text(c.to_string().repeat(len).as_str(), None);
                     text
                 }
                 TextOverflow::Scroll(_) => {
-                    ext.text.slice(ext.scroll_i, ext.scroll_i + size.0 as usize)
+                    ext.text.slice(ext.scroll_i, ext.scroll_i + size.x as usize)
                 }
             };
         }
 
-        position.1 = match ext.vertical_alignment {
+        position.y = match ext.vertical_alignment {
             VerticalAlignment::Top => 0,
-            VerticalAlignment::Center => size.1 / 2,
-            VerticalAlignment::Bottom => size.1 - 1,
+            VerticalAlignment::Center => size.y / 2,
+            VerticalAlignment::Bottom => size.y - 1,
         };
     }
 
-    ctx.get_buffer()
-        .write_rich_string(position.0, position.1, text);
+    ctx.get_buffer().write_rich_string(position, text);
 }

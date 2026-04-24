@@ -1,6 +1,6 @@
 use std::{cell::RefCell, error::Error, io::stdout, mem::take, rc::Rc, time::Duration};
 
-use apheleia_core::{buffer::Buffer, renderer::Renderer, types::Vector2};
+use apheleia_core::{buffer::Buffer, renderer::Renderer, types::Vec2};
 use crossterm::{
     event::{KeyCode, KeyModifiers, poll, read},
     terminal::{self, enable_raw_mode},
@@ -43,6 +43,10 @@ pub struct Root {
 impl Default for Root {
     fn default() -> Self {
         let (width, height) = terminal::size().unwrap();
+        let size = Vec2 {
+            x: width,
+            y: height,
+        };
 
         let mut relations: Tree<NodeId, NodeId> = Tree::new(None);
         _ = relations.add_node(Node::new(0, None), None);
@@ -65,9 +69,9 @@ impl Default for Root {
             system_store: SystemStore::default(),
             resource_store: ResourceStore::default(),
 
-            buffer: Buffer::new(width, height),
+            buffer: Buffer::new(size),
             renderer: Renderer {
-                size: (width, height),
+                size,
                 stdout: stdout(),
             },
         }
@@ -75,7 +79,8 @@ impl Default for Root {
 }
 impl Root {
     // TODO: Add a test to see if these two following functions calculate the correct output
-    fn calculate_global_position(&self, id: NodeId) -> Vector2 {
+    // TODO: Make this its own function eventually
+    fn calculate_global_position(&self, id: NodeId) -> Vec2 {
         let mut position = self.node_storage.get_data(id).unwrap().position;
         self.relations
             .get_ancestor_ids(&id)
@@ -85,19 +90,19 @@ impl Root {
             .for_each(|node_id| {
                 let pos = self.node_storage.get_data(*node_id).unwrap().position;
 
-                position.0 += pos.0;
-                position.1 += pos.1;
+                position.x += pos.x;
+                position.y += pos.y;
             });
 
         position
     }
-    fn calculate_global_size(&self, id: NodeId) -> Option<Vector2> {
+    fn calculate_global_size(&self, id: NodeId) -> Option<Vec2> {
         let size = self
             .node_storage
             .get_data(id)
             .unwrap()
             .get_size()
-            .unwrap_or(Vector2(0, 0));
+            .unwrap_or(Vec2::zero());
         let mut global_size = size;
         let parent_id = self.relations.get_ancestor_ids(&id).unwrap()[0];
 
@@ -107,25 +112,25 @@ impl Root {
                 .get_data(parent_id)
                 .unwrap()
                 .get_global_size()
-                .unwrap_or(Vector2(0, 0));
+                .unwrap_or(Vec2::zero());
 
-            if parent_global_size.0 == 0 && parent_global_size.1 == 0 {
+            if parent_global_size.x == 0 && parent_global_size.y == 0 {
                 return None;
             }
 
             let position = self.node_storage.get_data(id).unwrap().get_position();
-            if parent_global_size.0 != 0 && position.0 + size.0 > parent_global_size.0 - 1 {
-                if position.0 >= parent_global_size.0 {
-                    global_size.0 = 0;
+            if parent_global_size.x != 0 && position.x + size.x > parent_global_size.x - 1 {
+                if position.x >= parent_global_size.x {
+                    global_size.x = 0;
                 } else {
-                    global_size.0 = parent_global_size.0 - position.0;
+                    global_size.x = parent_global_size.x - position.x;
                 }
             }
-            if parent_global_size.1 != 0 && position.1 + size.1 > parent_global_size.1 - 1 {
-                if position.1 >= parent_global_size.1 {
-                    global_size.1 = 0;
+            if parent_global_size.y != 0 && position.y + size.y > parent_global_size.y - 1 {
+                if position.y >= parent_global_size.y {
+                    global_size.y = 0;
                 } else {
-                    global_size.1 = parent_global_size.1 - position.1;
+                    global_size.y = parent_global_size.y - position.y;
                 }
             }
         }
@@ -134,7 +139,7 @@ impl Root {
             "Calculated global size of Node: {} as size: {:?}",
             id, global_size
         );
-        if global_size.0 == 0 || global_size.1 == 0 {
+        if global_size.x == 0 || global_size.y == 0 {
             return None;
         }
         Some(global_size)
@@ -241,7 +246,10 @@ impl Root {
                 crossterm::event::Event::Paste(_) => todo!(),
                 crossterm::event::Event::Resize(width, height) => {
                     event_type = EventType::Resize;
-                    event_data = EventData::Resize(Vector2(width, height));
+                    event_data = EventData::Resize(Vec2 {
+                        x: width,
+                        y: height,
+                    });
                 }
             }
         }
@@ -312,7 +320,7 @@ impl Root {
             info!("RootNode Render node begins: {}", id);
 
             let size = self.node_storage.get_data(id).unwrap().get_size().unwrap();
-            let mut node_buffer = Buffer::new(size.0, size.1);
+            let mut node_buffer = Buffer::new(size);
             let mut world = SystemView {
                 relations: &self.relations,
 
@@ -327,7 +335,7 @@ impl Root {
                 &mut ctx,
             );
 
-            node_buffer.shrink_size(global_size.0, global_size.1);
+            node_buffer.shrink_size(global_size);
 
             info!("RootNodeBuffer ID: {}; BUFFER: {:?}", id, node_buffer);
             let position = self
@@ -336,8 +344,7 @@ impl Root {
                 .unwrap()
                 .get_global_position()
                 .unwrap();
-            self.buffer
-                .render_buffer(position.0, position.1, &mut node_buffer);
+            self.buffer.render_buffer(position, &mut node_buffer);
 
             info!("RootNode Render node ends: {}", id);
         }

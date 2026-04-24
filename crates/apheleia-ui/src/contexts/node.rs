@@ -1,6 +1,6 @@
 use std::{cell::RefCell, rc::Rc};
 
-use apheleia_core::types::Vector2;
+use apheleia_core::types::Vec2;
 
 use crate::{
     builder::node::NodeBuilder,
@@ -17,8 +17,8 @@ pub struct NodeContext {
     id: NodeId,
     id_generator: Rc<RefCell<IdGenerator<NodeId>>>,
 
-    position: Vector2,
-    size: Option<Vector2>,
+    position: Vec2,
+    size: Option<Vec2>,
 
     commands: Vec<Box<dyn ContextCommand>>,
 }
@@ -26,8 +26,8 @@ impl NodeContext {
     pub(crate) fn new(
         id: NodeId,
         id_generator: Rc<RefCell<IdGenerator<NodeId>>>,
-        position: Vector2,
-        size: Option<Vector2>,
+        position: Vec2,
+        size: Option<Vec2>,
     ) -> NodeContext {
         Self {
             id,
@@ -74,17 +74,17 @@ impl NodeContext {
         }));
     }
 
-    pub fn get_position(&self) -> Vector2 {
+    pub fn get_position(&self) -> Vec2 {
         self.position
     }
-    pub fn set_position(&mut self, position: Vector2) {
+    pub fn set_position(&mut self, position: Vec2) {
         self.add_command(Box::new(SetPosition(self.get_id(), position)));
     }
 
-    pub fn get_size(&self) -> Option<Vector2> {
+    pub fn get_size(&self) -> Option<Vec2> {
         self.size
     }
-    pub fn set_size(&mut self, size: Vector2) {
+    pub fn set_size(&mut self, size: Vec2) {
         self.add_command(Box::new(SetSize(self.get_id(), size)));
     }
 }

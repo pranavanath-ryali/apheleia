@@ -10,7 +10,7 @@
 //     types::{DirtyRenderLevel, EventType, NodeId, UpdateTypeNode},
 // };
 
-use apheleia_core::types::Vector2;
+use apheleia_core::types::Vec2;
 use log::info;
 use tree_ds::prelude::Node;
 
@@ -27,8 +27,8 @@ pub struct CreateNode {
     pub parent_id: Option<NodeId>,
     pub parent_class: Option<String>,
 
-    pub position: Vector2,
-    pub size: Option<Vector2>,
+    pub position: Vec2,
+    pub size: Option<Vec2>,
 
     pub node: Box<dyn NodeTrait>,
 }
@@ -40,8 +40,8 @@ pub struct HookSystemToId {
     pub system: System,
 }
 
-pub struct SetSize(pub NodeId, pub Vector2);
-pub struct SetPosition(pub NodeId, pub Vector2);
+pub struct SetSize(pub NodeId, pub Vec2);
+pub struct SetPosition(pub NodeId, pub Vec2);
 
 pub struct MarkRenderDirty(pub NodeId, pub DirtyRenderLevel);
 pub struct MarkUpdateDirty(pub NodeId);
@@ -134,8 +134,8 @@ impl ContextCommand for MarkUpdateDirty {
     }
 }
 
-// pub struct SetSize(pub Vector2);
-// pub struct SetSizeForNode(pub String, pub Vector2);
+// pub struct SetSize(pub Vec2);
+// pub struct SetSizeForNode(pub String, pub Vec2);
 
 // pub struct RegisterForUpdate;
 // pub struct RegisterForEvent(pub EventType);
