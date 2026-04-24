@@ -1,7 +1,7 @@
 use std::fmt::format;
 
 use apheleia::{
-    DirtyRenderLevel, EmptyNode, Extension, ExtensionMacro, KeyCode, Style, StyleFlags, Vector2,
+    DirtyRenderLevel, EmptyNode, Extension, ExtensionMacro, KeyCode, Style, StyleFlags, Vec2,
     container::ContainerNode,
     label::{HorizontalAlignment, LabelExtension, LabelNode, ScrollingTextParams},
     rich_strings::RichString,
@@ -23,15 +23,19 @@ fn main() {
     }
 
     let mut root = Root::default();
-
-    let width = root.width;
-    let height = root.height;
+    let size = root.get_size();
 
     root.create_node(|builder| {
         builder
             .set_class("container")
-            .set_position(Vector2(width / 4, 3 * (height / 8)))
-            .set_size(Vector2(width / 2, height / 4))
+            .set_position(Vec2 {
+                x: size.x / 4,
+                y: 3 * size.y / 8,
+            })
+            .set_size(Vec2 {
+                x: size.x / 2,
+                y: size.y / 4,
+            })
             .node(
                 ContainerNode::default().set_header(
                     2,
@@ -51,8 +55,8 @@ fn main() {
         builder
             .set_class("count_label")
             .set_parent("container")
-            .set_position(Vector2(2, 2))
-            .set_size(Vector2(30, 10))
+            .set_position(Vec2 { x: 2, y: 2 })
+            .set_size(Vec2 { x: 30, y: 10 })
             .add_extension(Box::new(CounterExtension {
                 text: RichString::new("Count: "),
                 count: 0,

@@ -1,5 +1,5 @@
 use apheleia::{
-    Vector2,
+    Vec2,
     label::{HorizontalAlignment, LabelNode, VerticalAlignment},
     rich_strings::RichString,
     root::Root,
@@ -7,12 +7,10 @@ use apheleia::{
 
 fn main() {
     let mut root = Root::default();
-
-    let width = root.width;
-    let height = root.height;
+    let size = root.get_size();
 
     root.create_node(|builder| {
-        builder.set_size(Vector2(width, height)).node(
+        builder.set_size(size).node(
             LabelNode::new(RichString::new("Hello World!"))
                 .set_horizontal_align(HorizontalAlignment::Center)
                 .set_vertical_align(VerticalAlignment::Center),

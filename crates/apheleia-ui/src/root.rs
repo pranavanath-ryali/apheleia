@@ -23,8 +23,7 @@ use crate::{
 
 pub struct Root {
     fps: u16,
-    pub width: u16,
-    pub height: u16,
+    pub size: Vec2,
     running: bool,
 
     id_generator: Rc<RefCell<IdGenerator<NodeId>>>,
@@ -56,8 +55,7 @@ impl Default for Root {
         Root {
             fps: 15,
             running: false,
-            width,
-            height,
+            size,
 
             id_generator: Rc::new(RefCell::new(IdGenerator::<NodeId>::new(0))),
 
@@ -78,6 +76,10 @@ impl Default for Root {
     }
 }
 impl Root {
+    pub fn get_size(&self) -> Vec2 {
+        self.size
+    }
+
     // TODO: Add a test to see if these two following functions calculate the correct output
     // TODO: Make this its own function eventually
     fn calculate_global_position(&self, id: NodeId) -> Vec2 {

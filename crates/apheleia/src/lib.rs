@@ -4,7 +4,7 @@
 pub use apheleia_core::{
     Color, buffer, rich_strings,
     style::{Style, StyleFlags},
-    types::Vector2,
+    types::Vec2,
 };
 pub use apheleia_macros::{Extension as ExtensionMacro, Resource as ResourceMacro};
 pub use apheleia_ui::{
