@@ -28,11 +28,11 @@ pub struct Root {
     id_generator: Rc<RefCell<IdGenerator<NodeId>>>,
     relations: Tree<NodeId, NodeId>,
 
-    node_storage: NodeStore,
+    node_store: NodeStore,
     extension_store: ExtensionStore,
-    dirty_tracker: DirtyTracker,
     system_store: SystemStore,
     resource_store: ResourceStore,
+    dirty_tracker: DirtyTracker,
 
     buffer: Buffer,
     renderer: Renderer,
@@ -57,11 +57,11 @@ impl Default for Root {
 
             relations,
 
-            node_storage: NodeStore::default(),
-            extension_store: ExtensionStore::default(),
-            dirty_tracker: DirtyTracker::default(),
-            system_store: SystemStore::default(),
-            resource_store: ResourceStore::default(),
+            node_store: Default::default(),
+            extension_store: Default::default(),
+            system_store: Default::default(),
+            resource_store: Default::default(),
+            dirty_tracker: Default::default(),
 
             buffer: Buffer::new(size),
             renderer: Renderer {
@@ -79,14 +79,14 @@ impl Root {
     // TODO: Add a test to see if these two following functions calculate the correct output
     // TODO: Make this its own function eventually
     fn calculate_global_position(&self, id: NodeId) -> Vec2 {
-        let mut position = self.node_storage.get_data(id).unwrap().position;
+        let mut position = self.node_store.get_data(id).unwrap().position;
         self.relations
             .get_ancestor_ids(&id)
             .unwrap()
             .iter()
             .filter(|id| **id != 0_usize)
             .for_each(|node_id| {
-                let pos = self.node_storage.get_data(*node_id).unwrap().position;
+                let pos = self.node_store.get_data(*node_id).unwrap().position;
 
                 position.x += pos.x;
                 position.y += pos.y;
@@ -96,7 +96,7 @@ impl Root {
     }
     fn calculate_global_size(&self, id: NodeId) -> Option<Vec2> {
         let size = self
-            .node_storage
+            .node_store
             .get_data(id)
             .unwrap()
             .get_size()
@@ -106,7 +106,7 @@ impl Root {
 
         if parent_id != 0 {
             let parent_global_size = self
-                .node_storage
+                .node_store
                 .get_data(parent_id)
                 .unwrap()
                 .get_global_size()
@@ -116,7 +116,7 @@ impl Root {
                 return None;
             }
 
-            let position = self.node_storage.get_data(id).unwrap().get_position();
+            let position = self.node_store.get_data(id).unwrap().get_position();
             if parent_global_size.x != 0 && position.x + size.x > parent_global_size.x - 1 {
                 if position.x >= parent_global_size.x {
                     global_size.x = 0;
@@ -144,7 +144,7 @@ impl Root {
             command.execute(&mut WorldViewForCommands {
                 relations: &mut self.relations,
 
-                node_storage: &mut self.node_storage,
+                node_storage: &mut self.node_store,
                 systems_store: &mut self.system_store,
                 extension_store: &mut self.extension_store,
                 dirty_tracker: &mut self.dirty_tracker,
@@ -166,9 +166,9 @@ impl Root {
             .collect();
 
         for id in ids {
-            let data = self.node_storage.get_data(id).unwrap();
+            let data = self.node_store.get_data(id).unwrap();
             let mut ctx = NodeContext::new(id, self.id_generator.clone(), data.position, data.size);
-            self.node_storage
+            self.node_store
                 .get_node_mut(id)
                 .unwrap()
                 .initial_setup(&mut ctx);
@@ -178,7 +178,7 @@ impl Root {
 
             let global_position = self.calculate_global_position(id);
             let global_size = self.calculate_global_size(id);
-            let data = self.node_storage.get_data_mut(id).unwrap();
+            let data = self.node_store.get_data_mut(id).unwrap();
 
             data.set_global_position(global_position);
             data.set_global_size(global_size);
@@ -187,10 +187,10 @@ impl Root {
         if !self.dirty_tracker.is_setup_empty() {
             let ids: Vec<NodeId> = self.dirty_tracker.iter_setup().copied().collect();
             for id in ids {
-                let data = self.node_storage.get_data(id).unwrap();
+                let data = self.node_store.get_data(id).unwrap();
                 let mut ctx =
                     NodeContext::new(id, self.id_generator.clone(), data.position, data.size);
-                self.node_storage
+                self.node_store
                     .get_node_mut(id)
                     .unwrap()
                     .initial_setup(&mut ctx);
@@ -200,7 +200,7 @@ impl Root {
 
                 let global_position = self.calculate_global_position(id);
                 let global_size = self.calculate_global_size(id);
-                let data = self.node_storage.get_data_mut(id).unwrap();
+                let data = self.node_store.get_data_mut(id).unwrap();
 
                 data.set_global_position(global_position);
                 data.set_global_size(global_size);
@@ -242,7 +242,7 @@ impl Root {
             let mut world = SystemView {
                 relations: &self.relations,
 
-                node_storage: &self.node_storage,
+                node_storage: &self.node_store,
                 extension_store: &mut self.extension_store,
                 resource_store: &mut self.resource_store,
             };
@@ -263,7 +263,7 @@ impl Root {
             let mut world = SystemView {
                 relations: &self.relations,
 
-                node_storage: &self.node_storage,
+                node_storage: &self.node_store,
                 extension_store: &mut self.extension_store,
                 resource_store: &mut self.resource_store,
             };
@@ -284,7 +284,7 @@ impl Root {
         let mut world = SystemView {
             relations: &self.relations,
 
-            node_storage: &self.node_storage,
+            node_storage: &self.node_store,
             extension_store: &mut self.extension_store,
             resource_store: &mut self.resource_store,
         };
@@ -295,14 +295,14 @@ impl Root {
         self.run_commands(commands);
     }
     fn render_node(&mut self, id: NodeId) {
-        let size = self.node_storage.get_data(id).unwrap().get_global_size();
+        let size = self.node_store.get_data(id).unwrap().get_global_size();
         if let Some(global_size) = size {
-            let size = self.node_storage.get_data(id).unwrap().get_size().unwrap();
+            let size = self.node_store.get_data(id).unwrap().get_size().unwrap();
             let mut node_buffer = Buffer::new(size);
             let mut world = SystemView {
                 relations: &self.relations,
 
-                node_storage: &self.node_storage,
+                node_storage: &self.node_store,
                 extension_store: &mut self.extension_store,
                 resource_store: &mut self.resource_store,
             };
@@ -316,7 +316,7 @@ impl Root {
             node_buffer.shrink_size(global_size);
 
             let position = self
-                .node_storage
+                .node_store
                 .get_data(id)
                 .unwrap()
                 .get_global_position()
