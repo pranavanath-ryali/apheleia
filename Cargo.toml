@@ -13,6 +13,10 @@ apheleia-macros = { path = "crates/apheleia-macros" }
 apheleia-widgets = { path = "crates/apheleia-widgets" }
 apheleia = { path = "crates/apheleia" }
 
+crossterm = "0.29.0"
+indexmap = "2.2.2"
+tree-ds = "0.2.0"
+rustc-hash = "2.1.2"
 log = "0.4"
 fern = "0.7"
 chrono = "0.4"

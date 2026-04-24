@@ -1,6 +1,7 @@
 use std::{collections::HashMap, mem::replace};
 
 use indexmap::IndexMap;
+use rustc_hash::FxHashMap;
 
 use crate::{rich_strings::RichString, style::Style, types::Vec2};
 
@@ -24,7 +25,7 @@ impl Default for Cell {
 pub struct Buffer {
     size: Vec2,
     cells: Vec<Vec<Cell>>,
-    diffed_cells: HashMap<u16, IndexMap<u16, Cell>>,
+    diffed_cells: FxHashMap<u16, IndexMap<u16, Cell>>,
 }
 impl Buffer {
     pub fn new(size: Vec2) -> Self {
@@ -37,7 +38,7 @@ impl Buffer {
         Self {
             size,
             cells,
-            diffed_cells: HashMap::new(),
+            diffed_cells: Default::default(),
         }
     }
 
@@ -47,30 +48,52 @@ impl Buffer {
 
     // pub fn shrink_size(&mut self, width: u16, height: u16) {
     // TODO: Reimplement this function to a more general resize function
-    pub fn shrink_size(&mut self, new_size: Vec2) {
-        if self.size.x > new_size.x && self.size.y > new_size.y {
-            return;
+    // pub fn resize(&mut self, new_size: Vec2) {
+    //     if self.size.x > new_size.x && self.size.y > new_size.y {
+    //         return;
+    //     }
+
+    //     let mut new_cells: Vec<Vec<Cell>> = vec![];
+    //     for (y, row) in self.cells.iter().enumerate() {
+    //         if y as u16 > new_size.y - 1 {
+    //             break;
+    //         }
+
+    //         let mut new_row: Vec<Cell> = vec![];
+    //         for (x, cell) in row.iter().enumerate() {
+    //             if x as u16 > new_size.x - 1 {
+    //                 break;
+    //             }
+
+    //             new_row.push(*cell);
+    //         }
+    //         new_cells.push(new_row);
+    //     }
+
+    //     self.size = new_size;
+    //     self.cells = replace(&mut self.cells, new_cells);
+    // }
+
+    pub fn resize(&mut self, new_size: Vec2) {
+        if self.size.x > new_size.x {
+            self.cells.iter_mut().for_each(|row| {
+                row.truncate(new_size.x as usize);
+            });
+        } else if self.size.x < new_size.x {
+            self.cells.iter_mut().for_each(|row| {
+                row.resize(new_size.x as usize, Cell::default());
+            });
         }
 
-        let mut new_cells: Vec<Vec<Cell>> = vec![];
-        for (y, row) in self.cells.iter().enumerate() {
-            if y as u16 > new_size.y - 1 {
-                break;
-            }
-
-            let mut new_row: Vec<Cell> = vec![];
-            for (x, cell) in row.iter().enumerate() {
-                if x as u16 > new_size.x - 1 {
-                    break;
-                }
-
-                new_row.push(*cell);
-            }
-            new_cells.push(new_row);
+        if self.size.y > new_size.y {
+            self.cells.truncate(new_size.y as usize);
+        } else if self.size.y < new_size.y {
+            self.cells.resize_with(new_size.y as usize, || {
+                vec![Cell::default(); new_size.x as usize]
+            });
         }
 
         self.size = new_size;
-        self.cells = replace(&mut self.cells, new_cells);
     }
 
     pub fn write_string(&mut self, position: Vec2, text: String, style: Option<Style>) {
@@ -82,25 +105,26 @@ impl Buffer {
     }
 
     pub fn write_rich_string(&mut self, position: Vec2, rich_string: RichString) {
-        let mut y_offset = 0_usize;
-        let mut x_offset = 0_usize;
+        let mut offset = Vec2::zero();
         for (c, style) in rich_string.iter() {
             if c == '\n' {
-                y_offset += 1;
-                x_offset = x_offset.saturating_sub(1);
+                offset.y += 1;
+                offset.x = offset.x.saturating_sub(1);
                 continue;
             }
 
-            if position.x as usize + x_offset > self.size.x as usize - 1 {
-                break;
+            if position.x + offset.x > self.size.x - 1 || position.y + offset.y > self.size.y - 1 {
+                continue;
             }
 
-            self.cells[position.y as usize + y_offset][position.x as usize + x_offset].c = c;
-            self.cells[position.y as usize + y_offset][position.x as usize + x_offset].style =
-                style;
-            self.cells[position.y as usize + y_offset][position.x as usize + x_offset].written =
-                true;
-            x_offset += 1;
+            let cell =
+                &mut self.cells[(position.y + offset.y) as usize][(position.x + offset.x) as usize];
+
+            cell.c = c;
+            cell.style = style;
+            cell.written = true;
+
+            offset.x += 1;
         }
     }
 
@@ -133,7 +157,7 @@ impl Buffer {
         &self.cells[position.y as usize][position.x as usize]
     }
 
-    pub fn get_diffed_cells(&self) -> &HashMap<u16, IndexMap<u16, Cell>> {
+    pub fn get_diffed_cells(&self) -> &FxHashMap<u16, IndexMap<u16, Cell>> {
         &self.diffed_cells
     }
 
@@ -149,14 +173,9 @@ mod test_buffer {
     use super::*;
 
     #[test]
-    fn test_write_functions() {
+    fn test_write() {
         let mut buffer = Buffer::new(Vec2 { x: 10, y: 1 });
-        buffer.write_rich_string(Vec2 { x: 5, y: 0 }, RichString::new("He<bold>llo"));
-
-        let mut text = "".to_string();
-        for cell in buffer.cells[0].iter() {
-            text.push(cell.c);
-        }
+        buffer.write_rich_string(Vec2 { x: 5, y: 0 }, RichString::new("He</bold/>llo"));
 
         assert_eq!(
             buffer.cells[0],
@@ -204,6 +223,79 @@ mod test_buffer {
                     },
                     written: true
                 },
+            ]
+        );
+    }
+
+    #[test]
+    fn test_resize() {
+        let mut buffer = Buffer::new(Vec2 { x: 10, y: 1 });
+        buffer.write_string(Vec2::zero(), "HelloWorld".to_string(), None);
+
+        buffer.resize(Vec2 { x: 20, y: 1 });
+        assert_eq!(
+            buffer.cells[0],
+            [
+                Cell {
+                    c: 'H',
+                    style: Default::default(),
+                    written: true
+                },
+                Cell {
+                    c: 'e',
+                    style: Default::default(),
+                    written: true
+                },
+                Cell {
+                    c: 'l',
+                    style: Default::default(),
+                    written: true
+                },
+                Cell {
+                    c: 'l',
+                    style: Default::default(),
+                    written: true
+                },
+                Cell {
+                    c: 'o',
+                    style: Default::default(),
+                    written: true
+                },
+                Cell {
+                    c: 'W',
+                    style: Default::default(),
+                    written: true
+                },
+                Cell {
+                    c: 'o',
+                    style: Default::default(),
+                    written: true
+                },
+                Cell {
+                    c: 'r',
+                    style: Default::default(),
+                    written: true
+                },
+                Cell {
+                    c: 'l',
+                    style: Default::default(),
+                    written: true
+                },
+                Cell {
+                    c: 'd',
+                    style: Default::default(),
+                    written: true
+                },
+                Cell::default(),
+                Cell::default(),
+                Cell::default(),
+                Cell::default(),
+                Cell::default(),
+                Cell::default(),
+                Cell::default(),
+                Cell::default(),
+                Cell::default(),
+                Cell::default(),
             ]
         );
     }

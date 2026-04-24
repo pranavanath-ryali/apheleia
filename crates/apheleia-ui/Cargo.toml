@@ -6,11 +6,10 @@ edition.workspace = true
 [dependencies]
 apheleia-core.workspace = true
 
-crossterm = "0.29.0"
-indexmap = "2.2.2"
-tree-ds = "0.2.0"
-rustc-hash = "2.1.2"
-
+indexmap.workspace = true
+crossterm.workspace = true
+tree-ds.workspace = true
+rustc-hash.workspace = true
 log.workspace = true
 fern.workspace = true
 chrono.workspace = true

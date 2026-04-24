@@ -5,9 +5,10 @@ edition.workspace = true
 
 [dependencies]
 bitflags = "2.10.0"
-crossterm = "0.29.0"
-indexmap = "2.13.1"
 
+rustc-hash.workspace = true
+crossterm.workspace = true
+indexmap.workspace = true
 log.workspace = true
 fern.workspace = true
 chrono.workspace = true

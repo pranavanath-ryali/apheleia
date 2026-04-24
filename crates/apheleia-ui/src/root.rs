@@ -313,7 +313,7 @@ impl Root {
                 &mut ctx,
             );
 
-            node_buffer.shrink_size(global_size);
+            node_buffer.resize(global_size);
 
             let position = self
                 .node_store
