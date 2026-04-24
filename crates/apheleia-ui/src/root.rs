@@ -1,6 +1,5 @@
 use std::{
     cell::RefCell,
-    error::Error,
     io::{self, stdout},
     mem::take,
     rc::Rc,
@@ -160,7 +159,7 @@ impl Root {
         }
     }
 
-    fn setup(&mut self) -> io::Result<()> {
+    pub fn setup(&mut self) -> io::Result<()> {
         self.renderer.init()?;
 
         let ids: Vec<NodeId> = self
@@ -191,6 +190,8 @@ impl Root {
             data.set_global_size(global_size);
         }
 
+        // For nodes that were created from other nodes automatically
+        // TODO: Make this run automatically after every commands flush
         if !self.dirty_tracker.is_setup_empty() {
             let ids: Vec<NodeId> = self.dirty_tracker.iter_setup().copied().collect();
             for id in ids {
@@ -223,8 +224,8 @@ impl Root {
         let mut event_data: EventData = EventData::None;
         if poll(Duration::from_nanos(1_000_000_000 / self.fps as u64))? {
             match read()? {
-                crossterm::event::Event::FocusGained => todo!(),
-                crossterm::event::Event::FocusLost => todo!(),
+                crossterm::event::Event::FocusGained => event_type = EventType::FocusGained,
+                crossterm::event::Event::FocusLost => event_type = EventType::FocusLost,
                 crossterm::event::Event::Key(key_event) => {
                     if key_event.modifiers == KeyModifiers::CONTROL
                         && key_event.code == KeyCode::Char('c')
@@ -235,7 +236,10 @@ impl Root {
                     event_type = EventType::Keys;
                     event_data = EventData::Keys(key_event);
                 }
-                crossterm::event::Event::Mouse(_) => todo!(),
+                crossterm::event::Event::Mouse(event) => {
+                    event_type = EventType::Mouse;
+                    event_data = EventData::Mouse(event)
+                }
                 crossterm::event::Event::Paste(_) => todo!(),
                 crossterm::event::Event::Resize(width, height) => {
                     event_type = EventType::Resize;
@@ -303,6 +307,7 @@ impl Root {
         let commands = take(ctx.get_commands());
         self.run_commands(commands);
     }
+
     fn render_node(&mut self, id: NodeId) {
         let size = self.node_store.get_data(id).unwrap().get_global_size();
         if let Some(global_size) = size {
@@ -333,6 +338,7 @@ impl Root {
             self.buffer.render_buffer(position, &mut node_buffer);
         }
     }
+
     fn render_flip(&mut self) -> io::Result<()> {
         let ids: Vec<NodeId> = self
             .relations
@@ -369,7 +375,6 @@ impl Root {
     pub fn run(&mut self) -> io::Result<()> {
         _ = enable_raw_mode();
 
-        self.setup()?;
         self.render_flip()?;
 
         self.running = true;

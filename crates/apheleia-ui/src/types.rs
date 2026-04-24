@@ -1,7 +1,7 @@
 use std::fmt;
 
 use apheleia_core::types::Vec2;
-use crossterm::event::KeyEvent;
+use crossterm::event::{KeyEvent, MouseEvent};
 
 use crate::contexts::system::SystemContext;
 
@@ -17,6 +17,9 @@ pub enum EventType {
 
     Resize,
     Keys,
+    FocusGained,
+    FocusLost,
+    Mouse,
 }
 
 #[derive(Hash, PartialEq, Eq, Clone, Copy, Debug)]
@@ -30,6 +33,7 @@ pub enum UpdateType {
 pub enum EventData {
     Resize(Vec2),
     Keys(KeyEvent),
+    Mouse(MouseEvent),
 
     #[default]
     None,
