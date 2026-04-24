@@ -1,4 +1,11 @@
-use std::{cell::RefCell, error::Error, io::stdout, mem::take, rc::Rc, time::Duration};
+use std::{
+    cell::RefCell,
+    error::Error,
+    io::{self, stdout},
+    mem::take,
+    rc::Rc,
+    time::Duration,
+};
 
 use apheleia_core::{buffer::Buffer, renderer::Renderer, types::Vec2};
 use crossterm::{
@@ -153,8 +160,8 @@ impl Root {
         }
     }
 
-    fn initial_setup(&mut self) {
-        self.renderer.init();
+    fn setup(&mut self) -> io::Result<()> {
+        self.renderer.init()?;
 
         let ids: Vec<NodeId> = self
             .relations
@@ -206,9 +213,11 @@ impl Root {
                 data.set_global_size(global_size);
             }
         }
+
+        Ok(())
     }
 
-    fn event(&mut self) -> Result<(), Box<dyn Error>> {
+    fn event(&mut self) -> io::Result<()> {
         // TODO: Implement event function
         let mut event_type: EventType = EventType::None;
         let mut event_data: EventData = EventData::None;
@@ -324,7 +333,7 @@ impl Root {
             self.buffer.render_buffer(position, &mut node_buffer);
         }
     }
-    fn render_flip(&mut self) {
+    fn render_flip(&mut self) -> io::Result<()> {
         let ids: Vec<NodeId> = self
             .relations
             .traverse(&0, tree_ds::prelude::TraversalStrategy::PreOrder)
@@ -338,35 +347,41 @@ impl Root {
             self.render_node(id);
         }
 
-        self.renderer.render_flip(&mut self.buffer);
+        self.renderer.render_flip(&mut self.buffer)?;
         self.dirty_tracker.clear_render();
+
+        Ok(())
     }
 
-    fn render(&mut self) {
+    fn render(&mut self) -> io::Result<()> {
         let ids: Vec<NodeId> = self.dirty_tracker.iter_render().copied().collect();
 
         for id in ids {
             self.render_node(id);
         }
 
-        self.renderer.render(&mut self.buffer);
+        self.renderer.render(&mut self.buffer)?;
         self.dirty_tracker.clear_render();
+
+        Ok(())
     }
 
-    pub fn run(&mut self) {
+    pub fn run(&mut self) -> io::Result<()> {
         _ = enable_raw_mode();
 
-        self.initial_setup();
-        self.render_flip();
+        self.setup()?;
+        self.render_flip()?;
 
         self.running = true;
         while self.running {
             _ = self.event();
             self.update();
-            self.render();
+            self.render()?;
         }
 
-        self.renderer.quit();
+        self.renderer.quit()?;
+
+        Ok(())
     }
 
     // Functions for Developers
@@ -376,36 +391,7 @@ impl Root {
         self.run_commands(builder.build());
     }
 
-    // pub fn create_node<'a>(&mut self, class: &str) -> &'a mut NodeBuilder {
-    //     let mut world = WorldViewForBuilder {
-    //         relations: &mut self.relations,
-    //         node_storage: &mut self.node_storage,
-    //         extension_store: &mut self.extension_store,
-    //         system_store: &mut self.system_store,
-    //         resource_store: &mut self.resource_store,
-    //     };
-    //     let mut builder = NodeBuilder::new(self.nodeid_gen.borrow_mut().next(), class);
-
-    //     &mut builder
-    // }
-
     pub fn add_resource<T: Resource>(&mut self, res: T) {
         self.resource_store.add_resource(Box::new(res));
     }
-
-    // pub fn bind_extension_to_classes<T: Extension>(
-    //     &mut self,
-    //     classes: Vec<&str>,
-    //     extension: Box<T>,
-    // ) {
-    //     let ext_id = self.extension_store.get_id();
-    //     self.extension_store.add_extension(ext_id, extension);
-
-    //     for class in classes {
-    //         let id = self.node_storage.get_id(class).cloned();
-    //         if let Some(id) = id {
-    //             _ = self.extension_store.bind_extension::<T>(id, ext_id);
-    //         }
-    //     }
-    // }
 }
