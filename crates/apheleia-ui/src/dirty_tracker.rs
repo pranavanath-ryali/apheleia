@@ -19,7 +19,6 @@ impl DirtyTracker {
         self.dirty_updates.insert(id);
     }
     pub fn add_render(&mut self, id: NodeId) {
-        info!("Node {} is marked Dirty!", id);
         self.dirty_renders.insert(id);
     }
 

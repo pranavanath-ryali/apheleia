@@ -5,7 +5,6 @@ use crossterm::{
     event::{KeyCode, KeyModifiers, poll, read},
     terminal::{self, enable_raw_mode},
 };
-use log::info;
 use tree_ds::prelude::{Node, Tree};
 
 use crate::{
@@ -27,7 +26,6 @@ pub struct Root {
     running: bool,
 
     id_generator: Rc<RefCell<IdGenerator<NodeId>>>,
-    // data: Rc<RefCell<World>>,
     relations: Tree<NodeId, NodeId>,
 
     node_storage: NodeStore,
@@ -49,8 +47,6 @@ impl Default for Root {
 
         let mut relations: Tree<NodeId, NodeId> = Tree::new(None);
         _ = relations.add_node(Node::new(0, None), None);
-
-        info!("RootNode initialization started");
 
         Root {
             fps: 15,
@@ -137,10 +133,6 @@ impl Root {
             }
         }
 
-        info!(
-            "Calculated global size of Node: {} as size: {:?}",
-            id, global_size
-        );
         if global_size.x == 0 || global_size.y == 0 {
             return None;
         }
@@ -162,8 +154,6 @@ impl Root {
     }
 
     fn initial_setup(&mut self) {
-        info!("RootNode inital_setup started");
-
         self.renderer.init();
 
         let ids: Vec<NodeId> = self
@@ -176,8 +166,6 @@ impl Root {
             .collect();
 
         for id in ids {
-            info!("RootNode inital_setup: Initializing NodeID: {}", id);
-
             let data = self.node_storage.get_data(id).unwrap();
             let mut ctx = NodeContext::new(id, self.id_generator.clone(), data.position, data.size);
             self.node_storage
@@ -199,8 +187,6 @@ impl Root {
         if !self.dirty_tracker.is_setup_empty() {
             let ids: Vec<NodeId> = self.dirty_tracker.iter_setup().copied().collect();
             for id in ids {
-                info!("RootNode inital_setup: Initializing NodeID: {}", id);
-
                 let data = self.node_storage.get_data(id).unwrap();
                 let mut ctx =
                     NodeContext::new(id, self.id_generator.clone(), data.position, data.size);
@@ -220,13 +206,9 @@ impl Root {
                 data.set_global_size(global_size);
             }
         }
-
-        info!("RootNode intial_setup ended");
     }
 
     fn event(&mut self) -> Result<(), Box<dyn Error>> {
-        info!("RootNode event started");
-
         // TODO: Implement event function
         let mut event_type: EventType = EventType::None;
         let mut event_data: EventData = EventData::None;
@@ -255,11 +237,8 @@ impl Root {
                 }
             }
         }
-        info!("RootNode Event triggered: {:?}", event_type);
 
         if event_type != EventType::None {
-            info!("RootNode Event data: {:?}", event_data);
-
             let mut world = SystemView {
                 relations: &self.relations,
 
@@ -274,7 +253,6 @@ impl Root {
             let commands = take(ctx.get_commands());
             self.run_commands(commands);
         }
-        info!("RootNode event ended");
         Ok(())
     }
 
@@ -319,8 +297,6 @@ impl Root {
     fn render_node(&mut self, id: NodeId) {
         let size = self.node_storage.get_data(id).unwrap().get_global_size();
         if let Some(global_size) = size {
-            info!("RootNode Render node begins: {}", id);
-
             let size = self.node_storage.get_data(id).unwrap().get_size().unwrap();
             let mut node_buffer = Buffer::new(size);
             let mut world = SystemView {
@@ -339,7 +315,6 @@ impl Root {
 
             node_buffer.shrink_size(global_size);
 
-            info!("RootNodeBuffer ID: {}; BUFFER: {:?}", id, node_buffer);
             let position = self
                 .node_storage
                 .get_data(id)
@@ -347,8 +322,6 @@ impl Root {
                 .get_global_position()
                 .unwrap();
             self.buffer.render_buffer(position, &mut node_buffer);
-
-            info!("RootNode Render node ends: {}", id);
         }
     }
     fn render_flip(&mut self) {
@@ -373,7 +346,6 @@ impl Root {
         let ids: Vec<NodeId> = self.dirty_tracker.iter_render().copied().collect();
 
         for id in ids {
-            info!("Apparently id {} is marked dirty", id);
             self.render_node(id);
         }
 

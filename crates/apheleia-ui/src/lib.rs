@@ -35,7 +35,5 @@ pub fn setup_logger() -> Result<(), Box<dyn Error>> {
         .level(log::LevelFilter::Info)
         .chain(log_file)
         .apply()?;
-
-    info!("Log Started");
     Ok(())
 }

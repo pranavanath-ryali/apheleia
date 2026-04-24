@@ -70,7 +70,6 @@ impl Renderer {
     }
 
     pub fn render(&mut self, buf: &mut Buffer) {
-        info!("RENDERER's UPDATE CALLED");
         for (y, map) in buf.get_diffed_cells().iter() {
             let mut batch_text = String::new();
             let mut style = Style::default();
@@ -111,7 +110,6 @@ impl Renderer {
 
         _ = self.stdout.flush();
         buf.clear_diff();
-        info!("RENDERER's UPDATE ENDED");
     }
 
     pub fn quit(&mut self) {
@@ -131,11 +129,6 @@ fn queue_batch(
     if text.is_empty() {
         return Ok(());
     }
-
-    info!("BATCH QUEUE INFO:");
-    info!("x: {}; y: {}", x, y);
-    info!("text: {}", text);
-    info!("style: {:?}", style);
 
     queue!(stdout, SetAttribute(Attribute::Reset))?;
 

@@ -48,10 +48,6 @@ pub struct MarkUpdateDirty(pub NodeId);
 
 impl ContextCommand for CreateNode {
     fn execute(self: Box<Self>, world: &mut crate::world::WorldViewForCommands) {
-        info!(
-            "Creating node with class: {}",
-            self.class.clone().unwrap_or("".to_string())
-        );
         let node_data = NodeData::new(self.position, self.size);
         if let Some(parent_id) = self.parent_id {
             _ = world
@@ -110,7 +106,6 @@ impl ContextCommand for SetPosition {
 
 impl ContextCommand for MarkRenderDirty {
     fn execute(self: Box<Self>, world: &mut crate::world::WorldViewForCommands) {
-        info!("node id: {} marked render dirty", self.0);
         match self.1 {
             DirtyRenderLevel::SimpleDirty => world.dirty_tracker.add_render(self.0),
             DirtyRenderLevel::SubtreeDirty => {
