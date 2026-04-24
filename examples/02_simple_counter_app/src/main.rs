@@ -74,6 +74,7 @@ fn main() {
             ))
     });
 
+    root.setup();
     root.run();
 }
 

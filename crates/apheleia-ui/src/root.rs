@@ -11,6 +11,7 @@ use crossterm::{
     event::{KeyCode, KeyModifiers, poll, read},
     terminal::{self, enable_raw_mode},
 };
+use indexmap::IndexSet;
 use tree_ds::prelude::{Node, Tree};
 
 use crate::{
@@ -42,6 +43,7 @@ pub struct Root {
 
     buffer: Buffer,
     renderer: Renderer,
+    commands: Vec<Box<dyn ContextCommand>>,
 }
 impl Default for Root {
     fn default() -> Self {
@@ -74,6 +76,7 @@ impl Default for Root {
                 size,
                 stdout: stdout(),
             },
+            commands: vec![],
         }
     }
 }
@@ -145,7 +148,8 @@ impl Root {
         Some(global_size)
     }
 
-    fn run_commands(&mut self, commands: Vec<Box<dyn ContextCommand>>) {
+    fn run_commands(&mut self) {
+        let commands = take(&mut self.commands);
         for command in commands {
             command.execute(&mut WorldViewForCommands {
                 relations: &mut self.relations,
@@ -179,8 +183,7 @@ impl Root {
                 .unwrap()
                 .initial_setup(&mut ctx);
 
-            let commands = take(ctx.get_commands());
-            self.run_commands(commands);
+            self.commands.append(ctx.get_commands());
 
             let global_position = self.calculate_global_position(id);
             let global_size = self.calculate_global_size(id);
@@ -189,11 +192,38 @@ impl Root {
             data.set_global_position(global_position);
             data.set_global_size(global_size);
         }
+        self.run_commands();
 
         // For nodes that were created from other nodes automatically
         // TODO: Make this run automatically after every commands flush
+        // if !self.dirty_tracker.is_setup_empty() {
+        //     let ids: Vec<NodeId> = self.dirty_tracker.iter_setup().copied().collect();
+        //     for id in ids {
+        //         let data = self.node_store.get_data(id).unwrap();
+        //         let mut ctx =
+        //             NodeContext::new(id, self.id_generator.clone(), data.position, data.size);
+        //         self.node_store
+        //             .get_node_mut(id)
+        //             .unwrap()
+        //             .initial_setup(&mut ctx);
+
+        //         let commands = take(ctx.get_commands());
+
+        //         let global_position = self.calculate_global_position(id);
+        //         let global_size = self.calculate_global_size(id);
+        //         let data = self.node_store.get_data_mut(id).unwrap();
+
+        //         data.set_global_position(global_position);
+        //         data.set_global_size(global_size);
+        //     }
+        // }
+
+        Ok(())
+    }
+
+    fn dirty_setup(&mut self) {
         if !self.dirty_tracker.is_setup_empty() {
-            let ids: Vec<NodeId> = self.dirty_tracker.iter_setup().copied().collect();
+            let ids: IndexSet<NodeId> = take(&mut self.dirty_tracker.dirty_setups);
             for id in ids {
                 let data = self.node_store.get_data(id).unwrap();
                 let mut ctx =
@@ -203,8 +233,7 @@ impl Root {
                     .unwrap()
                     .initial_setup(&mut ctx);
 
-                let commands = take(ctx.get_commands());
-                self.run_commands(commands);
+                self.commands.append(ctx.get_commands());
 
                 let global_position = self.calculate_global_position(id);
                 let global_size = self.calculate_global_size(id);
@@ -214,8 +243,7 @@ impl Root {
                 data.set_global_size(global_size);
             }
         }
-
-        Ok(())
+        self.run_commands();
     }
 
     fn event(&mut self) -> io::Result<()> {
@@ -263,15 +291,14 @@ impl Root {
             let mut ctx = SystemContext::new_event(&event_data, &mut world);
             self.system_store
                 .run_systems_for_type(crate::types::UpdateType::Event(event_type), &mut ctx);
-            let commands = take(ctx.get_commands());
-            self.run_commands(commands);
+            self.commands.append(ctx.get_commands());
         }
         Ok(())
     }
 
     fn update(&mut self) {
         // Update Nodes marked dirty
-        let ids: Vec<NodeId> = self.dirty_tracker.iter_update().copied().collect();
+        let ids: IndexSet<NodeId> = take(&mut self.dirty_tracker.dirty_updates);
         for id in ids {
             let mut world = SystemView {
                 relations: &self.relations,
@@ -287,10 +314,8 @@ impl Root {
                 id,
                 &mut ctx,
             );
-            let commands = take(ctx.get_commands());
-            self.run_commands(commands);
+            self.commands.append(ctx.get_commands());
         }
-        self.dirty_tracker.clear_update();
 
         // Update Nodes registered for constant update
         // TODO: Add a check to see if there are any systems registered for constant update
@@ -304,8 +329,7 @@ impl Root {
         let mut ctx = SystemContext::new(&mut world);
         self.system_store
             .run_systems_for_type(crate::types::UpdateType::ConstantUpdate, &mut ctx);
-        let commands = take(ctx.get_commands());
-        self.run_commands(commands);
+        self.commands.append(ctx.get_commands());
     }
 
     fn render_node(&mut self, id: NodeId) {
@@ -360,8 +384,7 @@ impl Root {
     }
 
     fn render(&mut self) -> io::Result<()> {
-        let ids: Vec<NodeId> = self.dirty_tracker.iter_render().copied().collect();
-
+        let ids: IndexSet<NodeId> = take(&mut self.dirty_tracker.dirty_renders);
         for id in ids {
             self.render_node(id);
         }
@@ -375,6 +398,7 @@ impl Root {
     pub fn run(&mut self) -> io::Result<()> {
         _ = enable_raw_mode();
 
+        self.dirty_setup();
         self.render_flip()?;
 
         self.running = true;
@@ -382,6 +406,8 @@ impl Root {
             _ = self.event();
             self.update();
             self.render()?;
+
+            self.run_commands();
         }
 
         self.renderer.quit()?;
@@ -393,7 +419,7 @@ impl Root {
     pub fn create_node(&mut self, f: impl FnOnce(NodeBuilder) -> NodeBuilder) {
         let id = self.id_generator.borrow_mut().next();
         let mut builder = f(NodeBuilder::new(id, self.id_generator.clone()));
-        self.run_commands(builder.build());
+        self.commands.append(&mut builder.build());
     }
 
     pub fn add_resource<T: Resource>(&mut self, res: T) {

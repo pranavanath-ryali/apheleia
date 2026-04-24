@@ -5,9 +5,9 @@ use crate::types::NodeId;
 
 #[derive(Default)]
 pub struct DirtyTracker {
-    dirty_setups: IndexSet<NodeId>,
-    dirty_updates: IndexSet<NodeId>,
-    dirty_renders: IndexSet<NodeId>,
+    pub dirty_setups: IndexSet<NodeId>,
+    pub dirty_updates: IndexSet<NodeId>,
+    pub dirty_renders: IndexSet<NodeId>,
 }
 
 impl DirtyTracker {
