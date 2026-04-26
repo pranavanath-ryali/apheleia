@@ -1,7 +1,8 @@
+use apheleia_types::vec2::Vec2;
 use indexmap::IndexMap;
 use rustc_hash::FxHashMap;
 
-use crate::{rich_strings::RichString, style::Style, types::Vec2};
+use crate::{rich_strings::RichString, style::Style};
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Cell {

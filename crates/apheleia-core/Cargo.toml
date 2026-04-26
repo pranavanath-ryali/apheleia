@@ -4,6 +4,8 @@ version.workspace = true
 edition.workspace = true
 
 [dependencies]
+apheleia-types.workspace = true
+
 bitflags = "2.10.0"
 
 rustc-hash.workspace = true
