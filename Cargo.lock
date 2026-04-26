@@ -22,6 +22,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "apheleia-app"
+version = "0.1.0"
+dependencies = [
+ "apheleia-core",
+ "apheleia-ecs",
+ "apheleia-types",
+ "crossterm",
+ "tree-ds",
+]
+
+[[package]]
 name = "apheleia-core"
 version = "0.1.0"
 dependencies = [

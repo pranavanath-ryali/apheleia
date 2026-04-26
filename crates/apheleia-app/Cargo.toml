@@ -1,0 +1,12 @@
+[package]
+name = "apheleia-app"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+apheleia-types.workspace = true
+apheleia-core.workspace = true
+apheleia-ecs.workspace = true
+
+tree-ds.workspace = true
+crossterm.workspace = true

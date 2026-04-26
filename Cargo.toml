@@ -10,6 +10,7 @@ edition = "2024"
 apheleia-types = { path = "crates/apheleia-types" }
 apheleia-core = { path = "crates/apheleia-core" }
 apheleia-ui = { path = "crates/apheleia-ui" }
+apheleia-app = { path = "crates/apheleia-app" }
 apheleia-ecs = { path = "crates/apheleia-ecs" }
 apheleia-macros = { path = "crates/apheleia-macros" }
 apheleia-widgets = { path = "crates/apheleia-widgets" }
