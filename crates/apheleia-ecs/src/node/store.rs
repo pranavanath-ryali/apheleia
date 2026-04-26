@@ -13,11 +13,13 @@ pub struct NodeDataStore {
     class_id: HashMap<String, NodeId>,
 }
 impl NodeDataStore {
-    pub fn create_node(&mut self, class: &str, data: NodeData) -> NodeId {
+    pub fn create_node(&mut self, class: Option<&str>, data: NodeData) -> NodeId {
         let id = self.id_generator.next();
 
         self.id_data.insert(id, data);
-        self.class_id.insert(class.to_string(), id);
+        if let Some(class) = class {
+            self.class_id.insert(class.to_string(), id);
+        }
 
         id
     }

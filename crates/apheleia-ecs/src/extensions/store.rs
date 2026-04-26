@@ -3,19 +3,78 @@ use std::{
     collections::HashMap,
 };
 
-use apheleia_types::{ExtensionId, IdGenerator, NodeId};
+use apheleia_types::{ExtensionId, IdGenerator, IdGeneratorTrait, NodeId};
 use rustc_hash::FxHashMap;
 
 use crate::extensions::traits::Extension;
 
 #[derive(Default)]
-pub struct ExtensionStore {
+pub(crate) struct ExtensionStore {
     id_generator: IdGenerator<ExtensionId>,
 
     nodeid_extid: FxHashMap<NodeId, HashMap<TypeId, ExtensionId>>,
     extensions_storage: FxHashMap<ExtensionId, Box<dyn Any>>,
 }
 impl ExtensionStore {
+    pub fn add_extension_to_node(&mut self, node_id: NodeId, extension: Box<dyn Extension>) {
+        let ext_id = self.id_generator.next();
+        let type_id = &(*extension).type_id();
+
+        self.extensions_storage.insert(ext_id, extension);
+        self.nodeid_extid
+            .entry(node_id)
+            .and_modify(|v| {
+                if !v.contains_key(type_id) {
+                    v.insert(*type_id, ext_id);
+                } else {
+                    panic!("NodeId of {} already has extension binded.", node_id);
+                }
+            })
+            .or_insert_with(|| {
+                let mut map = HashMap::new();
+                map.insert(*type_id, ext_id);
+                map
+            });
+    }
+
+    pub fn get_extension<E: Extension>(&self, node_id: NodeId) -> Option<&E> {
+        let type_id = TypeId::of::<E>();
+
+        let ext_id = self
+            .nodeid_extid
+            .get(&node_id)
+            .and_then(|map| map.get(&type_id));
+
+        if let Some(ext_id) = ext_id {
+            return self
+                .extensions_storage
+                .get(ext_id)
+                .unwrap()
+                .downcast_ref::<E>();
+        }
+
+        None
+    }
+
+    pub fn get_extension_mut<E: Extension>(&mut self, node_id: NodeId) -> Option<&mut E> {
+        let type_id = TypeId::of::<E>();
+
+        let ext_id = self
+            .nodeid_extid
+            .get(&node_id)
+            .and_then(|map| map.get(&type_id));
+
+        if let Some(ext_id) = ext_id {
+            return self
+                .extensions_storage
+                .get_mut(ext_id)
+                .unwrap()
+                .downcast_mut::<E>();
+        }
+
+        None
+    }
+
     // pub fn get_id(&mut self) -> ExtensionId {
     //     self.id_generator.next()
     // }

@@ -1,13 +1,12 @@
-use std::{
-    any::{Any, TypeId},
-    collections::HashMap,
-};
+use std::any::{Any, TypeId};
+
+use rustc_hash::FxHashMap;
 
 use crate::resources::traits::Resource;
 
 #[derive(Default)]
 pub struct ResourceStore {
-    resources_storage: HashMap<TypeId, Box<dyn Any>>,
+    resources_storage: FxHashMap<TypeId, Box<dyn Any>>,
 }
 impl ResourceStore {
     pub fn add_resource<T: Resource>(&mut self, res: Box<T>) {
