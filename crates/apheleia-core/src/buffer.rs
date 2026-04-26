@@ -22,7 +22,7 @@ impl Default for Cell {
 
 #[derive(Debug)]
 pub struct Buffer {
-    size: Vec2,
+    pub size: Vec2,
     cells: Vec<Vec<Cell>>,
     diffed_cells: FxHashMap<u16, IndexMap<u16, Cell>>,
 }

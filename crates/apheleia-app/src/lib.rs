@@ -33,8 +33,8 @@ impl Default for App {
 
             relations,
 
-            buffer: Default::default(),
-            renderer: Default::default(),
+            buffer: Buffer::new(size),
+            renderer: Renderer::default(),
         }
     }
 }

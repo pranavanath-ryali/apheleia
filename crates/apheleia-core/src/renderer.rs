@@ -19,17 +19,14 @@ use crate::{
 };
 
 pub struct Renderer {
-    pub size: Vec2,
     pub stdout: Stdout,
 }
-impl Renderer {
-    pub fn new(size: Vec2) -> Self {
-        Self {
-            size,
-            stdout: stdout(),
-        }
+impl Default for Renderer {
+    fn default() -> Self {
+        Self { stdout: stdout() }
     }
-
+}
+impl Renderer {
     pub fn init(&mut self) -> io::Result<()> {
         execute!(self.stdout, cursor::Hide)?;
         execute!(self.stdout, EnterAlternateScreen)?;
@@ -42,12 +39,12 @@ impl Renderer {
         execute!(self.stdout, Clear(crossterm::terminal::ClearType::All))?;
         execute!(self.stdout, cursor::Hide)?;
 
-        for y in 0..self.size.y {
+        for y in 0..buf.size.y {
             let mut batch_text = String::new();
             let mut style = Style::default();
             let mut start_x = 0u16;
 
-            for x in 0..self.size.x {
+            for x in 0..buf.size.x {
                 let cell = buf.get_cell(Vec2 { x, y });
 
                 if cell.style == style {
