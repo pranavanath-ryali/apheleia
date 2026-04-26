@@ -35,6 +35,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "apheleia-ecs"
+version = "0.1.0"
+dependencies = [
+ "apheleia-types",
+ "rustc-hash",
+]
+
+[[package]]
 name = "apheleia-macros"
 version = "0.1.0"
 dependencies = [
@@ -42,6 +50,10 @@ dependencies = [
  "quote",
  "syn",
 ]
+
+[[package]]
+name = "apheleia-types"
+version = "0.1.0"
 
 [[package]]
 name = "apheleia-ui"

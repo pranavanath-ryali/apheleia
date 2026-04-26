@@ -1,0 +1,9 @@
+[package]
+name = "apheleia-ecs"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+apheleia-types.workspace = true
+
+rustc-hash.workspace = true
