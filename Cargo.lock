@@ -29,6 +29,7 @@ dependencies = [
  "apheleia-ecs",
  "apheleia-types",
  "crossterm",
+ "rustc-hash",
  "tree-ds",
 ]
 
@@ -66,6 +67,9 @@ dependencies = [
 [[package]]
 name = "apheleia-types"
 version = "0.1.0"
+dependencies = [
+ "crossterm",
+]
 
 [[package]]
 name = "apheleia-ui"

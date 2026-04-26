@@ -21,7 +21,10 @@ impl World {
         self.data_store.create_node(class, data)
     }
 
-    pub fn add_resource<R: Resource + 'static>(&mut self, resource: R) {
-        self.resource_store.add_resource(Box::new(resource));
+    pub fn get_data(&self, id: NodeId) -> Option<&NodeData> {
+        self.data_store.get_data(id)
+    }
+    pub fn get_data_mut(&mut self, id: NodeId) -> Option<&mut NodeData> {
+        self.data_store.get_data_mut(id)
     }
 }

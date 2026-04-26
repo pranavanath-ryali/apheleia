@@ -10,3 +10,4 @@ apheleia-ecs.workspace = true
 
 tree-ds.workspace = true
 crossterm.workspace = true
+rustc-hash.workspace = true

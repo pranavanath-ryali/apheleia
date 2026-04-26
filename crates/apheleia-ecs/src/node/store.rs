@@ -1,9 +1,12 @@
 use std::collections::HashMap;
 
+use apheleia_types::{
+    NodeId,
+    id_generator::{IdGenerator, IdGeneratorTrait},
+};
 use rustc_hash::FxHashMap;
 
 use crate::node::NodeData;
-use apheleia_types::{IdGenerator, IdGeneratorTrait, NodeId};
 
 #[derive(Default)]
 pub struct NodeDataStore {

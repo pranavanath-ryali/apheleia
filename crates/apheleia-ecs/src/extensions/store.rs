@@ -3,7 +3,10 @@ use std::{
     collections::HashMap,
 };
 
-use apheleia_types::{ExtensionId, IdGenerator, IdGeneratorTrait, NodeId};
+use apheleia_types::{
+    ExtensionId, NodeId,
+    id_generator::{IdGenerator, IdGeneratorTrait},
+};
 use rustc_hash::FxHashMap;
 
 use crate::extensions::traits::Extension;

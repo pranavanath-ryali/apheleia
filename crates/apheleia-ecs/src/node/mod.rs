@@ -1,6 +1,6 @@
-pub(crate) mod store;
+use apheleia_types::vec2::Vec2;
 
-use apheleia_types::Vec2;
+pub(crate) mod store;
 
 #[derive(Clone, Copy)]
 pub struct NodeData {
