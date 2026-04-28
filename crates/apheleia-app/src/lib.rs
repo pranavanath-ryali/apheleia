@@ -3,7 +3,7 @@ pub mod node_definer;
 pub mod utils;
 mod dirty_tracker;
 
-use std::{collections::VecDeque, io, time::Duration};
+use std::{collections::VecDeque, io, mem::take, time::Duration};
 
 use apheleia_core::{buffer::Buffer, renderer::Renderer};
 use apheleia_ecs::World;
@@ -139,7 +139,8 @@ impl App {
         Ok(())
     }
 
-    pub fn update(&mut self) {}
+    pub fn update(&mut self) {
+    }
 
     pub fn render(&mut self) {}
 

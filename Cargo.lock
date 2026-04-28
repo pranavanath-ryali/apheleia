@@ -29,6 +29,7 @@ dependencies = [
  "apheleia-ecs",
  "apheleia-types",
  "crossterm",
+ "indexmap",
  "rustc-hash",
  "tree-ds",
 ]

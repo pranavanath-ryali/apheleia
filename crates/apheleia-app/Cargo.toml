@@ -8,6 +8,7 @@ apheleia-types.workspace = true
 apheleia-core.workspace = true
 apheleia-ecs.workspace = true
 
+indexmap.workspace = true
 tree-ds.workspace = true
 crossterm.workspace = true
 rustc-hash.workspace = true
