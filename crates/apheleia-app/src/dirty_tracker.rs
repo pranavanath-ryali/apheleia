@@ -1,7 +1,8 @@
 use std::mem::take;
 
-use apheleia_types::NodeId;
 use indexmap::IndexSet;
+
+use crate::NodeId;
 
 #[derive(Default)]
 pub struct DirtyTracker {
@@ -38,5 +39,8 @@ impl DirtyTracker {
     }
     pub fn take_render(&mut self) -> IndexSet<NodeId> {
         take(&mut self.render_dirty)
+    }
+    pub fn clear_render(&mut self) {
+        self.render_dirty.clear();
     }
 }

@@ -5,3 +5,6 @@ edition.workspace = true
 
 [dependencies]
 crossterm.workspace = true
+
+tree-ds.workspace = true
+indexmap.workspace = true

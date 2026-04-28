@@ -1,8 +1,7 @@
 use std::any::{Any, TypeId};
 
+use apheleia_types::Resource;
 use rustc_hash::FxHashMap;
-
-use crate::resources::traits::Resource;
 
 #[derive(Default)]
 pub struct ResourceStore {

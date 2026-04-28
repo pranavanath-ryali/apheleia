@@ -4,12 +4,9 @@ use std::{
 };
 
 use apheleia_types::{
-    ExtensionId, NodeId,
-    id_generator::{IdGenerator, IdGeneratorTrait},
+    Extension, ExtensionId, NodeId, id_generator::{IdGenerator, IdGeneratorTrait}
 };
 use rustc_hash::FxHashMap;
-
-use crate::extensions::traits::Extension;
 
 #[derive(Default)]
 pub(crate) struct ExtensionStore {

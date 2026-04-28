@@ -1,14 +1,18 @@
 pub mod contexts;
 pub mod node_definer;
 pub mod utils;
-mod dirty_tracker;
+pub mod dirty_tracker;
+pub mod commands;
 
 use std::{collections::VecDeque, io, mem::take, time::Duration};
 
 use apheleia_core::{buffer::Buffer, renderer::Renderer};
 use apheleia_ecs::World;
 use apheleia_types::{EventData, EventType, NodeId, vec2::Vec2};
-use crossterm::{event::{KeyCode, KeyModifiers, poll, read}, terminal};
+use crossterm::{
+    event::{KeyCode, KeyModifiers, poll, read},
+    terminal,
+};
 use rustc_hash::FxHashMap;
 use tree_ds::prelude::{Node, Tree};
 
@@ -25,6 +29,7 @@ pub struct App {
 
     relations: Tree<NodeId, NodeId>,
     nodeid_definer: FxHashMap<NodeId, Box<dyn NodeDefiner>>,
+    dirty_tracker: DirtyTracker,
 
     world: World,
 
@@ -49,6 +54,7 @@ impl App {
 
             relations,
             nodeid_definer: Default::default(),
+            dirty_tracker: Default::default(),
 
             world: Default::default(),
 
@@ -140,14 +146,40 @@ impl App {
     }
 
     pub fn update(&mut self) {
+        let ids = self.dirty_tracker.take_setup();
+        for id in ids {
+            // TODO: Handle this
+        }
+
+        // TODO: Systems registered for updates
     }
 
-    pub fn render(&mut self) {}
+    fn render_node(&mut self, id: NodeId) {}
 
-    pub fn render_flip(&mut self) {}
+    pub fn render(&mut self) {
+        let ids = self.dirty_tracker.take_render();
+        for id in ids {
+            self.render_node(id);
+        }
+    }
+    pub fn render_flip(&mut self) -> io::Result<()> {
+        let ids: Vec<NodeId> = self
+            .relations
+            .traverse(&0, tree_ds::prelude::TraversalStrategy::PreOrder)
+            .unwrap()
+            .to_vec();
+        for id in ids {
+            self.render_node(id);
+        }
+
+        self.renderer.render_flip(&mut self.buffer)?;
+        self.dirty_tracker.clear_render();
+
+        Ok(())
+    }
 
     pub fn run(&mut self) -> io::Result<()> {
-        self.render_flip();
+        self.render_flip()?;
 
         while self.running {
             self.event()?;

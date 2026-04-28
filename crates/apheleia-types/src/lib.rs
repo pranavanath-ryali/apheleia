@@ -1,12 +1,23 @@
+use std::any::Any;
+
 use crossterm::event::{KeyEvent, MouseEvent};
 
-use crate::vec2::Vec2;
+use crate::{vec2::Vec2, views::SystemContext};
 
 pub mod id_generator;
 pub mod vec2;
+pub mod views;
+pub mod world_access;
 
 pub type NodeId = usize;
 pub type ExtensionId = usize;
+
+pub trait Extension: Any {}
+pub trait Resource: Any {}
+
+pub trait ContextCommand {
+    fn execute(&mut self, ctx: &mut SystemContext);
+}
 
 #[derive(Hash, PartialEq, Eq, Clone, Copy)]
 pub enum EventType {

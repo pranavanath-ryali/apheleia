@@ -1,11 +1,12 @@
-use apheleia_types::{NodeId, vec2::Vec2};
+use apheleia_types::{ContextCommand, NodeId, vec2::Vec2};
 
 pub struct NodeContext {
     id: NodeId,
 
     position: Vec2,
     size: Option<Vec2>,
-    // commands: Vec<Box<dyn ContextCommand>>,
+    
+    commands: Vec<Box<dyn ContextCommand>>,
 }
 impl NodeContext {
     pub(crate) fn new(id: NodeId, position: Vec2, size: Option<Vec2>) -> NodeContext {
@@ -14,7 +15,7 @@ impl NodeContext {
 
             position,
             size,
-            // commands: vec![],
+            commands: vec![],
         }
     }
 

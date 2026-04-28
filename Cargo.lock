@@ -70,6 +70,8 @@ name = "apheleia-types"
 version = "0.1.0"
 dependencies = [
  "crossterm",
+ "indexmap",
+ "tree-ds",
 ]
 
 [[package]]
