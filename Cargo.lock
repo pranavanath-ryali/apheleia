@@ -54,6 +54,7 @@ version = "0.1.0"
 dependencies = [
  "apheleia-types",
  "rustc-hash",
+ "sparseset",
 ]
 
 [[package]]
@@ -588,6 +589,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "67b1b7a3b5fe4f1376887184045fcf45c69e92af734b7aaddc05fb777b6fbd03"
 
 [[package]]
+name = "sparseset"
+version = "1.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "52cdcc78334463b00033480504b70cd1108b6fd6d0ab8b826a289f7ad616af6d"
+
+[[package]]
 name = "spin"
 version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -645,6 +652,7 @@ name = "ui-hello-world"
 version = "0.1.0"
 dependencies = [
  "apheleia",
+ "apheleia-app",
 ]
 
 [[package]]

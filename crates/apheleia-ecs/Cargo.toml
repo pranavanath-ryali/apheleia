@@ -6,4 +6,5 @@ edition.workspace = true
 [dependencies]
 apheleia-types.workspace = true
 
+sparseset.workspace = true
 rustc-hash.workspace = true

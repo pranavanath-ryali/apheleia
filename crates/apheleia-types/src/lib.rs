@@ -4,6 +4,8 @@ use crossterm::event::{KeyEvent, MouseEvent};
 
 use crate::{vec2::Vec2, views::SystemContext};
 
+pub const MAX_NODES: usize = 128;
+
 pub mod id_generator;
 pub mod vec2;
 pub mod views;

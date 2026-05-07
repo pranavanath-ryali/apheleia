@@ -1,14 +1,15 @@
+pub mod builder;
+pub mod commands;
 pub mod contexts;
+pub mod dirty_tracker;
 pub mod node_definer;
 pub mod utils;
-pub mod dirty_tracker;
-pub mod commands;
 
 use std::{collections::VecDeque, io, mem::take, time::Duration};
 
 use apheleia_core::{buffer::Buffer, renderer::Renderer};
 use apheleia_ecs::World;
-use apheleia_types::{EventData, EventType, NodeId, vec2::Vec2};
+use apheleia_types::{ContextCommand, EventData, EventType, NodeId, vec2::Vec2};
 use crossterm::{
     event::{KeyCode, KeyModifiers, poll, read},
     terminal,
@@ -17,6 +18,7 @@ use rustc_hash::FxHashMap;
 use tree_ds::prelude::{Node, Tree};
 
 use crate::{
+    builder::node::NodeBuilder,
     contexts::node::NodeContext,
     node_definer::NodeDefiner,
     utils::{calculate_global_position, calculate_global_size},
@@ -32,6 +34,8 @@ pub struct App {
     dirty_tracker: DirtyTracker,
 
     world: World,
+
+    commands: Vec<Box<dyn ContextCommand>>,
 
     buffer: Buffer,
     renderer: Renderer,
@@ -57,6 +61,8 @@ impl App {
             dirty_tracker: Default::default(),
 
             world: Default::default(),
+
+            commands: vec![],
 
             buffer: Buffer::new(size),
             renderer: Renderer::default(),
@@ -189,4 +195,16 @@ impl App {
 
         Ok(())
     }
+
+    // Functions for developers
+    pub fn create_node(&mut self, f: impl FnOnce(NodeBuilder) -> NodeBuilder) {
+        let mut builder = f(NodeBuilder::default());
+        self.commands.append(builder.build());
+        // TODO: Deal with commands
+    }
+}
+
+pub struct EmptyNode;
+impl NodeDefiner for EmptyNode {
+    fn setup(&mut self, ctx: &mut NodeContext) {}
 }

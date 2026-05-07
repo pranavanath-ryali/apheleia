@@ -1,9 +1,9 @@
 use apheleia_types::NodeId;
 
 use crate::{
-    extensions::{store::ExtensionStore, traits::Extension},
+    extensions::{store::ExtensionStore},
     node::{NodeData, store::NodeDataStore},
-    resources::{store::ResourceStore, traits::Resource},
+    resources::{store::ResourceStore},
 };
 
 pub mod extensions;
