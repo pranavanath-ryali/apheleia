@@ -17,14 +17,14 @@ pub struct World {
     resource_store: ResourceStore,
 }
 impl World {
-    pub fn create_node(&mut self, class: Option<&str>, data: NodeData) -> NodeId {
-        self.data_store.create_node(class, data)
-    }
-
-    pub fn get_data(&self, id: NodeId) -> Option<&NodeData> {
-        self.data_store.get_data(id)
-    }
-    pub fn get_data_mut(&mut self, id: NodeId) -> Option<&mut NodeData> {
-        self.data_store.get_data_mut(id)
-    }
+    // pub fn create_node(&mut self, class: Option<&str>, data: NodeData) -> NodeId {
+    //     self.data_store.create_node(class, data)
+    // }
+    //
+    // pub fn get_data(&self, id: NodeId) -> Option<&NodeData> {
+    //     self.data_store.get_data(id)
+    // }
+    // pub fn get_data_mut(&mut self, id: NodeId) -> Option<&mut NodeData> {
+    //     self.data_store.get_data_mut(id)
+    // }
 }
