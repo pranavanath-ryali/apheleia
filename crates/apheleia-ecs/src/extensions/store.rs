@@ -6,7 +6,7 @@ use apheleia_types::{
 };
 use rustc_hash::FxHashMap;
 
-use crate::extensions::container::{ExtensionContainer, ExtensionContainerSingle};
+use crate::{extensions::container::{self, ExtensionContainer, ExtensionContainerSingle}, node};
 
 #[derive(Default)]
 pub(crate) struct ExtensionStore {
@@ -20,11 +20,33 @@ impl ExtensionStore {
         let ext_id = self.id_generator.next();
         let type_id = TypeId::of::<T>();
 
-        self.containers.entry(type_id).and_modify(|container| {
-            container.downcast_mut::<ExtensionContainerSingle<T>>().unwrap().insert(ext_id, extension);
-        }).or_insert_with(|| {
-            Box::new(ExtensionContainerSingle::<T>::new())
-        });
+        self.containers
+            .entry(type_id)
+            .and_modify(|container| {
+                container
+                    .downcast_mut::<ExtensionContainerSingle<T>>()
+                    .unwrap()
+                    .insert(ext_id, extension);
+            })
+            .or_insert_with(|| Box::new(ExtensionContainerSingle::<T>::new()));
+    }
+
+    pub fn get_extension<T: Extension>(&self, node_id: NodeId) -> Option<&T> {
+        let type_id = TypeId::of::<T>();
+
+        if let Some(container) = self.containers.get(&type_id) {
+            return container.downcast_ref::<ExtensionContainerSingle<T>>().unwrap().get(node_id);
+        }
+        None
+    }
+
+    pub fn get_extension_mut<T: Extension>(&mut self, node_id: NodeId) -> Option<&mut T> {
+        let type_id = TypeId::of::<T>();
+
+        if let Some(container) = self.containers.get_mut(&type_id) {
+            return container.downcast_mut::<ExtensionContainerSingle<T>>().unwrap().get_mut(node_id);
+        }
+        None
     }
 
     // pub fn add_extension_to_node(&mut self, node_id: NodeId, extension: Box<dyn Extension>) {

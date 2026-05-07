@@ -5,6 +5,8 @@ use sparseset::SparseSet;
 
 pub trait ExtensionContainer<T: Extension>: Any {
     fn insert(&mut self, id: ExtensionId, extension: T);
+    fn get(&self, id: ExtensionId) -> Option<&T>;
+    fn get_mut(&mut self, id: ExtensionId) -> Option<&mut T>;
 }
 
 pub struct ExtensionContainerSingle<T: Extension> {
@@ -18,5 +20,12 @@ impl<T: Extension> ExtensionContainerSingle<T> {
 impl<T: Extension> ExtensionContainer<T> for ExtensionContainerSingle<T> {
     fn insert(&mut self, id: ExtensionId, extension: T) {
         assert!(self.extensions.insert(id, extension), "Extension already exists with ID: {}", id);
+    }
+
+    fn get(&self, id: ExtensionId) -> Option<&T> {
+        self.extensions.get(id)
+    }
+    fn get_mut(&mut self, id: ExtensionId) -> Option<&mut T> {
+        self.extensions.get_mut(id)
     }
 }
