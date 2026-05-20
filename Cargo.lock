@@ -12,16 +12,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "apheleia"
-version = "0.1.0"
-dependencies = [
- "apheleia-core",
- "apheleia-macros",
- "apheleia-ui",
- "apheleia-widgets",
-]
-
-[[package]]
 name = "apheleia-app"
 version = "0.1.0"
 dependencies = [
@@ -58,13 +48,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "apheleia-macros"
+name = "apheleia-ecs-new"
 version = "0.1.0"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn",
-]
 
 [[package]]
 name = "apheleia-types"
@@ -94,7 +79,6 @@ name = "apheleia-widgets"
 version = "0.1.0"
 dependencies = [
  "apheleia-core",
- "apheleia-macros",
  "apheleia-ui",
  "chrono",
  "fern",
@@ -280,9 +264,6 @@ checksum = "841d1cc9bed7f9236f321df977030373f4a4163ae1a7dbfe1a51a2c1a51d9100"
 [[package]]
 name = "hello-world"
 version = "0.1.0"
-dependencies = [
- "apheleia",
-]
 
 [[package]]
 name = "iana-time-zone"
@@ -576,7 +557,6 @@ dependencies = [
 name = "simple_counter_app"
 version = "0.1.0"
 dependencies = [
- "apheleia",
  "chrono",
  "fern",
  "log",
@@ -651,7 +631,6 @@ dependencies = [
 name = "ui-hello-world"
 version = "0.1.0"
 dependencies = [
- "apheleia",
  "apheleia-app",
 ]
 
