@@ -1,3 +1,5 @@
+use std::fmt;
+
 use crate::vec2::Vec2;
 
 /// The minimum data needed for a node.
@@ -13,6 +15,7 @@ use crate::vec2::Vec2;
 /// assert_eq!(data.position, Vec2 { x: 10, y: 5 });
 /// assert_eq!(data.size, Vec2 { x: 0, y: 0 });
 /// ```
+#[derive(fmt::Debug, PartialEq)]
 pub struct NodeData {
     pub position: Vec2,
     pub size: Vec2,

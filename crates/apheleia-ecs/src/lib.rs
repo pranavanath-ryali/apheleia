@@ -7,6 +7,7 @@ use crate::{
 mod extensions;
 mod node;
 mod resources;
+pub mod commands;
 
 pub struct World {
     data_store: NodeDataStore,
