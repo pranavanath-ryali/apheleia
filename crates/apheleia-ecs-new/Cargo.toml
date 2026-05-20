@@ -4,3 +4,7 @@ version.workspace = true
 edition.workspace = true
 
 [dependencies]
+apheleia-core.workspace = true
+
+sparseset.workspace = true
+rustc-hash.workspace = true

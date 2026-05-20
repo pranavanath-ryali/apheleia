@@ -49,6 +49,11 @@ dependencies = [
 [[package]]
 name = "apheleia-ecs-new"
 version = "0.1.0"
+dependencies = [
+ "apheleia-core",
+ "rustc-hash",
+ "sparseset",
+]
 
 [[package]]
 name = "apheleia-types"
