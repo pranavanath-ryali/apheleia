@@ -9,7 +9,10 @@ pub struct ResourceStore {
 }
 impl ResourceStore {
     pub fn add_resource<T: Resource>(&mut self, res: Box<T>) {
-        assert!(self.resources_storage.contains_key(&TypeId::of::<T>()), "The given resource is already added");
+        assert!(
+            !self.resources_storage.contains_key(&TypeId::of::<T>()),
+            "The given resource is already added"
+        );
         self.resources_storage
             .entry(TypeId::of::<T>())
             .or_insert(res);

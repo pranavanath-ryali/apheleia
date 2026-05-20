@@ -58,7 +58,7 @@ impl NodeDataStore {
     pub fn get_global_size(&self, id: NodeId) -> &Option<Vec2> {
         self.global_sizes.get(id).unwrap()
     }
-    pub fn set_global_size_mut(&mut self, id: NodeId, global_size: Vec2) {
+    pub fn set_global_size(&mut self, id: NodeId, global_size: Vec2) {
         *self.global_sizes.get_mut(id).unwrap() = Some(global_size);
     }
 }

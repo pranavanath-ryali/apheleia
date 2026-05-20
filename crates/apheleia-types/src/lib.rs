@@ -5,11 +5,14 @@ use crossterm::event::{KeyEvent, MouseEvent};
 use crate::{vec2::Vec2, views::SystemContext};
 
 pub const MAX_NODES: usize = 128;
+pub const MAX_EXTENSIONS: usize = 64;
+pub const MAX_EXTENSIONS_PER_NODE: usize = 16;
 
 pub mod id_generator;
 pub mod vec2;
 pub mod views;
 pub mod world_access;
+pub mod node_data;
 
 pub type NodeId = usize;
 pub type ExtensionId = usize;
