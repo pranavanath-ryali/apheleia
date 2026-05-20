@@ -6,7 +6,6 @@ edition.workspace = true
 [dependencies]
 apheleia-core.workspace = true
 apheleia-ui.workspace = true
-apheleia-macros.workspace = true
 
 log.workspace = true
 fern.workspace = true
