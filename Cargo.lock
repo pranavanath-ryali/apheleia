@@ -28,7 +28,6 @@ dependencies = [
 name = "apheleia-core"
 version = "0.1.0"
 dependencies = [
- "apheleia-types",
  "bitflags",
  "chrono",
  "crossterm",

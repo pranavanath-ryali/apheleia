@@ -1,6 +1,4 @@
 use std::io::{self, Error, Stdout, Write, stdout};
-
-use apheleia_types::vec2::Vec2;
 use crossterm::{
     cursor::{self, MoveTo},
     execute, queue,
@@ -15,7 +13,7 @@ use crossterm::{
 
 use crate::{
     buffer::Buffer,
-    style::{Style, StyleFlags},
+    style::{Style, StyleFlags}, types::Vec2,
 };
 
 pub struct Renderer {
