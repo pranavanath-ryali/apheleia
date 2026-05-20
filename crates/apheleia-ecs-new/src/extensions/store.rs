@@ -4,13 +4,21 @@ use rustc_hash::FxHashMap;
 
 use crate::{ExtensionId, NodeId, extensions::{Extension, container::{ExtensionContainer, ExtensionContainerSingle}}, id_generator::IdGenerator};
 
-
-#[derive(Default)]
 pub(crate) struct ExtensionStore {
     id_generator: IdGenerator<ExtensionId>,
 
-    nodeid_extid: FxHashMap<NodeId, FxHashMap<TypeId, ExtensionId>>,
+    node_to_ext: FxHashMap<NodeId, FxHashMap<TypeId, ExtensionId>>,
     containers: FxHashMap<TypeId, Box<dyn Any>>,
+}
+impl Default for ExtensionStore {
+    fn default() -> Self {
+        Self {
+            id_generator: IdGenerator::new(0),
+
+            node_to_ext: Default::default(),
+            containers: Default::default(),
+        }
+    }
 }
 impl ExtensionStore {
     pub fn add_extension_to_node<T: Extension>(&mut self, node_id: NodeId, extension: T) {

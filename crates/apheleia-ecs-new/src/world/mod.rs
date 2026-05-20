@@ -1,10 +1,11 @@
-use crate::{NodeId, extensions::store::ExtensionStore, id_generator::IdGenerator, nodedata_store::NodeDataStore};
+use crate::{NodeId, extensions::store::ExtensionStore, id_generator::IdGenerator, nodedata_store::NodeDataStore, resources::store::ResourceStore};
 
 pub struct World {
     nodeid_gen: IdGenerator<NodeId>,
 
     nodedata_store: NodeDataStore,
     extension_store: ExtensionStore,
+    resource_store: ResourceStore,
 }
 impl Default for World {
     fn default() -> Self {
@@ -13,6 +14,7 @@ impl Default for World {
 
             nodedata_store: NodeDataStore::default(),
             extension_store: ExtensionStore::default(),
+            resource_store: ResourceStore::default(),
         }
     }
 }
