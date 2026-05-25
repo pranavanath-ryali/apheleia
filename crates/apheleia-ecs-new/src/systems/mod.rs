@@ -68,7 +68,9 @@ where
             world: UnsafeWorldCellMut<'w>,
         ) {
             let p1 = P1::fetch(world);
-            f(p1);
+            if let Some(p1) = p1 {
+                f(p1);
+            }
         }
         run_system::<P1>(self, world);
         // run_system(self, world);
@@ -76,11 +78,10 @@ where
 }
 
 // 2 Params
-impl<Func, P1,P2> SystemParamFunction<(P1,P2)> for Func
+impl<Func, P1, P2> SystemParamFunction<(P1, P2)> for Func
 where
     P1: SystemParam + 'static,
     P2: SystemParam + 'static,
-
     Func: 'static,
     for<'w> &'w mut Func: FnMut(P1::Item<'w>, P2::Item<'w>),
 {
@@ -91,7 +92,11 @@ where
         ) {
             let p1 = P1::fetch(world);
             let p2 = P2::fetch(world);
-            f(p1, p2);
+            if let Some(p1) = p1
+                && let Some(p2) = p2
+            {
+                f(p1, p2);
+            }
         }
         run_system::<P1, P2>(self, world);
         // run_system(self, world);
@@ -99,7 +104,7 @@ where
 }
 
 #[cfg(test)]
-mod tests {
+mod systems_tests {
     use std::ops::{Deref, DerefMut};
 
     use crate::{resources::Resource, world::World};
@@ -112,6 +117,11 @@ mod tests {
     }
     impl Resource for TestResource {}
 
+    struct AnotherTestResource {
+        value: i32,
+    }
+    impl Resource for AnotherTestResource {}
+
     /// A very crude implementation of [`ResMut`].
     /// Used to fetch mutable access to resource added to [`World`]
     struct ResMut<'w, R: Resource> {
@@ -120,10 +130,12 @@ mod tests {
     impl<R: Resource> SystemParam for ResMut<'_, R> {
         type Item<'a> = ResMut<'a, R>;
 
-        fn fetch<'a>(mut world: UnsafeWorldCellMut<'a>) -> Self::Item<'a> {
-            ResMut {
-                resource: unsafe { world.get_resource_mut::<R>().unwrap() }, // resource: unsafe { (*world.world_mut()).get_resource_mut::<R>().unwrap() },
+        fn fetch<'a>(mut world: UnsafeWorldCellMut<'a>) -> Option<Self::Item<'a>> {
+            let resource = unsafe { world.get_resource_mut::<R>() };
+            if let Some(resource) = resource {
+                return Some(ResMut { resource });
             }
+            None
         }
     }
 
@@ -155,6 +167,10 @@ mod tests {
             assert_eq!(res.value, 256);
         }
 
+        fn this_system_should_not_run(_: ResMut<AnotherTestResource>, _: ResMut<TestResource>) {
+            panic!("This system shouldn't run")
+        }
+
         let mut world = World::default();
         world.add_resource(TestResource { value: 10 });
 
@@ -164,9 +180,14 @@ mod tests {
             Box::new(FunctionSystem::<_, (ResMut<_>,)>::new(another_system));
         let mut final_system: Box<dyn System> =
             Box::new(FunctionSystem::<_, (ResMut<_>,)>::new(final_system));
+        let mut useless_system: Box<dyn System> =
+            Box::new(FunctionSystem::<_, (ResMut<_>, ResMut<_>)>::new(
+                this_system_should_not_run,
+            ));
 
         system.run(UnsafeWorldCellMut::from(&mut world));
         another_system.run(UnsafeWorldCellMut::from(&mut world));
         final_system.run(UnsafeWorldCellMut::from(&mut world));
+        useless_system.run(UnsafeWorldCellMut::from(&mut world));
     }
 }

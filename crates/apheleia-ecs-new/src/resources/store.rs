@@ -14,21 +14,27 @@ impl ResourceStore {
             !self.resources.contains_key(&TypeId::of::<T>()),
             "The given resource is already added"
         );
-        self.resources
-            .entry(TypeId::of::<T>())
-            .or_insert(res);
+        self.resources.entry(TypeId::of::<T>()).or_insert(res);
     }
 
     pub fn get_resource<T: Resource>(&self) -> Option<&T> {
-        self.resources
-            .get(&TypeId::of::<T>())
-            .unwrap()
-            .downcast_ref::<T>()
+        if let Some(resource) = self.resources.get(&TypeId::of::<T>()) {
+            return Some(
+                resource
+                    .downcast_ref::<T>()
+                    .expect("Couldn't downcast Any to resource T"),
+            );
+        }
+        None
     }
     pub fn get_resource_mut<T: Resource>(&mut self) -> Option<&mut T> {
-        self.resources
-            .get_mut(&TypeId::of::<T>())
-            .unwrap()
-            .downcast_mut::<T>()
+        if let Some(resource) = self.resources.get_mut(&TypeId::of::<T>()) {
+            return Some(
+                resource
+                    .downcast_mut::<T>()
+                    .expect("Couldn't downcast Any to resource T"),
+            );
+        }
+        None
     }
 }
