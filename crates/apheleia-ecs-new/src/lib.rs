@@ -9,6 +9,7 @@ pub mod systems;
 
 pub type NodeId = usize;
 pub type ExtensionId = usize;
+pub type SystemId = usize;
 
 pub const MAX_NODES: usize = 128;
 pub const MAX_EXTENSIONS: usize = 64;
