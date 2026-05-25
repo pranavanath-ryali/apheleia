@@ -98,27 +98,6 @@ where
     }
 }
 
-// 2 Params
-// impl<Func, P1, P2> SystemParamFunction<(P1, P2)> for Func
-// where
-//     Func: 'static,
-//     for<'w> &'w mut Func: FnMut(P1::Item<'w>, P2::Item<'w>),
-//     P1: SystemParam + 'static,
-//     P2: SystemParam + 'static,
-// {
-//     fn run(&mut self, world: UnsafeWorldCellMut) {
-//         fn run_system<'w, P1: SystemParam, P2: SystemParam>(
-//             mut f: impl FnMut(P1::Item<'w>, P2::Item<'w>),
-//             world: UnsafeWorldCellMut,
-//         ) {
-//             let p1 = P1::fetch(world);
-//             let p2 = P1::fetch(world);
-//             f(p1, p2);
-//         }
-//         run_system::<P1, P2>(self, world);
-//     }
-// }
-
 #[cfg(test)]
 mod tests {
     use std::ops::{Deref, DerefMut};
