@@ -2,7 +2,15 @@ use std::any::{Any, TypeId};
 
 use rustc_hash::FxHashMap;
 
-use crate::{ExtensionId, NodeId, extensions::{Extension, container::{ExtensionContainer, ExtensionContainerSingle}}, id_generator::IdGenerator};
+use crate::{
+    ExtensionId, NodeId,
+    constants::MAX_EXTENSIONS,
+    extensions::{
+        Extension,
+        container::{ExtensionContainer, ExtensionContainerSingle},
+    },
+    id_generator::IdGenerator,
+};
 
 pub(crate) struct ExtensionStore {
     id_generator: IdGenerator<ExtensionId>,
@@ -13,7 +21,7 @@ pub(crate) struct ExtensionStore {
 impl Default for ExtensionStore {
     fn default() -> Self {
         Self {
-            id_generator: IdGenerator::new(0),
+            id_generator: IdGenerator::new(MAX_EXTENSIONS),
 
             node_to_ext: Default::default(),
             containers: Default::default(),
