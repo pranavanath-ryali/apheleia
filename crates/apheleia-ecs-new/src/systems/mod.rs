@@ -1,4 +1,4 @@
-mod into_system;
+pub mod into_system;
 pub(crate) mod store;
 mod system;
 mod system_param;

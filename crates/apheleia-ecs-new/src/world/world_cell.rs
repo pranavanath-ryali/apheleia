@@ -21,7 +21,7 @@ impl<'w> UnsafeWorldCell<'w> {
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone)]
 pub struct UnsafeWorldCellMut<'w> {
     ptr: *mut World,
     marker: PhantomData<&'w mut World>,
@@ -41,7 +41,7 @@ impl<'w> UnsafeWorldCellMut<'w> {
     }
 
     #[inline]
-    pub unsafe fn get_world_mut(&mut self) -> &'w mut World {
+    pub unsafe fn get_world_mut(&self) -> &'w mut World {
         unsafe { &mut *self.ptr }
     }
 }

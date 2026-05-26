@@ -32,8 +32,8 @@ impl SystemStore {
     pub fn add_system<Marker>(
         &mut self,
         stage: SystemRunStage,
-        system: impl IntoSystem<Marker>,
         priority: u8,
+        system: impl IntoSystem<Marker>,
     ) -> SystemId {
         let id = self.id_generator.next();
 
