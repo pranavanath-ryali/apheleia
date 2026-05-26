@@ -1,8 +1,8 @@
-pub(crate) mod store;
-mod system_param;
 mod into_system;
-mod system_param_function;
+pub(crate) mod store;
 mod system;
+mod system_param;
+mod system_param_function;
 
 use crate::systems::system_param_function::SystemParamFunction;
 
@@ -10,7 +10,14 @@ use crate::systems::system_param_function::SystemParamFunction;
 mod systems_tests {
     use std::ops::{Deref, DerefMut};
 
-    use crate::{resources::Resource, systems::{system::{FunctionSystem, System}, system_param::SystemParam}, world::{World, world_cell::UnsafeWorldCellMut}};
+    use crate::{
+        resources::Resource,
+        systems::{
+            system::{FunctionSystem, System},
+            system_param::SystemParam,
+        },
+        world::{World, world_cell::UnsafeWorldCellMut},
+    };
 
     use super::*;
 
@@ -34,7 +41,7 @@ mod systems_tests {
         type Item<'a> = ResMut<'a, R>;
 
         fn fetch<'a>(mut world: UnsafeWorldCellMut<'a>) -> Option<Self::Item<'a>> {
-            let resource = unsafe { world.get_resource_mut::<R>() };
+            let resource = unsafe { world.get_world_mut().get_resource_mut::<R>() };
             if let Some(resource) = resource {
                 return Some(ResMut { resource });
             }

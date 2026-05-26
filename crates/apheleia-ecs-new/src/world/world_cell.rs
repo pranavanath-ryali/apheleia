@@ -1,9 +1,6 @@
 use std::{marker::PhantomData, ptr};
 
-use crate::{
-    resources::Resource,
-    world::{self, World},
-};
+use crate::world::World;
 
 pub struct UnsafeWorldCell<'w> {
     ptr: *const World,
@@ -39,16 +36,12 @@ impl<'w> From<&'w mut World> for UnsafeWorldCellMut<'w> {
 }
 impl<'w> UnsafeWorldCellMut<'w> {
     #[inline]
-    pub unsafe fn world(&self) -> &'w World {
+    pub unsafe fn get_world(&self) -> &'w World {
         unsafe { &*self.ptr }
     }
 
     #[inline]
-    pub unsafe fn world_mut(&mut self) -> &'w mut World {
+    pub unsafe fn get_world_mut(&mut self) -> &'w mut World {
         unsafe { &mut *self.ptr }
-    }
-
-    pub unsafe fn get_resource_mut<R: Resource>(&mut self) -> Option<&'w mut R> {
-        unsafe { self.world_mut().get_resource_mut::<R>() }
     }
 }
