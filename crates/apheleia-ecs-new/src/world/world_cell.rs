@@ -16,7 +16,7 @@ impl<'w> From<&'w World> for UnsafeWorldCell<'w> {
 }
 impl<'w> UnsafeWorldCell<'w> {
     #[inline]
-    pub unsafe fn world(&self) -> &'w World {
+    pub unsafe fn get_world(&self) -> &'w World {
         unsafe { &*self.ptr }
     }
 }
