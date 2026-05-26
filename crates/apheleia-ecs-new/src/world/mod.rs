@@ -2,7 +2,7 @@ pub mod world_cell;
 
 use crate::{
     NodeId, extensions::store::ExtensionStore, id_generator::IdGenerator,
-    nodedata_store::NodeDataStore, resources::{Resource, store::ResourceStore},
+    nodedata_store::NodeDataStore, resources::{Resource, store::ResourceStore}, systems::store::SystemStore,
 };
 
 pub struct World {
@@ -11,6 +11,7 @@ pub struct World {
     nodedata_store: NodeDataStore,
     extension_store: ExtensionStore,
     resource_store: ResourceStore,
+    system_store: SystemStore,
 }
 impl Default for World {
     fn default() -> Self {
@@ -20,6 +21,7 @@ impl Default for World {
             nodedata_store: NodeDataStore::default(),
             extension_store: ExtensionStore::default(),
             resource_store: ResourceStore::default(),
+            system_store: Default::default(),
         }
     }
 }

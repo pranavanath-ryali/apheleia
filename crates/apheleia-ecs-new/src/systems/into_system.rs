@@ -1,24 +1,18 @@
-use std::marker::PhantomData;
-
-use crate::systems::{system::FunctionSystem, system_param_function::SystemParamFunction};
+use crate::systems::{
+    system::{FunctionSystem, System},
+    system_param_function::SystemParamFunction,
+};
 
 /// The translation that converts a given function to a [`System`] itself.
 pub trait IntoSystem<Marker> {
-    type System;
-    fn into_system(this: Self) -> Self::System;
+    fn into_system(self) -> Box<dyn System>;
 }
 
 impl<F, Marker: 'static> IntoSystem<Marker> for F
-where 
-    F: SystemParamFunction<Marker>
+where
+    F: SystemParamFunction<Marker> + 'static,
 {
-    type System = FunctionSystem<F, Marker>;
-
-    /// converts the function to [`FunctionSystem`] which implements [`System`]
-    fn into_system(this: Self) -> Self::System {
-        FunctionSystem {
-            func: this,
-            marker: PhantomData,
-        }
+    fn into_system(self) -> Box<dyn System> {
+        Box::new(FunctionSystem::new(self))
     }
 }

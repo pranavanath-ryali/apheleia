@@ -1,6 +1,6 @@
-pub mod system_param;
-pub mod into_system;
-pub mod store;
+pub(crate) mod store;
+mod system_param;
+mod into_system;
 mod system_param_function;
 mod system;
 
