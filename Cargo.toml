@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = [ "crates/*", "examples/*",  "tests/*" ]
+members = ["crates/*", "examples/*",  "tests/*" ]
 
 [workspace.package]
 version = "0.1.0"
@@ -11,10 +11,12 @@ apheleia-types = { path = "crates/apheleia-types" }
 apheleia-core = { path = "crates/apheleia-core" }
 apheleia-ui = { path = "crates/apheleia-ui" }
 apheleia-app = { path = "crates/apheleia-app" }
+apheleia-app-new = { path = "crates/apheleia-app-new" }
 apheleia-ecs = { path = "crates/apheleia-ecs" }
 apheleia-ecs-new = { path = "crates/apheleia-ecs-new" }
 apheleia-widgets = { path = "crates/apheleia-widgets" }
 
+smallvec = "1.15.1"
 sparseset = "1.0.1"
 crossterm = "0.29.0"
 indexmap = "2.2.2"

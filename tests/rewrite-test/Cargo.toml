@@ -1,0 +1,7 @@
+[package]
+name = "rewrite-test"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+apheleia-app-new.workspace = true

@@ -64,12 +64,12 @@ impl SystemStore {
 
     pub fn run_systems_for_stage(&mut self, stage: SystemRunStage, world: UnsafeWorldCellMut) {
         if let Some(map) = self.stage_to_priority_ids.get(&stage) {
-            for (_, id) in map {
+            for id in map.values() {
                 let system = self
                     .id_to_systems
                     .get_mut(id)
                     .expect("Unexpected Error! System not found");
-                system.run(world);
+                system.run(world.clone());
             }
         }
     }

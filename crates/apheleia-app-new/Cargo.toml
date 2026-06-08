@@ -1,0 +1,17 @@
+[package]
+name = "apheleia-app-new"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+apheleia-ecs-new.workspace = true
+apheleia-core.workspace = true
+
+crossterm.workspace = true
+
+rustc-hash.workspace = true
+smallvec.workspace = true
+tree-ds.workspace = true
+log.workspace = true
+fern.workspace = true
+chrono.workspace = true

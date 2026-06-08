@@ -87,3 +87,36 @@ impl World {
         self.system_store = system_store;
     }
 }
+
+#[cfg(test)]
+mod Test {
+    use crate::systems::system_param::SystemParam;
+
+    use super::*;
+
+    struct Res<R> {
+        value: *mut R,
+    }
+    impl<R: Resource + 'static> SystemParam for Res<R> {
+        type Item<'w> = Res<R>;
+
+        fn fetch<'w>(world: UnsafeWorldCellMut<'w>) -> Option<Self::Item<'w>> {
+            Some(Res {
+                value: (unsafe { world.get_world_mut() })
+                    .get_resource_mut::<R>()
+                    .unwrap(),
+            })
+        }
+    }
+
+    #[test]
+    fn test_world() {
+        use crate::constants::PRE_STAGE;
+
+        fn test_system() {}
+
+        let mut world = World::default();
+
+        world.add_system(SystemRunStage::Render, PRE_STAGE, test_system);
+    }
+}

@@ -55,7 +55,7 @@ where
             mut f: impl FnMut(P1::Item<'w>, P2::Item<'w>),
             world: UnsafeWorldCellMut<'w>,
         ) {
-            let p1 = P1::fetch(world);
+            let p1 = P1::fetch(world.clone());
             let p2 = P2::fetch(world);
             if let Some(p1) = p1
                 && let Some(p2) = p2

@@ -1,10 +1,8 @@
 pub mod into_system;
 pub(crate) mod store;
 mod system;
-mod system_param;
+pub mod system_param;
 mod system_param_function;
-
-use crate::systems::system_param_function::SystemParamFunction;
 
 #[cfg(test)]
 mod systems_tests {
@@ -18,8 +16,6 @@ mod systems_tests {
         },
         world::{World, world_cell::UnsafeWorldCellMut},
     };
-
-    use super::*;
 
     /// A very basic Resource that stores a _i32_ value
     struct TestResource {
