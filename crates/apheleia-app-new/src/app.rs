@@ -1,22 +1,24 @@
-use std::{collections::VecDeque, io, mem::take, ops::Deref, time::Duration};
+use std::{collections::VecDeque, io, mem::take, time::Duration};
 
 use apheleia_core::{buffer::Buffer, renderer::Renderer, terminal, types::Vec2};
 use apheleia_ecs_new::{
     NodeId,
-    resources::Resource,
     world::{World, world_cell::UnsafeWorldCellMut},
 };
+use crate::id_generator::{IdGenerator, IdGeneratorTrait};
 use crossterm::event::{KeyCode, KeyModifiers, poll};
 use log::info;
 use tree_ds::prelude::{Node, Tree};
 
 use crate::{
-    commands::Command, context::node::NodeContext, into_resource::IntoResource, node_definer::NodeDefiner, tag::tag_registry::TagRegistry
+    builder::node::NodeBuilder, commands::ContextCommand, context::node::NodeContext,
+    into_resource::IntoResource, node_definer::NodeDefiner, tag::tag_registry::TagRegistry,
 };
 
 pub struct App {
     pub is_running: bool,
 
+    id_gen: IdGenerator<NodeId>,
     tag_registry: TagRegistry,
 
     relations: Tree<NodeId, NodeId>,
@@ -25,7 +27,7 @@ pub struct App {
     buffer: Buffer,
 
     definers: VecDeque<(NodeId, Box<dyn NodeDefiner>)>,
-    commands: VecDeque<Box<dyn Command>>,
+    commands: VecDeque<Box<dyn ContextCommand>>,
 }
 impl App {
     #[allow(clippy::new_without_default)]
@@ -44,7 +46,8 @@ impl App {
 
         App {
             is_running: true,
-
+            
+            id_gen: IdGenerator::new(0),
             tag_registry: Default::default(),
 
             relations,
@@ -61,7 +64,7 @@ impl App {
         &mut self.relations
     }
 
-    pub fn add_command(&mut self, command: Box<dyn Command>) {
+    pub fn add_command(&mut self, command: Box<dyn ContextCommand>) {
         info!("COMMAND: Added new command - {:#?}", command);
         self.commands.push_back(command);
     }
@@ -78,12 +81,22 @@ impl App {
         self
     }
 
+    pub fn build_node(mut self, f: impl FnOnce(NodeBuilder) -> NodeBuilder) -> Self {
+        info!("APP: building new node");
+        let mut builder = f(NodeBuilder::new(&mut self.id_gen));
+        let mut commands = take(builder.get_commands());
+        info!("APP: commands returned from NodeBuilder: {:#?}", commands);
+        self.commands.append(&mut commands);
+        self
+    }
+
     pub fn setup(&mut self) {
-        let mut definers = take(&mut self.definers);
-        for definer in definers.iter_mut() {
-            let mut ctx = NodeContext::new(definer.0);
-            definer.1.setup(&mut ctx);
-        }
+        self.execute_commands();
+        // let mut definers = take(&mut self.definers);
+        // for definer in definers.iter_mut() {
+        //     let mut ctx = NodeContext::new(definer.0);
+        //     definer.1.setup(&mut ctx);
+        // }
     }
 
     pub fn event(&mut self) -> io::Result<()> {
@@ -143,6 +156,7 @@ impl App {
     }
 
     pub fn run(&mut self) {
+        self.setup();
         _ = self.renderer.init();
 
         while self.is_running {

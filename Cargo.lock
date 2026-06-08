@@ -33,6 +33,7 @@ dependencies = [
  "chrono",
  "crossterm",
  "fern",
+ "indexmap",
  "log",
  "rustc-hash",
  "smallvec",

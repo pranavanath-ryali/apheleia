@@ -1,6 +1,7 @@
 use std::{error::Error, fs::OpenOptions};
 
 use fern::Dispatch;
+use log::info;
 
 pub mod app;
 pub mod into_resource;
@@ -9,6 +10,7 @@ pub mod commands;
 pub mod builder;
 pub mod node_definer;
 pub mod context;
+mod id_generator;
 
 pub fn setup_logger() -> Result<(), Box<dyn Error>> {
     let log_file = OpenOptions::new()
@@ -28,5 +30,7 @@ pub fn setup_logger() -> Result<(), Box<dyn Error>> {
         .level(log::LevelFilter::Info)
         .chain(log_file)
         .apply()?;
+
+    info!("Log started");
     Ok(())
 }
