@@ -3,17 +3,10 @@ pub mod world_cell;
 use std::mem::take;
 
 use crate::{
-    NodeId,
-    constants::MAX_NODES,
-    extensions::{Extension, store::ExtensionStore},
-    id_generator::IdGenerator,
-    nodedata_store::NodeDataStore,
-    resources::{Resource, store::ResourceStore},
-    systems::{
+    NodeId, constants::MAX_NODES, extensions::{Extension, store::ExtensionStore}, id_generator::IdGenerator, nodedata_store::NodeDataStore, resources::{Resource, store::ResourceStore}, systems::{
         into_system::IntoSystem,
         store::{stages::SystemRunStage, store::SystemStore},
-    },
-    world::world_cell::{UnsafeWorldCell, UnsafeWorldCellMut},
+    }, types::NodeData, world::world_cell::{UnsafeWorldCell, UnsafeWorldCellMut}
 };
 
 pub struct World {
@@ -37,6 +30,11 @@ impl Default for World {
     }
 }
 impl World {
+    // [`NodeDataStore`] functions
+    pub fn set_data(&mut self, id: NodeId, data: NodeData) {
+        self.nodedata_store.set_data(id, data);
+    }
+
     // [`ResourceStore`] functions
     /// Add a resource.
     pub fn add_resource<R: Resource>(&mut self, resource: R) {
@@ -109,11 +107,15 @@ mod Test {
         }
     }
 
+    struct TestRes;
+    impl Resource for TestRes {
+    }
+
     #[test]
     fn test_world() {
         use crate::constants::PRE_STAGE;
 
-        fn test_system() {}
+        fn test_system(res: Res<TestRes>) {}
 
         let mut world = World::default();
 

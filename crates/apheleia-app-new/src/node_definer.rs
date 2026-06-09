@@ -11,3 +11,9 @@ pub struct EmptyNode;
 impl NodeDefiner for EmptyNode {
     fn setup(&mut self, ctx: &mut NodeContext) {}
 }
+
+impl Default for Box<dyn NodeDefiner> {
+    fn default() -> Self {
+        Box::new(EmptyNode)
+    }
+}

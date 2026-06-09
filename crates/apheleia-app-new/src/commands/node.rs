@@ -1,3 +1,5 @@
+use std::mem::{replace, take};
+
 use apheleia_ecs_new::{NodeId, types::NodeData};
 
 use crate::{commands::ContextCommand, node_definer::NodeDefiner};
@@ -11,8 +13,7 @@ impl CreateNode {
     }
 }
 impl ContextCommand for CreateNode {
-    fn execute(&self, app: &mut crate::app::App) {
-        todo!()
+    fn execute(&mut self, app: &mut crate::app::App) {
     }
 }
 
@@ -25,8 +26,9 @@ impl SetDataForNode {
     }
 }
 impl ContextCommand for SetDataForNode {
-    fn execute(&self, app: &mut crate::app::App) {
-        todo!()
+    fn execute(&mut self, app: &mut crate::app::App) {
+        let world = app.get_world_mut();
+        world.set_data(self.0, self.1);
     }
 }
 
@@ -39,7 +41,7 @@ impl SetDefinerForNode {
     }
 }
 impl ContextCommand for SetDefinerForNode {
-    fn execute(&self, app: &mut crate::app::App) {
-        todo!()
+    fn execute(&mut self, app: &mut crate::app::App) {
+        app.add_definer(self.0, take(&mut self.1));
     }
 }

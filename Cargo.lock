@@ -456,6 +456,7 @@ name = "rewrite-test"
 version = "0.1.0"
 dependencies = [
  "apheleia-app-new",
+ "apheleia-core",
 ]
 
 [[package]]

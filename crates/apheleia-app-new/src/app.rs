@@ -7,7 +7,7 @@ use apheleia_ecs_new::{
 };
 use crate::id_generator::{IdGenerator, IdGeneratorTrait};
 use crossterm::event::{KeyCode, KeyModifiers, poll};
-use log::info;
+use log::{info, warn};
 use tree_ds::prelude::{Node, Tree};
 
 use crate::{
@@ -60,6 +60,10 @@ impl App {
         }
     }
 
+    pub fn get_world_mut(&mut self) -> &mut World {
+        &mut self.world
+    }
+
     pub fn get_relation_mut(&mut self) -> &mut Tree<NodeId, NodeId> {
         &mut self.relations
     }
@@ -70,13 +74,20 @@ impl App {
     }
 
     pub(crate) fn execute_commands(&mut self) {
-        let commands = take(&mut self.commands);
-        for command in commands {
+        warn!("Executing commands");
+        let mut commands = take(&mut self.commands);
+        for command in commands.iter_mut() {
             command.execute(self);
         }
     }
 
+    pub fn add_definer(&mut self, id: NodeId, definer: Box<dyn NodeDefiner>) {
+        info!("Added node definer - ID: {}; Definer: {:#?}", id, definer);
+        self.definers.push_back((id, definer));
+    }
+
     pub fn add_resource<T: IntoResource>(mut self, resource: T) -> Self {
+        // info!("Added resource: {:#?}", resource);
         resource.insert_into(UnsafeWorldCellMut::from(&mut self.world));
         self
     }
