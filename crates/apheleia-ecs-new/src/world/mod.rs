@@ -3,10 +3,17 @@ pub mod world_cell;
 use std::mem::take;
 
 use crate::{
-    NodeId, constants::MAX_NODES, extensions::{Extension, store::ExtensionStore}, id_generator::IdGenerator, nodedata_store::NodeDataStore, resources::{Resource, store::ResourceStore}, systems::{
-        into_system::IntoSystem,
-        store::{stages::SystemRunStage, store::SystemStore},
-    }, types::NodeData, world::world_cell::{UnsafeWorldCell, UnsafeWorldCellMut}
+    NodeId,
+    constants::MAX_NODES,
+    extensions::{Extension, store::ExtensionStore},
+    id_generator::IdGenerator,
+    nodedata_store::NodeDataStore,
+    resources::{Resource, store::ResourceStore},
+    systems::{
+        into_system::IntoSystem, store::{stages::SystemRunStage, store::SystemStore}, system::System, system_param_function::SystemParamFunction
+    },
+    types::NodeData,
+    world::world_cell::{UnsafeWorldCell, UnsafeWorldCellMut},
 };
 
 pub struct World {
@@ -74,7 +81,8 @@ impl World {
         priority: u8,
         system: impl IntoSystem<M>,
     ) {
-        self.system_store.add_system(stage, priority, system);
+        self.system_store.add_system(stage, priority, system.into_system());
+        // self.system_store.add_system(stage, priority, system);
     }
 
     /// Run all [`System`]s registered for that stage and run in order of priority
@@ -88,7 +96,7 @@ impl World {
 
 #[cfg(test)]
 mod Test {
-    use crate::systems::system_param::SystemParam;
+    use crate::systems::{self, system_param::SystemParam};
 
     use super::*;
 
@@ -108,14 +116,12 @@ mod Test {
     }
 
     struct TestRes;
-    impl Resource for TestRes {
-    }
+    impl Resource for TestRes {}
+    fn test_system(res: Res<TestRes>, res2: Res<TestRes>) {}
 
     #[test]
     fn test_world() {
         use crate::constants::PRE_STAGE;
-
-        fn test_system(res: Res<TestRes>) {}
 
         let mut world = World::default();
 

@@ -1,8 +1,8 @@
 pub mod into_system;
 pub(crate) mod store;
-mod system;
+pub mod system;
 pub mod system_param;
-mod system_param_function;
+pub mod system_param_function;
 
 #[cfg(test)]
 mod systems_tests {

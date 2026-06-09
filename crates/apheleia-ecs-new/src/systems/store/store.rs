@@ -29,11 +29,11 @@ impl Default for SystemStore {
 
 impl SystemStore {
     /// Register the given function the store and return the [`SystemId`]
-    pub fn add_system<Marker>(
+    pub fn add_system(
         &mut self,
         stage: SystemRunStage,
         priority: u8,
-        system: impl IntoSystem<Marker>,
+        system: Box<dyn System>,
     ) -> SystemId {
         let id = self.id_generator.next();
 
@@ -57,7 +57,7 @@ impl SystemStore {
                 map
             });
         self.id_to_systems
-            .insert(id, IntoSystem::into_system(system));
+            .insert(id, system);
 
         id
     }
