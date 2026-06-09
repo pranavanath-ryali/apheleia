@@ -70,25 +70,25 @@ impl App {
     }
 
     pub fn add_command(&mut self, command: Box<dyn ContextCommand>) {
-        info!("COMMAND: Added new command - {:#?}", command);
+        info!("APP: Added new command - {:#?}", command);
         self.commands.push_back(command);
     }
 
     pub(crate) fn execute_commands(&mut self) {
-        warn!("Executing commands");
-        let mut commands = take(&mut self.commands);
-        for command in commands.iter_mut() {
+        warn!("APP: Executing commands");
+        let commands = take(&mut self.commands);
+        for command in commands {
             command.execute(self);
         }
     }
 
     pub fn add_definer(&mut self, id: NodeId, definer: Box<dyn NodeDefiner>) {
-        info!("Added node definer - ID: {}; Definer: {:#?}", id, definer);
+        info!("APP: Added node definer - ID: {}; Definer: {:#?}", id, definer);
         self.definers.push_back((id, definer));
     }
 
-    pub fn add_resource<T: IntoResource>(mut self, resource: T) -> Self {
-        info!("Added resource: {:#?}", resource);
+    pub fn add_resource(mut self, resource: impl IntoResource) -> Self {
+        info!("APP: Added resource: {:#?}", resource);
         resource.insert_into(&mut self.world);
         self
     }
@@ -108,7 +108,7 @@ impl App {
         priority: u8,
         system: impl IntoSystem<Params>,
     ) -> Self {
-        info!("Added system - STAGE: {:?}, PRIORITY: {}", stage, priority);
+        info!("APP: Added system - STAGE: {:?}, PRIORITY: {}", stage, priority);
         self.world.add_system(stage, priority, system);
         self
     }

@@ -42,6 +42,9 @@ impl World {
     pub fn add_resource<R: Resource>(&mut self, resource: R) {
         self.resource_store.add_resource(Box::new(resource));
     }
+    pub fn add_resource_boxed<R: Resource>(&mut self, resource: Box<R>) {
+        self.resource_store.add_resource(resource);
+    }
 
     // Get reference of resource that was previously added to [`World`]
     pub fn get_resource<R: Resource + 'static>(&self) -> Option<&R> {

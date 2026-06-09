@@ -1,6 +1,8 @@
 use apheleia_app_new::{app::App, node_definer::NodeDefiner, setup_logger};
 use apheleia_core::types::Vec2;
-use apheleia_ecs_new::{constants::STAGE, systems::{stages::SystemRunStage, system::SystemParam}};
+use apheleia_ecs_new::{
+    constants::STAGE, resources::Resource, systems::{stages::SystemRunStage, system::SystemParam}
+};
 
 const MY_TAG: usize = 0;
 
@@ -22,9 +24,13 @@ impl SystemParam for TestParam {
 fn test_system(_: TestParam) {
     println!("HELLO");
 }
-fn another_test_system() {
-}
+fn another_test_system() {}
 
+#[derive(Debug)]
+struct TestResource {
+    a: f32
+}
+impl Resource for TestResource {}
 
 fn main() {
     setup_logger();
@@ -36,6 +42,7 @@ fn main() {
                 .size(Vec2 { x: 1, y: 2 })
                 .node(CustomDefiner { f: 1.23 })
         })
+        .add_resource((TestResource { a: 1.0 },))
         .add_system(SystemRunStage::Render, STAGE, test_system)
         .add_system(SystemRunStage::Render, STAGE, another_test_system)
         .run();
