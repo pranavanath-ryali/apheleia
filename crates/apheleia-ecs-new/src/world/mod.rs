@@ -1,6 +1,4 @@
-pub mod world_cell;
-
-use std::mem::take;
+use std::{mem::take, ptr};
 
 use crate::{
     NodeId,
@@ -9,11 +7,8 @@ use crate::{
     id_generator::IdGenerator,
     nodedata_store::NodeDataStore,
     resources::{Resource, store::ResourceStore},
-    systems::{
-        into_system::IntoSystem, store::{stages::SystemRunStage, store::SystemStore}, system::System, system_param_function::SystemParamFunction
-    },
+    systems::{stages::SystemRunStage, store::SystemStore, system::IntoSystem},
     types::NodeData,
-    world::world_cell::{UnsafeWorldCell, UnsafeWorldCellMut},
 };
 
 pub struct World {
@@ -75,56 +70,53 @@ impl World {
 
     // [`SystemStore`] functions
     /// Convert function to a [`System`] and register
-    pub fn add_system<M>(
+    pub fn add_system<Params: 'static>(
         &mut self,
         stage: SystemRunStage,
         priority: u8,
-        system: impl IntoSystem<M>,
+        system: impl IntoSystem<Params>,
     ) {
-        self.system_store.add_system(stage, priority, system.into_system());
-        // self.system_store.add_system(stage, priority, system);
+        self.system_store.add_system(stage, priority, system);
     }
-
-    /// Run all [`System`]s registered for that stage and run in order of priority
+    // /// Run all [`System`]s registered for that stage and run in order of priority
     pub fn run_systems_on_stage(&mut self, stage: SystemRunStage) {
         let mut system_store = take(&mut self.system_store);
-        let world = UnsafeWorldCellMut::from(&mut *self);
-        system_store.run_systems_for_stage(stage, world);
+        system_store.run_systems_for_stage(stage, ptr::from_mut(self));
         self.system_store = system_store;
     }
 }
 
-#[cfg(test)]
-mod Test {
-    use crate::systems::{self, system_param::SystemParam};
-
-    use super::*;
-
-    struct Res<R> {
-        value: *mut R,
-    }
-    impl<R: Resource + 'static> SystemParam for Res<R> {
-        type Item<'w> = Res<R>;
-
-        fn fetch<'w>(world: UnsafeWorldCellMut<'w>) -> Option<Self::Item<'w>> {
-            Some(Res {
-                value: (unsafe { world.get_world_mut() })
-                    .get_resource_mut::<R>()
-                    .unwrap(),
-            })
-        }
-    }
-
-    struct TestRes;
-    impl Resource for TestRes {}
-    fn test_system(res: Res<TestRes>, res2: Res<TestRes>) {}
-
-    #[test]
-    fn test_world() {
-        use crate::constants::PRE_STAGE;
-
-        let mut world = World::default();
-
-        world.add_system(SystemRunStage::Render, PRE_STAGE, test_system);
-    }
-}
+// #[cfg(test)]
+// mod Test {
+//     use crate::systems::{self, system_param::SystemParam};
+//
+//     use super::*;
+//
+//     struct Res<R> {
+//         value: *mut R,
+//     }
+//     impl<R: Resource + 'static> SystemParam for Res<R> {
+//         type Item<'w> = Res<R>;
+//
+//         fn fetch<'w>(world: UnsafeWorldCellMut<'w>) -> Option<Self::Item<'w>> {
+//             Some(Res {
+//                 value: (unsafe { world.get_world_mut() })
+//                     .get_resource_mut::<R>()
+//                     .unwrap(),
+//             })
+//         }
+//     }
+//
+//     struct TestRes;
+//     impl Resource for TestRes {}
+//     fn test_system(res: Res<TestRes>, res2: Res<TestRes>) {}
+//
+//     #[test]
+//     fn test_world() {
+//         use crate::constants::PRE_STAGE;
+//
+//         let mut world = World::default();
+//
+//         world.add_system(SystemRunStage::Render, PRE_STAGE, test_system);
+//     }
+// }

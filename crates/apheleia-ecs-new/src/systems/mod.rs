@@ -1,106 +1,42 @@
-pub mod into_system;
-pub(crate) mod store;
 pub mod system;
-pub mod system_param;
-pub mod system_param_function;
+pub(crate) mod store;
+pub mod stages;
 
 #[cfg(test)]
-mod systems_tests {
+mod tests {
     use std::ops::{Deref, DerefMut};
 
-    use crate::{
-        resources::Resource,
-        systems::{
-            system::{FunctionSystem, System},
-            system_param::SystemParam,
-        },
-        world::{World, world_cell::UnsafeWorldCellMut},
-    };
+    use crate::{constants::PRE_STAGE, systems::{stages::SystemRunStage, store::SystemStore, system::SystemParam}};
 
-    /// A very basic Resource that stores a _i32_ value
-    struct TestResource {
-        value: i32,
+    struct TestParam {
+        value: f32
     }
-    impl Resource for TestResource {}
-
-    struct AnotherTestResource {
-        value: i32,
-    }
-    impl Resource for AnotherTestResource {}
-
-    /// A very crude implementation of [`ResMut`].
-    /// Used to fetch mutable access to resource added to [`World`]
-    struct ResMut<'w, R: Resource> {
-        resource: &'w mut R,
-    }
-    impl<R: Resource> SystemParam for ResMut<'_, R> {
-        type Item<'a> = ResMut<'a, R>;
-
-        fn fetch<'a>(mut world: UnsafeWorldCellMut<'a>) -> Option<Self::Item<'a>> {
-            let resource = unsafe { world.get_world_mut().get_resource_mut::<R>() };
-            if let Some(resource) = resource {
-                return Some(ResMut { resource });
-            }
-            None
+    impl SystemParam for TestParam {
+        unsafe fn fetch(world: *mut crate::world::World) -> Option<Self> {
+            Some(TestParam { value: 123.0 })
         }
     }
 
-    impl<'w, R: Resource> Deref for ResMut<'w, R> {
-        type Target = &'w mut R;
+    impl Deref for TestParam {
+        type Target = f32;
 
         fn deref(&self) -> &Self::Target {
-            &self.resource
+            &self.value
+        }
+    }
+    impl DerefMut for TestParam {
+        fn deref_mut(&mut self) -> &mut Self::Target {
+            &mut self.value
         }
     }
 
-    impl<'w, R: Resource> DerefMut for ResMut<'w, R> {
-        fn deref_mut(&mut self) -> &mut Self::Target {
-            &mut self.resource
-        }
+    fn a_system(param: TestParam) {
+        println!("WHY DOES THIS WORK: {}", *param);
     }
 
     #[test]
-    fn test_basic_systems_calling() {
-        fn test_system(res: ResMut<TestResource>) {
-            assert_eq!(res.value, 10);
-        }
-
-        fn another_system(mut res: ResMut<TestResource>) {
-            res.value = 256;
-        }
-
-        fn final_system(res: ResMut<TestResource>) {
-            assert_eq!(res.value, 256);
-        }
-
-        fn this_system_should_not_run(_: ResMut<AnotherTestResource>, _: ResMut<TestResource>) {
-            panic!("This system shouldn't run")
-        }
-
-        let mut world = World::default();
-        world.add_resource(TestResource { value: 10 });
-        //
-        // fn add_system<Marker>(system: impl IntoSystem<Marker>) -> <impl IntoSystem<Marker> as IntoSystem<Marker>>::System {
-        //     let system = IntoSystem::into_system(system);
-        //     system
-        // }
-        //
-        // let system: Box<dyn System> = add_system(test_system);
-
-        let mut system: Box<dyn System> =
-            Box::new(FunctionSystem::<_, (ResMut<_>,)>::new(test_system));
-        let mut another_system: Box<dyn System> =
-            Box::new(FunctionSystem::<_, (ResMut<_>,)>::new(another_system));
-        let mut final_system: Box<dyn System> =
-            Box::new(FunctionSystem::<_, (ResMut<_>,)>::new(final_system));
-        let mut useless_system: Box<dyn System> =
-            Box::new(FunctionSystem::<_, (ResMut<_>, ResMut<_>)>::new(
-                this_system_should_not_run,
-            ));
-
-        system.run(UnsafeWorldCellMut::from(&mut world));
-        another_system.run(UnsafeWorldCellMut::from(&mut world));
-        final_system.run(UnsafeWorldCellMut::from(&mut world));
-        useless_system.run(UnsafeWorldCellMut::from(&mut world));
+    fn test_systems() {
+        let mut store = SystemStore::default();
+        store.add_system(SystemRunStage::Update, PRE_STAGE, a_system);
     }
 }

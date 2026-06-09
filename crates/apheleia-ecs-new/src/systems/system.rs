@@ -1,34 +1,58 @@
 use std::marker::PhantomData;
 
-use crate::{systems::system_param_function::SystemParamFunction, world::world_cell::UnsafeWorldCellMut};
+use crate::world::World;
 
-/// The trait that is used to store the actual functions.
-/// This is used in cases like a Vec of systems, specifically
-/// ```rust
-/// let mut systems: Vec<Box<dyn System>>
-/// ```
-/// In the above example, the vector can store multiple types of systems that have number of
-/// parameters. A [`System`] is a generic trait used for storage.
 pub trait System: 'static {
-    fn run(&mut self, world: UnsafeWorldCellMut);
+    fn run(&mut self, world: *mut World);
 }
 
-/// The actual type that stores the function and the type of system it is
-pub struct FunctionSystem<F: SystemParamFunction<Marker>, Marker: 'static> {
-    pub func: F,
-    pub marker: PhantomData<Marker>,
+pub trait SystemParam: Sized + 'static {
+    unsafe fn fetch(world: *mut World) -> Option<Self>;
 }
-impl<F: SystemParamFunction<Marker>, Marker> FunctionSystem<F, Marker> {
-    pub fn new(func: F) -> Self {
-        Self {
-            func,
-            marker: PhantomData,
+
+pub trait IntoSystem<Params> {
+    fn into_system(self) -> Box<dyn System>;
+}
+
+struct FunctionSystem<F, Params> {
+    func: F,
+    _marker: PhantomData<fn() -> Params>,
+}
+
+macro_rules! impl_into_system {
+    ($($param:ident),*) => {
+        impl<Func, $($param: SystemParam),*> IntoSystem<($($param,)*)> for Func
+        where
+            Func: FnMut($($param,)*) + 'static,
+        {
+            fn into_system(self) -> Box<dyn System> {
+                Box::new(FunctionSystem {
+                    func: self,
+                    _marker: std::marker::PhantomData::<fn() -> ($($param,)*)>,
+                })
+            }
         }
-    }
+
+        #[allow(non_snake_case, unused_variables)]
+        impl<Func, $($param: SystemParam),*> System for FunctionSystem<Func, ($($param,)*)>
+        where
+            Func: FnMut($($param,)*) + 'static,
+        {
+            fn run(&mut self, world: *mut World) {
+                unsafe {
+                    if let ($(Some($param),)*) = ($($param::fetch(world),)*) {
+                        // 3. If they are all Some, execute the system function
+                        (self.func)($($param,)*);
+                    }
+
+                    // $(let $param = $param::fetch(world_ptr);)*
+                    // (self.func)($($param,)*);
+                }
+            }
+        }
+    };
 }
-impl<F: SystemParamFunction<Marker>, Marker> System for FunctionSystem<F, Marker> {
-    /// Run the system
-    fn run(&mut self, world: UnsafeWorldCellMut) {
-        self.func.run(world);
-    }
-}
+
+impl_into_system!();
+impl_into_system!(P0);
+impl_into_system!(P0, P1);

@@ -67,6 +67,9 @@ name = "apheleia-ecs-new"
 version = "0.1.0"
 dependencies = [
  "apheleia-core",
+ "chrono",
+ "fern",
+ "log",
  "rustc-hash",
  "sparseset",
 ]
@@ -457,6 +460,7 @@ version = "0.1.0"
 dependencies = [
  "apheleia-app-new",
  "apheleia-core",
+ "apheleia-ecs-new",
 ]
 
 [[package]]

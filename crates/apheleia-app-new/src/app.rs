@@ -1,11 +1,12 @@
 use std::{collections::VecDeque, io, mem::take, time::Duration};
 
+use crate::id_generator::{IdGenerator, IdGeneratorTrait};
 use apheleia_core::{buffer::Buffer, renderer::Renderer, terminal, types::Vec2};
 use apheleia_ecs_new::{
     NodeId,
-    world::{World, world_cell::UnsafeWorldCellMut},
+    systems::{stages::SystemRunStage, system::IntoSystem},
+    world::World,
 };
-use crate::id_generator::{IdGenerator, IdGeneratorTrait};
 use crossterm::event::{KeyCode, KeyModifiers, poll};
 use log::{info, warn};
 use tree_ds::prelude::{Node, Tree};
@@ -46,7 +47,7 @@ impl App {
 
         App {
             is_running: true,
-            
+
             id_gen: IdGenerator::new(0),
             tag_registry: Default::default(),
 
@@ -87,8 +88,8 @@ impl App {
     }
 
     pub fn add_resource<T: IntoResource>(mut self, resource: T) -> Self {
-        // info!("Added resource: {:#?}", resource);
-        resource.insert_into(UnsafeWorldCellMut::from(&mut self.world));
+        info!("Added resource: {:#?}", resource);
+        resource.insert_into(&mut self.world);
         self
     }
 
@@ -98,6 +99,17 @@ impl App {
         let mut commands = take(builder.get_commands());
         info!("APP: commands returned from NodeBuilder: {:#?}", commands);
         self.commands.append(&mut commands);
+        self
+    }
+
+    pub fn add_system<Params: 'static>(
+        mut self,
+        stage: SystemRunStage,
+        priority: u8,
+        system: impl IntoSystem<Params>,
+    ) -> Self {
+        info!("Added system - STAGE: {:?}, PRIORITY: {}", stage, priority);
+        self.world.add_system(stage, priority, system);
         self
     }
 
@@ -161,15 +173,22 @@ impl App {
         // }
         Ok(())
     }
-    fn update(&mut self) {}
-    fn render(&mut self) {
+    fn update(&mut self) {
+        self.world.run_systems_on_stage(SystemRunStage::Update);
+    }
+    fn render_flip(&mut self) {
         _ = self.renderer.render_flip(&mut self.buffer);
+        self.world.run_systems_on_stage(SystemRunStage::Render);
+    }
+    fn render(&mut self) {
+        self.world.run_systems_on_stage(SystemRunStage::Render);
     }
 
     pub fn run(&mut self) {
         self.setup();
         _ = self.renderer.init();
 
+        self.render_flip();
         while self.is_running {
             self.event();
             self.update();

@@ -8,3 +8,6 @@ apheleia-core.workspace = true
 
 sparseset.workspace = true
 rustc-hash.workspace = true
+log.workspace = true
+fern.workspace = true
+chrono.workspace = true
