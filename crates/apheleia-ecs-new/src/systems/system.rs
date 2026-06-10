@@ -1,4 +1,4 @@
-use std::marker::PhantomData;
+use std::{fmt::Debug, marker::PhantomData};
 
 use crate::world::World;
 

@@ -7,7 +7,7 @@ use crate::{
     id_generator::IdGenerator,
     nodedata_store::NodeDataStore,
     resources::{Resource, store::ResourceStore},
-    systems::{stages::SystemRunStage, store::SystemStore, system::IntoSystem},
+    systems::{stages::SystemRunStage, store::SystemStore, system::{IntoSystem, System}},
     types::NodeData,
 };
 
@@ -80,6 +80,15 @@ impl World {
         system: impl IntoSystem<Params>,
     ) {
         self.system_store.add_system(stage, priority, system);
+    }
+
+    pub fn add_system_boxed(
+        &mut self,
+        stage: SystemRunStage,
+        priority: u8,
+        system: Box<dyn System>,
+    ) {
+        self.system_store.add_system_boxed(stage, priority, system);
     }
     // /// Run all [`System`]s registered for that stage and run in order of priority
     pub fn run_systems_on_stage(&mut self, stage: SystemRunStage) {

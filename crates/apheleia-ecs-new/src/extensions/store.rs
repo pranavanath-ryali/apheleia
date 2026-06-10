@@ -73,6 +73,7 @@ impl ExtensionStore {
 mod test {
     use super::*;
 
+    #[derive(Debug)]
     struct TestExtension {
         value: u16,
     }
