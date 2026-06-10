@@ -6,7 +6,7 @@ use crate::widget::BasicTextDefiner;
 const MY_TAG: usize = 0;
 
 mod widget {
-    use apheleia_app_new::{node_definer::NodeDefiner, params::resource::{Res, ResMut}};
+    use apheleia_app_new::{context::system::SystemContext, node_definer::NodeDefiner, params::resource::{Res, ResMut}};
     use apheleia_core::rich_strings::RichString;
     use apheleia_ecs_new::{
         constants::{POST_STAGE, STAGE}, resources::Resource, systems::stages::SystemRunStage::Update,
@@ -30,7 +30,7 @@ mod widget {
         }
     }
 
-    fn mut_system(mut res: ResMut<TestRes>) {
+    fn mut_system(mut res: ResMut<TestRes>, ctx: SystemContext) {
         res.value += 1.0;
     }
 

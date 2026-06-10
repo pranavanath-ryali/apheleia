@@ -1,8 +1,9 @@
-use std::mem::{replace, take};
-
-use apheleia_ecs_new::{NodeId, types::NodeData};
-
-use crate::{commands::ContextCommand, node_definer::NodeDefiner};
+use apheleia_ecs_new::{
+    NodeId,
+    command::ContextCommand,
+    types::NodeData,
+    world::{self, World},
+};
 
 #[derive(Debug)]
 pub struct CreateNode(pub NodeId);
@@ -13,8 +14,7 @@ impl CreateNode {
     }
 }
 impl ContextCommand for CreateNode {
-    fn execute(self: Box<Self>, _app: &mut crate::app::App) {
-    }
+    fn execute(self: Box<Self>, world: &mut apheleia_ecs_new::world::World) {}
 }
 
 #[derive(Debug)]
@@ -26,22 +26,7 @@ impl SetDataForNode {
     }
 }
 impl ContextCommand for SetDataForNode {
-    fn execute(self: Box<Self>, app: &mut crate::app::App) {
-        let world = app.get_world_mut();
+    fn execute(self: Box<Self>, world: &mut World) {
         world.set_data(self.0, self.1);
-    }
-}
-
-#[derive(Debug)]
-pub struct SetDefinerForNode(pub NodeId, pub Box<dyn NodeDefiner>);
-
-impl SetDefinerForNode {
-    pub fn new(id: NodeId, definer: Box<dyn NodeDefiner>) -> Box<Self> {
-        Box::new(Self(id, definer))
-    }
-}
-impl ContextCommand for SetDefinerForNode {
-    fn execute(self: Box<Self>, app: &mut crate::app::App) {
-        app.add_definer(self.0, self.1);
     }
 }

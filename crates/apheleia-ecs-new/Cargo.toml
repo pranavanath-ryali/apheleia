@@ -6,6 +6,9 @@ edition.workspace = true
 [dependencies]
 apheleia-core.workspace = true
 
+smallvec.workspace = true
+num-traits.workspace = true
+tree-ds.workspace = true
 sparseset.workspace = true
 rustc-hash.workspace = true
 log.workspace = true

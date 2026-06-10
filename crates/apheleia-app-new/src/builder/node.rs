@@ -1,11 +1,12 @@
-use std::{collections::VecDeque, mem::{replace, take}};
+use std::{collections::VecDeque, mem::replace};
 
+use crate::{
+    commands::node::{CreateNode, SetDataForNode},
+    node_definer::{EmptyNode, NodeDefiner},
+};
 use apheleia_core::types::Vec2;
-use apheleia_ecs_new::{NodeId, types::NodeData};
-use crate::{commands::node::{CreateNode, SetDataForNode, SetDefinerForNode}, id_generator::{IdGenerator, IdGeneratorTrait}, node_definer::{EmptyNode, NodeDefiner}};
+use apheleia_ecs_new::{NodeId, command::ContextCommand, id_generator::IdGenerator, types::NodeData};
 use indexmap::IndexSet;
-
-use crate::commands::ContextCommand;
 
 /// [`NodeBuilder`] automates the creation process of a node during the setup process with any extensions and systems
 pub struct NodeBuilder<'a> {
@@ -16,7 +17,7 @@ pub struct NodeBuilder<'a> {
     data: NodeData,
     node: Box<dyn NodeDefiner>,
 
-    commands: VecDeque<Box<dyn ContextCommand>>
+    commands: VecDeque<Box<dyn ContextCommand>>,
 }
 impl<'a> NodeBuilder<'a> {
     pub fn new(id_gen: &'a mut IdGenerator<NodeId>) -> NodeBuilder<'a> {
@@ -33,7 +34,7 @@ impl<'a> NodeBuilder<'a> {
             data: NodeData::default(),
             node: Box::new(EmptyNode),
 
-            commands
+            commands,
         }
     }
 
@@ -55,9 +56,9 @@ impl<'a> NodeBuilder<'a> {
         self.node = Box::new(node);
         self
     }
-    pub(crate) fn get_commands(&mut self) -> &mut VecDeque<Box<dyn ContextCommand>> {
-        self.commands.push_back(SetDataForNode::new(self.id, self.data));
-        self.commands.push_back(SetDefinerForNode::new(self.id, replace(&mut self.node, Box::new(EmptyNode))));
-        &mut self.commands
+    pub(crate) fn execute(mut self) -> (VecDeque<Box<dyn ContextCommand>>, (NodeId, Box<dyn NodeDefiner>)) {
+        self.commands
+            .push_back(SetDataForNode::new(self.id, self.data));
+        (self.commands, (self.id, self.node))
     }
 }

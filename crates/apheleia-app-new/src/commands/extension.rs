@@ -1,6 +1,4 @@
-use apheleia_ecs_new::{NodeId, extensions::Extension};
-
-use crate::commands::ContextCommand;
+use apheleia_ecs_new::{NodeId, command::ContextCommand, extensions::Extension, world::{self, World}};
 
 #[derive(Debug)]
 pub struct AddExtensionToNode<E: Extension>(pub NodeId, pub E);
@@ -10,7 +8,7 @@ impl<E: Extension> AddExtensionToNode<E> {
     }
 }
 impl<E: Extension> ContextCommand for AddExtensionToNode<E> {
-    fn execute(self: Box<Self>, app: &mut crate::app::App) {
-        app.get_world_mut().add_extension_to_node(self.0, self.1);
+    fn execute(self: Box<Self>, world: &mut World) {
+        world.add_extension_to_node(self.0, self.1);
     }
 }

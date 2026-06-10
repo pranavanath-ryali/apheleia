@@ -1,11 +1,13 @@
 use std::fmt::Debug;
 
-use apheleia_ecs_new::systems::{
-    stages::SystemRunStage,
-    system::{IntoSystem, System},
+use apheleia_ecs_new::{
+    command::ContextCommand,
+    systems::{
+        stages::SystemRunStage,
+        system::{IntoSystem, System},
+    },
+    world::World,
 };
-
-use crate::commands::ContextCommand;
 
 pub struct AddSystem {
     pub stage: SystemRunStage,
@@ -34,7 +36,7 @@ impl AddSystem {
     }
 }
 impl ContextCommand for AddSystem {
-    fn execute(self: Box<Self>, app: &mut crate::app::App) {
-        app.get_world_mut().add_system_boxed(self.stage, self.priority, self.system);
+    fn execute(self: Box<Self>, world: &mut World) {
+        world.add_system_boxed(self.stage, self.priority, self.system);
     }
 }

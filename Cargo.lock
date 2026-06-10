@@ -70,8 +70,11 @@ dependencies = [
  "chrono",
  "fern",
  "log",
+ "num-traits",
  "rustc-hash",
+ "smallvec",
  "sparseset",
+ "tree-ds",
 ]
 
 [[package]]

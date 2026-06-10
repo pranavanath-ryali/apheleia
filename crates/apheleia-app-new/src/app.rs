@@ -1,6 +1,5 @@
 use std::{collections::VecDeque, io, mem::take, time::Duration};
 
-use crate::id_generator::{IdGenerator, IdGeneratorTrait};
 use apheleia_core::{buffer::Buffer, renderer::Renderer, terminal, types::Vec2};
 use apheleia_ecs_new::{
     NodeId,
@@ -12,23 +11,18 @@ use log::{info, warn};
 use tree_ds::prelude::{Node, Tree};
 
 use crate::{
-    builder::node::NodeBuilder, commands::ContextCommand, context::node::NodeContext,
-    into_resource::IntoResource, node_definer::NodeDefiner, tag::tag_registry::TagRegistry,
+    builder::node::NodeBuilder, context::node::NodeContext,
+    into_resource::IntoResource, node_definer::NodeDefiner,
 };
 
 pub struct App {
     pub is_running: bool,
 
-    id_gen: IdGenerator<NodeId>,
-    tag_registry: TagRegistry,
-
-    relations: Tree<NodeId, NodeId>,
     world: World,
     renderer: Renderer,
     buffer: Buffer,
 
     definers: VecDeque<(NodeId, Box<dyn NodeDefiner>)>,
-    commands: VecDeque<Box<dyn ContextCommand>>,
 }
 impl App {
     #[allow(clippy::new_without_default)]
@@ -48,43 +42,16 @@ impl App {
         App {
             is_running: true,
 
-            id_gen: IdGenerator::new(0),
-            tag_registry: Default::default(),
-
-            relations,
             world: Default::default(),
             renderer: Default::default(),
             buffer: Buffer::new(size),
 
             definers: Default::default(),
-            commands: Default::default(),
         }
     }
 
     pub fn get_world_mut(&mut self) -> &mut World {
         &mut self.world
-    }
-
-    pub fn get_relation_mut(&mut self) -> &mut Tree<NodeId, NodeId> {
-        &mut self.relations
-    }
-
-    pub fn add_command(&mut self, command: Box<dyn ContextCommand>) {
-        info!("APP: Added new command - {:#?}", command);
-        self.commands.push_back(command);
-    }
-
-    pub(crate) fn execute_commands(&mut self) {
-        warn!("APP: Executing commands");
-        let commands = take(&mut self.commands);
-        for command in commands {
-            command.execute(self);
-        }
-    }
-
-    pub fn add_definer(&mut self, id: NodeId, definer: Box<dyn NodeDefiner>) {
-        info!("APP: Added node definer - ID: {}; Definer: {:#?}", id, definer);
-        self.definers.push_back((id, definer));
     }
 
     pub fn add_resource(mut self, resource: impl IntoResource) -> Self {
@@ -95,10 +62,12 @@ impl App {
 
     pub fn build_node(mut self, f: impl FnOnce(NodeBuilder) -> NodeBuilder) -> Self {
         info!("APP: building new node");
-        let mut builder = f(NodeBuilder::new(&mut self.id_gen));
-        let mut commands = take(builder.get_commands());
+        let builder = f(NodeBuilder::new(&mut self.world.nodeid_gen));
+        let (mut commands, definer) = builder.execute();
         info!("APP: commands returned from NodeBuilder: {:#?}", commands);
-        self.commands.append(&mut commands);
+
+        self.world.apppend_commands(&mut commands);
+        self.definers.push_back(definer);
         self
     }
 
@@ -108,20 +77,23 @@ impl App {
         priority: u8,
         system: impl IntoSystem<Params>,
     ) -> Self {
-        info!("APP: Added system - STAGE: {:?}, PRIORITY: {}", stage, priority);
+        info!(
+            "APP: Added system - STAGE: {:?}, PRIORITY: {}",
+            stage, priority
+        );
         self.world.add_system(stage, priority, system);
         self
     }
 
     pub fn setup(&mut self) {
-        self.execute_commands();
+        self.world.execute_commands();
         let mut definers = take(&mut self.definers);
         for definer in definers.iter_mut() {
             let mut ctx = NodeContext::new(definer.0);
             definer.1.setup(&mut ctx);
-            self.commands.append(ctx.get_commands());
+            self.world.apppend_commands(ctx.get_commands());
         }
-        self.execute_commands();
+        self.world.execute_commands();
     }
 
     pub fn event(&mut self) -> io::Result<()> {

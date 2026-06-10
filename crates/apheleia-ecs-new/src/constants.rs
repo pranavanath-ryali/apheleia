@@ -1,6 +1,6 @@
 pub const MAX_NODES: usize = 512;
 pub const MAX_EXTENSIONS: usize = 1024;
-pub const MAX_SYSTEMS: u8 = u8::MAX;
+pub const MAX_SYSTEMS: usize = u8::MAX as usize;
 
 pub const SYSTEMS_MAX_PRIORITY_CHANGE: u8 = 15;
 

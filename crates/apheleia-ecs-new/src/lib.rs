@@ -1,5 +1,4 @@
-pub(crate) mod id_generator;
-
+pub mod id_generator;
 pub mod constants;
 pub mod extensions;
 mod nodedata_store;
@@ -7,6 +6,8 @@ pub mod resources;
 pub mod systems;
 pub mod types;
 pub mod world;
+pub(crate) mod tag;
+pub mod command;
 
 pub type NodeId = usize;
 pub type ExtensionId = usize;

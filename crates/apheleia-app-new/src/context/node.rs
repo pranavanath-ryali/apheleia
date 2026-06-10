@@ -1,8 +1,8 @@
 use std::collections::VecDeque;
 
-use apheleia_ecs_new::{NodeId, extensions::Extension, resources::Resource, systems::{stages::SystemRunStage, system::IntoSystem}};
+use apheleia_ecs_new::{NodeId, command::ContextCommand, extensions::Extension, resources::Resource, systems::{stages::SystemRunStage, system::IntoSystem}};
 
-use crate::commands::{ContextCommand, extension::AddExtensionToNode, resource::AddResource, system::AddSystem};
+use crate::commands::{extension::AddExtensionToNode, resource::AddResource, system::AddSystem};
 
 pub struct NodeContext {
     id: NodeId,

@@ -5,7 +5,7 @@ use rustc_hash::FxHashMap;
 
 use crate::{
     SystemId,
-    constants::SYSTEMS_MAX_PRIORITY_CHANGE,
+    constants::{MAX_SYSTEMS, SYSTEMS_MAX_PRIORITY_CHANGE},
     id_generator::IdGenerator,
     systems::{
         stages::SystemRunStage,
@@ -22,7 +22,7 @@ pub struct SystemStore {
 impl Default for SystemStore {
     fn default() -> Self {
         Self {
-            id_generator: IdGenerator::new(0),
+            id_generator: IdGenerator::new(MAX_SYSTEMS),
 
             stage_to_priority_ids: Default::default(),
             id_to_systems: Default::default(),

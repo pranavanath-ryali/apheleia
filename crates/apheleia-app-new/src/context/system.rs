@@ -3,12 +3,12 @@ use apheleia_ecs_new::world::World;
 use crate::app::App;
 
 pub struct SystemContext {
-    app: *mut App,
+    world: *mut World,
 }
 impl SystemContext {
-    pub fn new(app: *mut App) -> Self {
+    pub fn new(world: *mut World) -> Self {
         Self {
-            app
+            world
         }
     }
 }

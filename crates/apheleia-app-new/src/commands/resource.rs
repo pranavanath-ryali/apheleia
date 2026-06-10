@@ -1,6 +1,4 @@
-use apheleia_ecs_new::resources::Resource;
-
-use crate::commands::ContextCommand;
+use apheleia_ecs_new::{command::ContextCommand, resources::Resource, world::World};
 
 #[derive(Debug)]
 pub struct AddResource<R: Resource>(pub R);
@@ -10,7 +8,7 @@ impl<R: Resource> AddResource<R> {
     }
 }
 impl<R: Resource> ContextCommand for AddResource<R> {
-    fn execute(self: Box<Self>, app: &mut crate::app::App) {
-        app.get_world_mut().add_resource(self.0);
+    fn execute(self: Box<Self>, world: &mut World) {
+        world.add_resource(self.0);
     }
 }
