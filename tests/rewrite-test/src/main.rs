@@ -1,36 +1,32 @@
 use apheleia_app_new::{app::App, node_definer::NodeDefiner, setup_logger};
-use apheleia_core::types::Vec2;
-use apheleia_ecs_new::{
-    constants::STAGE, resources::Resource, systems::{stages::SystemRunStage, system::SystemParam}
-};
+use apheleia_core::{rich_strings::RichString, types::Vec2};
+
+use crate::widget::BasicTextDefiner;
 
 const MY_TAG: usize = 0;
 
-#[derive(Debug)]
-struct CustomDefiner {
-    pub f: f32,
-}
-impl NodeDefiner for CustomDefiner {
-    fn setup(&mut self, ctx: &mut apheleia_app_new::context::node::NodeContext) {}
-}
+mod widget {
+    use apheleia_app_new::node_definer::NodeDefiner;
+    use apheleia_core::rich_strings::RichString;
+    use apheleia_ecs_new::{constants::STAGE, systems::stages::SystemRunStage::Update};
 
-struct TestParam;
-impl SystemParam for TestParam {
-    unsafe fn fetch(world: *mut apheleia_ecs_new::world::World) -> Option<Self> {
-        Some(TestParam)
+    #[derive(Debug)]
+    pub struct BasicTextDefiner {
+        pub text: RichString,
+    }
+    impl NodeDefiner for BasicTextDefiner {
+        fn setup(&mut self, ctx: &mut apheleia_app_new::context::node::NodeContext) {
+            ctx.add_system(
+                Update,
+                STAGE,
+                update_system,
+            );
+        }
+    }
+
+    fn update_system() {
     }
 }
-
-fn test_system(_: TestParam) {
-    println!("HELLO");
-}
-fn another_test_system() {}
-
-#[derive(Debug)]
-struct TestResource {
-    a: f32
-}
-impl Resource for TestResource {}
 
 fn main() {
     setup_logger();
@@ -40,10 +36,9 @@ fn main() {
                 .tag::<MY_TAG>()
                 .position(Vec2 { x: 10, y: 10 })
                 .size(Vec2 { x: 1, y: 2 })
-                .node(CustomDefiner { f: 1.23 })
+                .node(BasicTextDefiner {
+                    text: RichString::new("YAY"),
+                })
         })
-        .add_resource((TestResource { a: 1.0 },))
-        .add_system(SystemRunStage::Render, STAGE, test_system)
-        .add_system(SystemRunStage::Render, STAGE, another_test_system)
         .run();
 }

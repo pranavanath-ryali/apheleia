@@ -115,11 +115,13 @@ impl App {
 
     pub fn setup(&mut self) {
         self.execute_commands();
-        // let mut definers = take(&mut self.definers);
-        // for definer in definers.iter_mut() {
-        //     let mut ctx = NodeContext::new(definer.0);
-        //     definer.1.setup(&mut ctx);
-        // }
+        let mut definers = take(&mut self.definers);
+        for definer in definers.iter_mut() {
+            let mut ctx = NodeContext::new(definer.0);
+            definer.1.setup(&mut ctx);
+            self.commands.append(ctx.get_commands());
+        }
+        self.execute_commands();
     }
 
     pub fn event(&mut self) -> io::Result<()> {
