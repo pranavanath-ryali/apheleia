@@ -1,5 +1,6 @@
 use std::{collections::VecDeque, mem::take, ptr};
 
+use log::{info, warn};
 use tree_ds::prelude::{Node, Tree};
 
 use crate::{
@@ -126,6 +127,7 @@ impl World {
     /// Add an extension and bind it to the given [`NodeId`]
     #[inline]
     pub fn add_extension_to_node<E: Extension>(&mut self, node_id: NodeId, extension: E) {
+        info!("ECS - Adding extension: {:#?} to node: {}", extension, node_id);
         self.extension_store
             .add_extension_to_node(node_id, extension);
     }
@@ -183,6 +185,7 @@ impl World {
     /// Append [`ContextCommand`]s to queue
     #[inline]
     pub fn apppend_commands(&mut self, commands: &mut VecDeque<Box<dyn ContextCommand>>) {
+        info!("ECS - Commands to be appended: {:#?}", commands);
         self.commands.append(commands);
     }
     /// Execute [`ContextCommand`]s buffered
@@ -191,5 +194,6 @@ impl World {
         for command in commands {
             command.execute(self);
         }
+        warn!("ECS - Executing commands");
     }
 }

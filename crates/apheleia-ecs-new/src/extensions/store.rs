@@ -1,5 +1,6 @@
 use std::any::{Any, TypeId};
 
+use log::info;
 use rustc_hash::FxHashMap;
 
 use crate::{
@@ -7,7 +8,7 @@ use crate::{
     constants::MAX_EXTENSIONS,
     extensions::{
         Extension,
-        container::{ExtensionContainer, ExtensionContainerSingle},
+        container::{self, ExtensionContainer, ExtensionContainerSingle},
     },
     id_generator::IdGenerator,
 };
@@ -17,7 +18,7 @@ pub(crate) struct ExtensionStore {
 
     node_to_ext: FxHashMap<NodeId, FxHashMap<TypeId, ExtensionId>>,
     exttype_to_node: FxHashMap<TypeId, Vec<NodeId>>,
-    containers: FxHashMap<TypeId, Box<dyn Any>>,
+    exttype_to_container: FxHashMap<TypeId, Box<dyn Any>>,
 }
 impl Default for ExtensionStore {
     fn default() -> Self {
@@ -26,7 +27,7 @@ impl Default for ExtensionStore {
 
             exttype_to_node: Default::default(),
             node_to_ext: Default::default(),
-            containers: Default::default(),
+            exttype_to_container: Default::default(),
         }
     }
 }
@@ -35,15 +36,16 @@ impl ExtensionStore {
         let ext_id = self.id_generator.next();
         let type_id = TypeId::of::<T>();
 
-        self.containers
-            .entry(type_id)
-            .and_modify(|container| {
-                container
-                    .downcast_mut::<ExtensionContainerSingle<T>>()
-                    .unwrap()
-                    .insert(ext_id, extension);
-            })
-            .or_insert_with(|| Box::new(ExtensionContainerSingle::<T>::new()));
+        if let Some(container) = self.exttype_to_container.get_mut(&type_id) {
+            container
+                .downcast_mut::<ExtensionContainerSingle<T>>()
+                .unwrap()
+                .insert(ext_id, extension);
+        } else {
+            let mut container = Box::new(ExtensionContainerSingle::<T>::new());
+            container.insert(ext_id, extension);
+            self.exttype_to_container.insert(type_id, container);
+        }
 
         self.node_to_ext
             .entry(node_id)
@@ -66,14 +68,15 @@ impl ExtensionStore {
     pub fn get_extension<T: Extension>(&self, node_id: NodeId) -> Option<&T> {
         let type_id = TypeId::of::<T>();
 
-        if let Some(container) = self.containers.get(&type_id)
+        if let Some(container) = self.exttype_to_container.get(&type_id)
             && let Some(typeid_to_extid) = self.node_to_ext.get(&node_id)
             && let Some(ext_id) = typeid_to_extid.get(&type_id)
         {
-            return container
+            let ext = container
                 .downcast_ref::<ExtensionContainerSingle<T>>()
                 .unwrap()
                 .get(*ext_id);
+            return ext;
         }
         None
     }
@@ -81,7 +84,7 @@ impl ExtensionStore {
     pub fn get_extension_mut<T: Extension>(&mut self, node_id: NodeId) -> Option<&mut T> {
         let type_id = TypeId::of::<T>();
 
-        if let Some(container) = self.containers.get_mut(&type_id)
+        if let Some(container) = self.exttype_to_container.get_mut(&type_id)
             && let Some(typeid_to_extid) = self.node_to_ext.get(&node_id)
             && let Some(ext_id) = typeid_to_extid.get(&type_id)
         {

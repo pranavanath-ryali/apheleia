@@ -1,6 +1,5 @@
 use std::{
-    iter::{self, Map},
-    marker::PhantomData, slice,
+    collections::HashSet, iter::{self, Map}, marker::PhantomData, process::id, slice
 };
 
 use apheleia_ecs_new::{
@@ -10,6 +9,7 @@ use apheleia_ecs_new::{
     types::NodeData,
     world::{self, World},
 };
+use log::info;
 
 pub trait WorldQuery {
     type Item<'w>;
@@ -28,8 +28,7 @@ impl<E: Extension> WorldQuery for &E {
     unsafe fn fetch<'w>(world: *mut World, id: NodeId) -> Self::Item<'w> {
         let world = unsafe { &*world };
         world
-            .get_extension::<E>(id)
-            .expect("Unexpected extension does not exist for node")
+            .get_extension::<E>(id).expect("Unexpected error")
     }
 }
 
@@ -45,6 +44,24 @@ impl<E: Extension> WorldQuery for &mut E {
         world
             .get_extension_mut::<E>(id)
             .expect("Unexpected extension does not exist for node")
+    }
+}
+
+impl<Q1: WorldQuery, Q2: WorldQuery> WorldQuery for (Q1, Q2) {
+    type Item<'w> = (Q1::Item<'w>, Q2::Item<'w>);
+
+    fn match_ids(world: &World) -> Vec<NodeId> {
+        let q1_ids_set: HashSet<NodeId> = Q1::match_ids(world).iter().copied().collect();
+        let q2_ids = Q2::match_ids(world);
+
+        q1_ids_set
+            .into_iter()
+            .filter(|id| q2_ids.contains(id))
+            .collect()
+    }
+
+    unsafe fn fetch<'w>(world: *mut World, id: NodeId) -> Self::Item<'w> {
+        unsafe { (Q1::fetch(world, id), Q2::fetch(world, id)) }
     }
 }
 
@@ -123,12 +140,16 @@ impl<'w, Q: WorldQuery, F: QueryFilter> Query<'w, Q, F> {
 pub struct QueryIter<'a, Q: WorldQuery> {
     world: *mut World,
     ids: slice::Iter<'a, NodeId>,
-    
+
     _marker: PhantomData<(&'a mut World, Q)>,
 }
 impl<'a, Q: WorldQuery> QueryIter<'a, Q> {
     pub(crate) fn new(world: *mut World, ids: slice::Iter<'a, NodeId>) -> Self {
-        Self { world, ids, _marker: PhantomData }
+        Self {
+            world,
+            ids,
+            _marker: PhantomData,
+        }
     }
 }
 
@@ -137,10 +158,8 @@ impl<'a, Q: WorldQuery> Iterator for QueryIter<'a, Q> {
 
     fn next(&mut self) -> Option<Self::Item> {
         if let Some(id) = self.ids.next() {
-            let world = unsafe {
-                &mut *self.world
-            };
-            return Some(unsafe { Q::fetch(world, *id) })
+            let world = unsafe { &mut *self.world };
+            return Some(unsafe { Q::fetch(world, *id) });
         }
         None
     }
