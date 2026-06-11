@@ -62,7 +62,7 @@ impl App {
 
     pub fn build_node(mut self, f: impl FnOnce(NodeBuilder) -> NodeBuilder) -> Self {
         info!("APP: building new node");
-        let builder = f(NodeBuilder::new(&mut self.world.nodeid_gen));
+        let builder = f(NodeBuilder::new(&mut self.world));
         let (mut commands, definer) = builder.execute();
         info!("APP: commands returned from NodeBuilder: {:#?}", commands);
 

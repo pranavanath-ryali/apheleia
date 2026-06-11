@@ -16,4 +16,8 @@ impl NodeDataStore {
             .and_modify(|d| *d = data)
             .or_insert(data);
     }
+
+    pub fn get_data(&self, id: NodeId) -> Option<&NodeData> {
+        self.id_to_data.get(&id)
+    }
 }

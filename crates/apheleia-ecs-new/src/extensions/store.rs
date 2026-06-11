@@ -92,6 +92,16 @@ impl ExtensionStore {
         }
         None
     }
+
+    pub fn get_nodes_with_extension<T: Extension>(&self) -> Vec<NodeId> {
+        let type_id = TypeId::of::<T>();
+        let mut ids: Vec<NodeId> = vec![];
+
+        if let Some(nodes) = self.exttype_to_node.get(&type_id) {
+            nodes.iter().for_each(|id| ids.push(*id));
+        }
+        ids
+    }
 }
 
 #[cfg(test)]
