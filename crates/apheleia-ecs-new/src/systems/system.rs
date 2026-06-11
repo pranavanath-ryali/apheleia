@@ -1,8 +1,9 @@
-use std::{fmt::Debug, marker::PhantomData};
+use std::{any::TypeId, fmt::Debug, marker::PhantomData};
 
 use crate::world::World;
 
 pub trait System: 'static {
+    fn id(&self) -> TypeId;
     fn run(&mut self, world: *mut World);
 }
 
@@ -38,6 +39,10 @@ macro_rules! impl_into_system {
         where
             Func: FnMut($($param,)*) + 'static,
         {
+            fn id(&self) -> TypeId {
+                TypeId::of::<Self>()
+            }
+
             fn run(&mut self, world: *mut World) {
                 unsafe {
                     if let ($(Some($param),)*) = ($($param::fetch(world),)*) {
