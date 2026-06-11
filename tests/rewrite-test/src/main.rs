@@ -64,7 +64,7 @@ mod widget {
 }
 
 fn main() {
-    setup_logger();
+    // setup_logger();
     App::new()
         .build_node(|builder| {
             builder
