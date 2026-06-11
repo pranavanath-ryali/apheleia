@@ -169,10 +169,10 @@ impl World {
         self.system_store.add_system_boxed(stage, priority, system);
     }
     /// Run all [`System`]s registered for that stage and run in order of priority
+    #[inline]
     pub fn run_systems_on_stage(&mut self, stage: SystemRunStage) {
-        let mut system_store = take(&mut self.system_store);
-        system_store.run_systems_for_stage(stage, ptr::from_mut(self));
-        self.system_store = system_store;
+        let ptr = self as *mut World;
+        self.system_store.run_systems_for_stage(stage, ptr);
     }
 
     /// Add [`ContextCommand`] to queue

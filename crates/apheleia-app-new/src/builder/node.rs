@@ -5,7 +5,7 @@ use crate::{
     node_definer::{EmptyNode, NodeDefiner},
 };
 use apheleia_core::types::Vec2;
-use apheleia_ecs_new::{NodeId, command::ContextCommand, id_generator::IdGenerator, types::NodeData, world::World};
+use apheleia_ecs_new::{NodeId, command::ContextCommand, types::NodeData, world::World};
 use indexmap::IndexSet;
 
 /// [`NodeBuilder`] automates the creation process of a node during the setup process with any extensions and systems

@@ -19,7 +19,7 @@ pub struct IdGenerator<T> {
 impl<T: Num + Copy + PartialOrd + Display + AddAssign> IdGenerator<T> {
     /// Creates a IdGenerator with a max value.
     pub fn new(max: T) -> Self {
-        warn!("ECS - Created new IdGenerator with max: {}", max);
+        warn!("IDGENERATOR - Created new IdGenerator with max: {}", max);
         Self { count: T::zero(), max }
     }
 
