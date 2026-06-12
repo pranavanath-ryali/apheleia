@@ -11,6 +11,7 @@ use indexmap::IndexSet;
 /// [`NodeBuilder`] automates the creation process of a node during the setup process with any extensions and systems
 pub struct NodeBuilder {
     id: NodeId,
+    parent_id: NodeId,
     world: *mut World,
 
     tags: IndexSet<usize>,
@@ -20,7 +21,7 @@ pub struct NodeBuilder {
     commands: VecDeque<Box<dyn ContextCommand>>,
 }
 impl NodeBuilder {
-    pub fn new(world: &mut World) -> NodeBuilder {
+    pub fn new(parent_id: NodeId, world: &mut World) -> NodeBuilder {
         let id = world.create_node();
 
         let mut commands: VecDeque<Box<dyn ContextCommand>> = Default::default();
@@ -28,6 +29,7 @@ impl NodeBuilder {
 
         Self {
             id,
+            parent_id,
             world,
 
             tags: Default::default(),
@@ -45,10 +47,12 @@ impl NodeBuilder {
 
     pub fn position(mut self, position: Vec2) -> Self {
         self.data.position = position;
+        self.data.global_position = Some(position);
         self
     }
     pub fn size(mut self, size: Vec2) -> Self {
         self.data.size = size;
+        self.data.global_size = Some(size);
         self
     }
 
@@ -56,7 +60,12 @@ impl NodeBuilder {
         self.node = Box::new(node);
         self
     }
-    pub(crate) fn execute(mut self) -> (VecDeque<Box<dyn ContextCommand>>, (NodeId, Box<dyn NodeDefiner>)) {
+    pub(crate) fn execute(
+        mut self,
+    ) -> (
+        VecDeque<Box<dyn ContextCommand>>,
+        (NodeId, Box<dyn NodeDefiner>),
+    ) {
         self.commands
             .push_back(SetDataForNode::new(self.id, self.data));
         (self.commands, (self.id, self.node))

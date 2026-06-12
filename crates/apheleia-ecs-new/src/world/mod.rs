@@ -1,10 +1,13 @@
-use std::{collections::VecDeque, mem::take, ptr};
+use std::{collections::{HashMap, VecDeque}, mem::take, ptr};
 
+use apheleia_core::buffer::Buffer;
 use log::{info, warn};
+use rustc_hash::{FxBuildHasher, FxHashMap};
 use tree_ds::prelude::{Node, Tree};
 
 use crate::{
     NodeId,
+    buffer_store::BufferStore,
     command::ContextCommand,
     constants::MAX_NODES,
     extensions::{Extension, store::ExtensionStore},
@@ -35,6 +38,7 @@ pub struct World {
     extension_store: ExtensionStore,
     resource_store: ResourceStore,
     system_store: SystemStore,
+    buffer_store: BufferStore,
 
     commands: VecDeque<Box<dyn ContextCommand>>, // TODO: Maybe switch to SmallVec
 }
@@ -57,6 +61,7 @@ impl Default for World {
             extension_store: Default::default(),
             resource_store: Default::default(),
             system_store: Default::default(),
+            buffer_store: Default::default(),
 
             commands: Default::default(),
         }
@@ -181,6 +186,22 @@ impl World {
     pub fn run_systems_on_stage(&mut self, stage: SystemRunStage) {
         let ptr = self as *mut World;
         self.system_store.run_systems_for_stage(stage, ptr);
+    }
+
+    // [`BufferStore`] functions
+    /// Get [`Buffer`] for the given [`NodeId`]
+    #[inline]
+    pub fn get_buffer(&mut self, id: NodeId) -> Option<&mut Buffer> {
+        if let Some(&data) = self.get_nodedata(id) {
+            return self.buffer_store.get_buffer_mut(data, id);
+        }
+        None
+    }
+
+    /// Get all [`Buffer`]s from [`BufferStore`]
+    #[inline]
+    pub fn get_buffers(&mut self) -> &mut FxHashMap<usize, Buffer> {
+        self.buffer_store.get_buffers()
     }
 
     /// Add [`ContextCommand`] to queue

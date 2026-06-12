@@ -1,6 +1,6 @@
 use std::{any::TypeId, collections::BTreeMap};
 
-use log::warn;
+use log::{info, warn};
 use rustc_hash::FxHashMap;
 
 use crate::{
@@ -111,8 +111,10 @@ impl SystemStore {
     }
 
     pub fn run_systems_for_stage(&mut self, stage: SystemRunStage, world: *mut World) {
+        info!("ECS - Running systems on stage {:#?}", stage);
         if let Some(map) = self.stage_to_priority_ids.get(&stage) {
             for id in map.values() {
+                info!("ECS - Running system ID: {}", id);
                 let system = self
                     .id_to_systems
                     .get_mut(id)

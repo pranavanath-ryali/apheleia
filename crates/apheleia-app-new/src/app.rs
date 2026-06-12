@@ -62,7 +62,7 @@ impl App {
 
     pub fn build_node(mut self, f: impl FnOnce(NodeBuilder) -> NodeBuilder) -> Self {
         info!("APP: building new node");
-        let builder = f(NodeBuilder::new(&mut self.world));
+        let builder = f(NodeBuilder::new(0, &mut self.world));
         let (mut commands, definer) = builder.execute();
         info!("APP: commands returned from NodeBuilder: {:#?}", commands);
 
@@ -146,6 +146,15 @@ impl App {
     fn render(&mut self) {
         self.world.current_stage = SystemRunStage::Render;
         self.world.run_systems_on_stage(SystemRunStage::Render);
+
+        let ids: Vec<NodeId> = self.world.get_registered_nodes().iter().copied().collect();
+        for id in ids {
+            let data = *self.world.get_nodedata(id).unwrap();
+            if let Some(buffer) = self.world.get_buffer(id) && let Some(position) = data.global_position {
+                self.buffer.render_buffer(position, buffer);
+            }
+        }
+        self.renderer.render(&mut self.buffer);
     }
 
     pub fn run(&mut self) {

@@ -8,6 +8,7 @@ pub mod systems;
 pub(crate) mod tag;
 pub mod types;
 pub mod world;
+mod buffer_store;
 
 pub type NodeId = usize;
 pub type ExtensionId = usize;
