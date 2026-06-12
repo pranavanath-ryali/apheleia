@@ -81,6 +81,7 @@ impl App {
 
     pub fn setup(&mut self) {
         self.world.execute_commands();
+        info!("[APP] Executing NodeDefiners");
         let mut definers = take(&mut self.definers);
         for definer in definers.iter_mut() {
             let mut ctx = NodeContext::new(definer.0);
@@ -90,6 +91,7 @@ impl App {
         self.world.execute_commands();
 
         // Setup [`World`] for event
+        info!("[APP] Setting up basic resources");
         self.world.add_resource(AppEvents {
             data: EventData::None,
             event_type: EventType::None,
@@ -98,6 +100,7 @@ impl App {
 
     pub fn event(&mut self) -> io::Result<()> {
         // TODO: Implement event function
+        info!("[APP] Event Poll");
         if poll(Duration::from_nanos(1_000_000_000 / 15))? {
             let resource = self.world.get_resource_mut::<AppEvents>().unwrap();
             match crossterm::event::read()? {
@@ -123,24 +126,29 @@ impl App {
                                                           // Resize event
             }
     
+            info!("[APP] Event Stage");
             self.world.current_stage = SystemRunStage::Event;
             self.world.run_systems_on_stage(SystemRunStage::Event);
         }
         Ok(())
     }
     fn update(&mut self) {
+        info!("[APP] Update Stage");
         self.world.current_stage = SystemRunStage::Update;
         self.world.run_systems_on_stage(SystemRunStage::Update);
     }
     fn render_flip(&mut self) {
+        info!("[APP] Render Flip");
         _ = self.renderer.render_flip(&mut self.buffer);
         self.world.current_stage = SystemRunStage::Render;
         self.world.run_systems_on_stage(SystemRunStage::Render);
     }
     fn render(&mut self) {
+        info!("[APP] Render Stage");
         self.world.current_stage = SystemRunStage::Render;
         self.world.run_systems_on_stage(SystemRunStage::Render);
 
+        warn!("[APP] Rendering all node buffers into Main Buffer");
         let ids: Vec<NodeId> = self.world.get_registered_nodes().iter().copied().collect();
         for id in ids {
             let data = *self.world.get_nodedata(id).unwrap();
@@ -148,6 +156,7 @@ impl App {
                 self.buffer.render_buffer(position, buffer);
             }
         }
+        info!("[APP] Rendering Main Buffer to stdout");
         self.renderer.render(&mut self.buffer);
     }
 

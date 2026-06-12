@@ -22,7 +22,7 @@ crossterm = "0.29.0"
 indexmap = "2.2.2"
 tree-ds = "0.2.0"
 rustc-hash = "2.1.2"
-log = "0.4"
+log = { version = "0.4", features = ["release_max_level_off"] }
 fern = "0.7"
 chrono = "0.4"
 num-traits = "0.2.19"

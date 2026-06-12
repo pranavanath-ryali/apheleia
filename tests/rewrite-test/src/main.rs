@@ -26,15 +26,12 @@ mod widget {
         constants::{POST_STAGE, STAGE},
         extensions::Extension,
         resources::Resource,
-        systems::stages::{self, SystemRunStage::{self, Update}},
+        systems::stages::{
+            self,
+            SystemRunStage::{self, Update},
+        },
         types::NodeData,
     };
-
-    #[derive(Debug)]
-    pub struct TestRes {
-        value: f32,
-    }
-    impl Resource for TestRes {}
 
     #[derive(Debug)]
     pub struct BasicTextDefiner {
@@ -43,14 +40,7 @@ mod widget {
     impl NodeDefiner for BasicTextDefiner {
         fn setup(&mut self, ctx: &mut apheleia_app_new::context::node::NodeContext) {
             ctx.add_system(Update, STAGE, mut_system);
-            ctx.add_system(Update, STAGE, update_system);
-            ctx.add_system(
-                SystemRunStage::Render,
-                STAGE,
-                render,
-            );
-            // ctx.add_resource(TestRes { value: 123.0 });
-
+            ctx.add_system(SystemRunStage::Render, STAGE, render);
             ctx.add_extension(TestExtension { value: 1 });
         }
     }
@@ -61,18 +51,23 @@ mod widget {
     }
     impl Extension for TestExtension {}
 
-    fn mut_system(mut res: ResMut<TestRes>, ctx: SystemContext) {
-        res.value += 1.0;
+    fn mut_system(q: Query<&mut TestExtension>) {
+        for ext in q.iter() {
+            ext.value += 1;
+        }
     }
 
-    fn update_system(res: Res<TestRes>) {}
-
     fn render(query: Query<(NodeId, &TestExtension)>, mut ctx: SystemContext) {
-        println!("SYSTEM START");
-        for (id, data) in query.iter() {
-            println!("IDS: {id}");
+        for (id, ext) in query.iter() {
             let buffer = ctx.get_buffer(id).expect("No Buffer?");
-            buffer.write_string(Vec2::zero(), format!("{}", id), None);
+            buffer.write_string(
+                Vec2::zero(),
+                format!("{}", ext.value),
+                Some(Style {
+                    bg: apheleia_core::Color::Red,
+                    ..Default::default()
+                }),
+            );
         }
     }
 }
@@ -80,16 +75,11 @@ mod widget {
 fn main() {
     setup_logger();
     App::new()
-        .add_system(
-            apheleia_ecs_new::systems::stages::SystemRunStage::Event,
-            PRE_STAGE,
-            exit_app,
-        )
         .build_node(|builder| {
             builder
                 .tag::<MY_TAG>()
-                .position(Vec2 { x: 10, y: 10 })
-                .size(Vec2 { x: 1, y: 2 })
+                .position(Vec2 { x: 0, y: 0 })
+                .size(Vec2 { x: 5, y: 1 })
                 .node(BasicTextDefiner {
                     text: RichString::new("YAY"),
                 })
