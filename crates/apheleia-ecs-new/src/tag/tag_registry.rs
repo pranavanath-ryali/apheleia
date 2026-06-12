@@ -1,3 +1,4 @@
+use log::info;
 use rustc_hash::FxHashMap;
 use smallvec::SmallVec;
 
@@ -14,6 +15,7 @@ impl TagRegistry {
             v.push(node);
             v
         });
+        info!("[ECS] Tagged NodeId: {} with Tag: {}", node, tag);
     }
 
     pub fn get_nodes(&self, tag: usize) -> Option<&SmallVec<[usize; 4]>> {

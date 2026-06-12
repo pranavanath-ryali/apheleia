@@ -1,5 +1,6 @@
 use std::any::{Any, TypeId};
 
+use log::info;
 use rustc_hash::FxHashMap;
 
 use crate::resources::Resource;
@@ -14,6 +15,7 @@ impl ResourceStore {
             !self.resources.contains_key(&TypeId::of::<T>()),
             "The given resource is already added"
         );
+        info!("[ECS] Added resource: {:#?}", res);
         self.resources.entry(TypeId::of::<T>()).or_insert(res);
     }
 

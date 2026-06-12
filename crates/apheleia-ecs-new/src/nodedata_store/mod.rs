@@ -1,5 +1,6 @@
 use std::mem::{replace, swap};
 
+use log::info;
 use rustc_hash::FxHashMap;
 
 use crate::{NodeId, types::NodeData};
@@ -11,6 +12,7 @@ pub struct NodeDataStore {
 }
 impl NodeDataStore {
     pub fn set_data(&mut self, id: NodeId, data: NodeData) {
+        info!("[ECS] Set data to Node {} - {:#?}", id, data);
         self.id_to_data
             .entry(id)
             .and_modify(|d| *d = data)

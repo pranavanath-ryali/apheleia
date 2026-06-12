@@ -47,6 +47,8 @@ impl Default for World {
         let mut relations: Tree<NodeId, NodeId> = Tree::new(None);
         _ = relations.add_node(Node::new(0, None), None);
 
+        warn!("[ECS] - Created new World");
+
         Self {
             running: true,
             nodeid_gen: IdGenerator::new(MAX_NODES),
@@ -198,29 +200,25 @@ impl World {
         None
     }
 
-    /// Get all [`Buffer`]s from [`BufferStore`]
-    #[inline]
-    pub fn get_buffers(&mut self) -> &mut FxHashMap<usize, Buffer> {
-        self.buffer_store.get_buffers()
-    }
-
     /// Add [`ContextCommand`] to queue
     #[inline]
     pub fn add_command(&mut self, command: Box<dyn ContextCommand>) {
+        warn!("[ECS] Added command: {:?}", command);
         self.commands.push_back(command);
     }
     /// Append [`ContextCommand`]s to queue
     #[inline]
     pub fn apppend_commands(&mut self, commands: &mut VecDeque<Box<dyn ContextCommand>>) {
-        info!("ECS - Commands to be appended: {:#?}", commands);
+        warn!("[ECS] Commands appended: {:#?}", commands);
         self.commands.append(commands);
     }
     /// Execute [`ContextCommand`]s buffered
     pub fn execute_commands(&mut self) {
+        warn!("[ECS] Executing commands");
         let commands = take(&mut self.commands);
         for command in commands {
             command.execute(self);
         }
-        warn!("ECS - Executing commands");
+        info!("[ECS] Commands executed");
     }
 }

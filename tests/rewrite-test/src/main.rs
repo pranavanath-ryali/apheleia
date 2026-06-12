@@ -68,7 +68,9 @@ mod widget {
     fn update_system(res: Res<TestRes>) {}
 
     fn render(query: Query<(NodeId, &TestExtension)>, mut ctx: SystemContext) {
+        println!("SYSTEM START");
         for (id, data) in query.iter() {
+            println!("IDS: {id}");
             let buffer = ctx.get_buffer(id).expect("No Buffer?");
             buffer.write_string(Vec2::zero(), format!("{}", id), None);
         }

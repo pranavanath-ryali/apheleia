@@ -29,7 +29,7 @@ pub struct App {
 impl App {
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
-        info!("APP: Creating new app object");
+        info!("[APP] Creating new app object");
         let size = {
             let (width, height) = terminal::size().expect("Failed to get terminal size");
             Vec2 {
@@ -55,16 +55,14 @@ impl App {
     }
 
     pub fn add_resource(mut self, resource: impl IntoResource) -> Self {
-        info!("APP: Added resource: {:#?}", resource);
         resource.insert_into(&mut self.world);
         self
     }
 
     pub fn build_node(mut self, f: impl FnOnce(NodeBuilder) -> NodeBuilder) -> Self {
-        info!("APP: building new node");
+        info!("[APP] building new node");
         let builder = f(NodeBuilder::new(0, &mut self.world));
         let (mut commands, definer) = builder.execute();
-        info!("APP: commands returned from NodeBuilder: {:#?}", commands);
 
         self.world.apppend_commands(&mut commands);
         self.definers.push_back(definer);
@@ -77,10 +75,6 @@ impl App {
         priority: u8,
         system: impl IntoSystem<Params>,
     ) -> Self {
-        info!(
-            "APP: Added system - STAGE: {:?}, PRIORITY: {}",
-            stage, priority
-        );
         self.world.add_system(stage, priority, system);
         self
     }
