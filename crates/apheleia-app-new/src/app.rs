@@ -11,13 +11,15 @@ use log::{info, warn};
 use tree_ds::prelude::{Node, Tree};
 
 use crate::{
-    builder::node::NodeBuilder, context::node::NodeContext,
-    into_resource::IntoResource, node_definer::NodeDefiner,
+    builder::node::NodeBuilder,
+    context::node::NodeContext,
+    into_resource::IntoResource,
+    node_definer::NodeDefiner,
+    resources::AppEvents,
+    types::{self, EventData, EventType},
 };
 
 pub struct App {
-    pub is_running: bool,
-
     world: World,
     renderer: Renderer,
     buffer: Buffer,
@@ -40,8 +42,6 @@ impl App {
         _ = relations.add_node(Node::new(0, None), None);
 
         App {
-            is_running: true,
-
             world: Default::default(),
             renderer: Default::default(),
             buffer: Buffer::new(size),
@@ -94,67 +94,57 @@ impl App {
             self.world.apppend_commands(ctx.get_commands());
         }
         self.world.execute_commands();
+
+        // Setup [`World`] for event
+        self.world.add_resource(AppEvents {
+            data: EventData::None,
+            event_type: EventType::None,
+        });
     }
 
     pub fn event(&mut self) -> io::Result<()> {
         // TODO: Implement event function
-        // let mut event_type: EventType = EventType::None;
-        // let mut event_data: EventData = EventData::None;
-        if poll(Duration::from_nanos(1_000_000_000 / 15 as u64))? {
+        if poll(Duration::from_nanos(1_000_000_000 / 15))? {
+            let resource = self.world.get_resource_mut::<AppEvents>().unwrap();
             match crossterm::event::read()? {
-                // crossterm::event::Event::FocusGained => event_type = EventType::FocusGained,
-                // crossterm::event::Event::FocusLost => event_type = EventType::FocusLost,
-                crossterm::event::Event::Key(key_event) => {
-                    if key_event.modifiers == KeyModifiers::CONTROL
-                        && key_event.code == KeyCode::Char('c')
-                    {
-                        self.is_running = false;
-                    }
-
-                    // event_type = EventType::Keys;
-                    // event_data = EventData::Keys(key_event);
+                crossterm::event::Event::FocusGained => {
+                    resource.data = EventData::FocusGained;
+                    resource.event_type = types::EventType::FocusGained;
                 }
-                // crossterm::event::Event::Mouse(event) => {
-                //     event_type = EventType::Mouse;
-                //     event_data = EventData::Mouse(event)
-                // }
-                // crossterm::event::Event::Paste(_) => todo!(),
-                // crossterm::event::Event::Resize(width, height) => {
-                //     event_type = EventType::Resize;
-                //     event_data = EventData::Resize(Vec2 {
-                //         x: width,
-                //         y: height,
-                //     });
-                // }
-                _ => (),
+                crossterm::event::Event::FocusLost => {
+                    resource.data = EventData::FocusLost;
+                    resource.event_type = types::EventType::FocusLost;
+                }
+                crossterm::event::Event::Key(event) => {
+                    resource.data = EventData::Keys(event);
+                    resource.event_type = types::EventType::Keys;
+                }
+                crossterm::event::Event::Mouse(event) => {
+                    resource.data = EventData::Mouse(event);
+                    resource.event_type = types::EventType::Mouse;
+                }
+                crossterm::event::Event::Paste(_) => (), // TODO: Implement Paste Event
+                crossterm::event::Event::Resize(width, height) => todo!(), // TODO:
+                                                          // Implement
+                                                          // Resize event
             }
+    
+            self.world.current_stage = SystemRunStage::Event;
+            self.world.run_systems_on_stage(SystemRunStage::Event);
         }
-
-        // if event_type != EventType::None {
-        //     // TODO: Handle this
-        //     // let mut world = SystemView {
-        //     //     relations: &self.relations,
-        //     //
-        //     //     node_storage: &self.node_store,
-        //     //     extension_store: &mut self.extension_store,
-        //     //     resource_store: &mut self.resource_store,
-        //     // };
-        //     //
-        //     // let mut ctx = SystemContext::new_event(&event_data, &mut world);
-        //     // self.system_store
-        //     //     .run_systems_for_type(crate::types::UpdateType::Event(event_type), &mut ctx);
-        //     // self.commands.append(ctx.get_commands());
-        // }
         Ok(())
     }
     fn update(&mut self) {
+        self.world.current_stage = SystemRunStage::Update;
         self.world.run_systems_on_stage(SystemRunStage::Update);
     }
     fn render_flip(&mut self) {
         _ = self.renderer.render_flip(&mut self.buffer);
+        self.world.current_stage = SystemRunStage::Render;
         self.world.run_systems_on_stage(SystemRunStage::Render);
     }
     fn render(&mut self) {
+        self.world.current_stage = SystemRunStage::Render;
         self.world.run_systems_on_stage(SystemRunStage::Render);
     }
 
@@ -163,7 +153,7 @@ impl App {
         _ = self.renderer.init();
 
         self.render_flip();
-        while self.is_running {
+        while self.world.running {
             self.event();
             self.update();
             self.render();

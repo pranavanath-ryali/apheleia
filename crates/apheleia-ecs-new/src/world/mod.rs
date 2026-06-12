@@ -21,8 +21,12 @@ use crate::{
 };
 
 pub struct World {
+    pub running: bool,
+
     pub nodeid_gen: IdGenerator<NodeId>,
     relations: Tree<NodeId, NodeId>,
+
+    pub current_stage: SystemRunStage,
 
     registered_nodes: VecDeque<NodeId>,
     tag_registry: TagRegistry,
@@ -32,7 +36,7 @@ pub struct World {
     resource_store: ResourceStore,
     system_store: SystemStore,
 
-    commands: VecDeque<Box<dyn ContextCommand>>,
+    commands: VecDeque<Box<dyn ContextCommand>>, // TODO: Maybe switch to SmallVec
 }
 impl Default for World {
     fn default() -> Self {
@@ -40,8 +44,11 @@ impl Default for World {
         _ = relations.add_node(Node::new(0, None), None);
 
         Self {
+            running: true,
             nodeid_gen: IdGenerator::new(MAX_NODES),
             relations,
+
+            current_stage: SystemRunStage::Event,
 
             registered_nodes: Default::default(),
             tag_registry: Default::default(),
@@ -127,7 +134,6 @@ impl World {
     /// Add an extension and bind it to the given [`NodeId`]
     #[inline]
     pub fn add_extension_to_node<E: Extension>(&mut self, node_id: NodeId, extension: E) {
-        info!("ECS - Adding extension: {:#?} to node: {}", extension, node_id);
         self.extension_store
             .add_extension_to_node(node_id, extension);
     }

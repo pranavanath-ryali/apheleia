@@ -102,6 +102,15 @@ impl QueryFilter for () {
     }
 }
 
+pub struct With<T> {
+    marker: PhantomData<T>
+}
+impl<T: Extension> QueryFilter for With<T> {
+    fn matches(world: &World, id: NodeId) -> bool {
+        world.get_extension::<T>(id).is_some()
+    }
+}
+
 pub struct Query<'w, Q: WorldQuery, F: QueryFilter = ()> {
     world: *mut World,
     ids: Vec<NodeId>,

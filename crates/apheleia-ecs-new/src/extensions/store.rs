@@ -107,22 +107,23 @@ impl ExtensionStore {
     }
 }
 
-#[cfg(test)]
-mod test_extensions {
-    use super::*;
+// #[cfg(test)]
+// mod test_extensions {
+//     use super::*;
 
-    #[derive(Debug)]
-    struct TestExtension {
-        value: u16,
-    }
-    impl Extension for TestExtension {}
+//     #[derive(Debug)]
+//     struct TestExtension {
+//         value: u16,
+//     }
+//     impl Extension for TestExtension {}
 
-    // #[test]
-    fn test_extension_store() {
-        let mut store = ExtensionStore::default();
+//     // #[test]
+//     fn test_extension_store() {
+//         let mut store = ExtensionStore::default();
 
-        store.add_extension_to_node(10, TestExtension { value: 5 });
+//         store.add_extension_to_node(10, TestExtension { value: 5 });
+//         store.
 
-        assert_eq!(store.get_extension::<TestExtension>(10).unwrap().value, 5);
-    }
-}
+//         assert_eq!(store.get_extension::<TestExtension>(10).unwrap().value, 5);
+//     }
+// }

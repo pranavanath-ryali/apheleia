@@ -8,7 +8,7 @@ pub trait System: 'static {
 }
 
 pub trait SystemParam: Sized + 'static {
-    unsafe fn fetch(world: *mut World) -> Option<Self>;
+    unsafe fn fetch<'w>(world: *mut World) -> Option<Self>;
 }
 
 pub trait IntoSystem<Params> {

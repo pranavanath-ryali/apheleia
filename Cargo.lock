@@ -464,6 +464,7 @@ dependencies = [
  "apheleia-app-new",
  "apheleia-core",
  "apheleia-ecs-new",
+ "crossterm",
 ]
 
 [[package]]

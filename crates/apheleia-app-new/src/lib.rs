@@ -11,6 +11,8 @@ pub mod builder;
 pub mod node_definer;
 pub mod context;
 pub mod params;
+pub mod resources;
+pub mod types;
 
 pub fn setup_logger() -> Result<(), Box<dyn Error>> {
     let log_file = OpenOptions::new()

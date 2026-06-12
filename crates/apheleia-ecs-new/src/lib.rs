@@ -1,13 +1,13 @@
-mod id_generator;
+pub mod command;
 pub mod constants;
 pub mod extensions;
+mod id_generator;
 mod nodedata_store;
 pub mod resources;
 pub mod systems;
+pub(crate) mod tag;
 pub mod types;
 pub mod world;
-pub(crate) mod tag;
-pub mod command;
 
 pub type NodeId = usize;
 pub type ExtensionId = usize;
