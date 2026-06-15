@@ -7,8 +7,8 @@ version = "0.1.0"
 edition = "2024"
 
 [workspace.dependencies]
-apheleia-types = { path = "crates/apheleia-types" }
 apheleia-core = { path = "crates/apheleia-core" }
+apheleia-types = { path = "crates/apheleia-types" }
 apheleia-app = { path = "crates/apheleia-app" }
 apheleia-ecs = { path = "crates/apheleia-ecs" }
 
