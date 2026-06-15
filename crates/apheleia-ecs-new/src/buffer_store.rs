@@ -22,6 +22,8 @@ impl BufferStore {
             return Some(self.id_to_buffer.get_mut(&id).unwrap());
         }
 
+        info!("[ECS] Skipped creating NodeBuffer since one of the dimension for global_size is 0 for NodeID: {}", id);
+
         None
     }
 }

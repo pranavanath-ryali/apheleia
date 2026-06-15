@@ -1,7 +1,10 @@
 use std::{collections::VecDeque, mem::replace};
 
 use crate::{
-    commands::node::{CreateNode, SetDataForNode},
+    commands::node::{
+        CalculateGlobalPositionForNode, CalculateGlobalSizeForNode, CreateNode,
+        RelateNodeWithParent, SetDataForNode,
+    },
     node_definer::{EmptyNode, NodeDefiner},
 };
 use apheleia_core::types::Vec2;
@@ -47,12 +50,10 @@ impl NodeBuilder {
 
     pub fn position(mut self, position: Vec2) -> Self {
         self.data.position = position;
-        self.data.global_position = Some(position);
         self
     }
     pub fn size(mut self, size: Vec2) -> Self {
         self.data.size = size;
-        self.data.global_size = Some(size);
         self
     }
 
@@ -67,7 +68,14 @@ impl NodeBuilder {
         (NodeId, Box<dyn NodeDefiner>),
     ) {
         self.commands
+            .push_back(RelateNodeWithParent::new(self.id, self.parent_id));
+        self.commands
             .push_back(SetDataForNode::new(self.id, self.data));
+        self.commands
+            .push_back(CalculateGlobalPositionForNode::new(self.id));
+        self.commands
+            .push_back(CalculateGlobalSizeForNode::new(self.id));
+
         (self.commands, (self.id, self.node))
     }
 }

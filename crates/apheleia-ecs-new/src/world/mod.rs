@@ -92,27 +92,34 @@ impl World {
         &self.relations
     }
 
+    /// Create a [`NodeId`] and return
     pub fn create_node(&mut self) -> NodeId {
         let id = self.nodeid_gen.next();
         self.registered_nodes.push_back(id);
         id
     }
+    /// Get all [`NodeId`]s currently registered in [`World`]
     #[inline]
     pub fn get_registered_nodes(&self) -> &VecDeque<NodeId> {
         &self.registered_nodes
     }
 
     // [`NodeDataStore`] functions
-    /// Get [`NodeData`] for given [`NodeId`]
+    /// Get reference [`NodeData`] for given [`NodeId`]
     #[inline]
     pub fn get_nodedata(&self, id: NodeId) -> Option<&NodeData> {
         self.nodedata_store.get_data(id)
     }
+    /// Get mutable reference [`NodeData`] for given [`NodeId`]
+    #[inline]
+    pub fn get_nodedata_mut(&mut self, id: NodeId) -> Option<&mut NodeData> {
+        self.nodedata_store.get_data_mut(id)
+    }
+    /// Set [`NodeData`] for given [`NodeId`]
     #[inline]
     pub fn set_data(&mut self, id: NodeId, data: NodeData) {
         self.nodedata_store.set_data(id, data);
     }
-    // TODO: Write get functions
 
     // [`ResourceStore`] functions
     /// Add and register given [`Resource`].

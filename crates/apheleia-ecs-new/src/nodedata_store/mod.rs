@@ -22,4 +22,7 @@ impl NodeDataStore {
     pub fn get_data(&self, id: NodeId) -> Option<&NodeData> {
         self.id_to_data.get(&id)
     }
+    pub fn get_data_mut(&mut self, id: NodeId) -> Option<&mut NodeData> {
+        self.id_to_data.get_mut(&id)
+    }
 }

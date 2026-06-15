@@ -140,10 +140,23 @@ impl App {
     fn render_flip(&mut self) {
         info!("[APP] Render Flip");
         _ = self.renderer.render_flip(&mut self.buffer);
+
         self.world.current_stage = SystemRunStage::Render;
         self.world.run_systems_on_stage(SystemRunStage::Render);
+
+        warn!("[APP] Rendering all node buffers into Main Buffer");
+        let ids: Vec<NodeId> = self.world.get_registered_nodes().iter().copied().collect();
+        for id in ids {
+            let data = *self.world.get_nodedata(id).unwrap();
+            if let Some(buffer) = self.world.get_buffer(id) && let Some(position) = data.global_position {
+                self.buffer.render_buffer(position, buffer);
+            }
+        }
+        info!("[APP] Rendering Main Buffer to stdout");
+        self.renderer.render(&mut self.buffer);
     }
     fn render(&mut self) {
+        // TODO: Use event based dirty render
         info!("[APP] Render Stage");
         self.world.current_stage = SystemRunStage::Render;
         self.world.run_systems_on_stage(SystemRunStage::Render);
