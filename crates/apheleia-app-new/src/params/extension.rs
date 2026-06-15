@@ -3,12 +3,9 @@ use std::{
 };
 
 use apheleia_ecs_new::{
-    NodeId,
-    extensions::Extension,
-    systems::system::SystemParam,
-    types::NodeData,
-    world::{self, World},
+    NodeId, event_tracker::EventId, extensions::Extension, systems::system::SystemParam, types::NodeData, world::{self, World}
 };
+use crossterm::event::Event;
 use log::info;
 
 pub trait WorldQuery {
@@ -99,6 +96,13 @@ pub trait QueryFilter {
 impl QueryFilter for () {
     fn matches(_world: &World, _id: NodeId) -> bool {
         true
+    }
+}
+
+pub struct WithEvent<const E: EventId>;
+impl<const E: EventId> QueryFilter for WithEvent<E> {
+    fn matches(world: &World, id: NodeId) -> bool {
+        world.is_local_event(id, E)
     }
 }
 

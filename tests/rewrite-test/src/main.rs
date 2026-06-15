@@ -15,22 +15,17 @@ mod widget {
         context::system::SystemContext,
         node_definer::NodeDefiner,
         params::{
-            extension::{Query, With},
+            extension::{Query, With, WithEvent},
             on_event::{OnEvent, OnKeys},
             resource::{Res, ResMut},
         },
     };
     use apheleia_core::{rich_strings::RichString, style::Style, types::Vec2};
     use apheleia_ecs_new::{
-        NodeId,
-        constants::{POST_STAGE, STAGE},
-        extensions::Extension,
-        resources::Resource,
-        systems::stages::{
+        NodeId, constants::{POST_STAGE, STAGE}, event_tracker::RENDER_DIRTY, extensions::Extension, resources::Resource, systems::stages::{
             self,
             SystemRunStage::{self, Update},
-        },
-        types::NodeData,
+        }, types::NodeData
     };
 
     #[derive(Debug)]
@@ -51,13 +46,14 @@ mod widget {
     }
     impl Extension for TestExtension {}
 
-    fn mut_system(q: Query<&mut TestExtension>) {
-        for ext in q.iter() {
+    fn mut_system(q: Query<(NodeId, &mut TestExtension)>, mut ctx: SystemContext) {
+        for (id, ext) in q.iter() {
             ext.value += 1;
+            ctx.mark_render_dirty(id);
         }
     }
 
-    fn render(query: Query<(NodeId, &TestExtension)>, mut ctx: SystemContext) {
+    fn render(query: Query<(NodeId, &TestExtension), WithEvent<{ RENDER_DIRTY }>>, mut ctx: SystemContext) {
         for (id, ext) in query.iter() {
             let buffer = ctx.get_buffer(id).expect("No Buffer?");
             buffer.write_string(
@@ -73,7 +69,6 @@ mod widget {
 }
 
 fn main() {
-    setup_logger();
     App::new()
         .build_node(|builder| {
             builder

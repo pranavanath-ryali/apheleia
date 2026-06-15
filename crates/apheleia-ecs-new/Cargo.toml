@@ -14,3 +14,4 @@ rustc-hash.workspace = true
 log.workspace = true
 fern.workspace = true
 chrono.workspace = true
+indexmap.workspace = true

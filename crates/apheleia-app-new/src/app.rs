@@ -2,11 +2,10 @@ use std::{collections::VecDeque, io, mem::take, time::Duration};
 
 use apheleia_core::{buffer::Buffer, renderer::Renderer, terminal, types::Vec2};
 use apheleia_ecs_new::{
-    NodeId,
-    systems::{stages::SystemRunStage, system::IntoSystem},
-    world::World,
+    NodeId, event_tracker::RENDER_DIRTY, systems::{stages::SystemRunStage, system::IntoSystem}, world::World
 };
 use crossterm::event::{KeyCode, KeyModifiers, poll};
+use indexmap::indexset;
 use log::{info, warn};
 use tree_ds::prelude::{Node, Tree};
 
@@ -136,6 +135,8 @@ impl App {
         info!("[APP] Update Stage");
         self.world.current_stage = SystemRunStage::Update;
         self.world.run_systems_on_stage(SystemRunStage::Update);
+
+        self.world.execute_commands();
     }
     fn render_flip(&mut self) {
         info!("[APP] Render Flip");
@@ -161,15 +162,17 @@ impl App {
         self.world.current_stage = SystemRunStage::Render;
         self.world.run_systems_on_stage(SystemRunStage::Render);
 
-        warn!("[APP] Rendering all node buffers into Main Buffer");
-        let ids: Vec<NodeId> = self.world.get_registered_nodes().iter().copied().collect();
-        for id in ids {
+        warn!("[APP] Rendering node buffers with RENDER_DIRTY event into Main Buffer");
+        let set = take(self.world.get_nodes_with_event(RENDER_DIRTY).unwrap_or(&mut indexset! {}));
+        for id in set {
+            info!("[APP] NodeId: {} was marked RENDER_DIRTY", id);
             let data = *self.world.get_nodedata(id).unwrap();
             if let Some(buffer) = self.world.get_buffer(id) && let Some(position) = data.global_position {
                 self.buffer.render_buffer(position, buffer);
             }
         }
         info!("[APP] Rendering Main Buffer to stdout");
+
         self.renderer.render(&mut self.buffer);
     }
 
@@ -182,6 +185,9 @@ impl App {
             self.event();
             self.update();
             self.render();
+
+            self.world.clear_local_events();
+            self.world.clear_global_events();
         }
 
         _ = self.renderer.quit();

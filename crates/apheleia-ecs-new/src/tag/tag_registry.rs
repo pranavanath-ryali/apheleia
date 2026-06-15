@@ -2,11 +2,11 @@ use log::info;
 use rustc_hash::FxHashMap;
 use smallvec::SmallVec;
 
-use crate::NodeId;
+use crate::{NodeId, Tag};
 
 #[derive(Default)]
 pub struct TagRegistry {
-    map: FxHashMap<usize, SmallVec<[NodeId; 4]>>,
+    map: FxHashMap<Tag, SmallVec<[NodeId; 4]>>,
 }
 impl TagRegistry {
     pub fn tag_node(&mut self, tag: usize, node: NodeId) {
@@ -18,7 +18,7 @@ impl TagRegistry {
         info!("[ECS] Tagged NodeId: {} with Tag: {}", node, tag);
     }
 
-    pub fn get_nodes(&self, tag: usize) -> Option<&SmallVec<[usize; 4]>> {
+    pub fn get_nodes(&self, tag: usize) -> Option<&SmallVec<[NodeId; 4]>> {
         self.map.get(&tag)
     }
 }
