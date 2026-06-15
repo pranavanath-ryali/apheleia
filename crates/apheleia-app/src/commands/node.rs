@@ -1,4 +1,4 @@
-use apheleia_ecs_new::{
+use apheleia_ecs::{
     NodeId,
     command::ContextCommand,
     types::NodeData,
@@ -17,7 +17,7 @@ impl CreateNode {
     }
 }
 impl ContextCommand for CreateNode {
-    fn execute(self: Box<Self>, world: &mut apheleia_ecs_new::world::World) {}
+    fn execute(self: Box<Self>, world: &mut apheleia_ecs::world::World) {}
 }
 
 #[derive(Debug)]
@@ -96,4 +96,3 @@ impl ContextCommand for CalculateGlobalSizeForNode {
             Some(calculate_global_size(world, self.0));
     }
 }
-

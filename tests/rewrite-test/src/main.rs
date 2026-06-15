@@ -1,4 +1,4 @@
-use apheleia_app_new::{
+use apheleia_app::{
     app::App, context::system::SystemContext, node_definer::NodeDefiner, params::on_event::OnKeys,
     setup_logger, types::EVENT_KEYS,
 };
@@ -11,7 +11,7 @@ use crate::widget::BasicTextDefiner;
 const MY_TAG: usize = 0;
 
 mod widget {
-    use apheleia_app_new::{
+    use apheleia_app::{
         context::system::SystemContext,
         node_definer::NodeDefiner,
         params::{
@@ -21,11 +21,17 @@ mod widget {
         },
     };
     use apheleia_core::{rich_strings::RichString, style::Style, types::Vec2};
-    use apheleia_ecs_new::{
-        NodeId, constants::{POST_STAGE, STAGE}, event_tracker::RENDER_DIRTY, extensions::Extension, resources::Resource, systems::stages::{
+    use apheleia_ecs::{
+        NodeId,
+        constants::{POST_STAGE, STAGE},
+        event_tracker::RENDER_DIRTY,
+        extensions::Extension,
+        resources::Resource,
+        systems::stages::{
             self,
             SystemRunStage::{self, Update},
-        }, types::NodeData
+        },
+        types::NodeData,
     };
 
     #[derive(Debug)]
@@ -33,7 +39,7 @@ mod widget {
         pub text: RichString,
     }
     impl NodeDefiner for BasicTextDefiner {
-        fn setup(&mut self, ctx: &mut apheleia_app_new::context::node::NodeContext) {
+        fn setup(&mut self, ctx: &mut apheleia_app::context::node::NodeContext) {
             ctx.add_system(Update, STAGE, mut_system);
             ctx.add_system(SystemRunStage::Render, STAGE, render);
             ctx.add_extension(TestExtension { value: 1 });
@@ -53,7 +59,10 @@ mod widget {
         }
     }
 
-    fn render(query: Query<(NodeId, &TestExtension), WithEvent<{ RENDER_DIRTY }>>, mut ctx: SystemContext) {
+    fn render(
+        query: Query<(NodeId, &TestExtension), WithEvent<{ RENDER_DIRTY }>>,
+        mut ctx: SystemContext,
+    ) {
         for (id, ext) in query.iter() {
             let buffer = ctx.get_buffer(id).expect("No Buffer?");
             buffer.write_string(

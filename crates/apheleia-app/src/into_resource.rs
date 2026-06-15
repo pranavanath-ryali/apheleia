@@ -1,6 +1,6 @@
 use std::fmt::Debug;
 
-use apheleia_ecs_new::{resources::Resource, world::World};
+use apheleia_ecs::{resources::Resource, world::World};
 
 pub trait IntoResource: Debug {
     fn insert_into(self, world: &mut World);

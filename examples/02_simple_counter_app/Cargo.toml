@@ -1,9 +1,0 @@
-[package]
-name = "simple_counter_app"
-version.workspace = true
-edition.workspace = true
-
-[dependencies]
-log.workspace = true
-fern.workspace = true
-chrono.workspace = true

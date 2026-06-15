@@ -1,4 +1,4 @@
-use apheleia_ecs_new::{command::ContextCommand, resources::Resource, world::World};
+use apheleia_ecs::{command::ContextCommand, resources::Resource, world::World};
 
 #[derive(Debug)]
 pub struct AddResource<R: Resource>(pub R);

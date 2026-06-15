@@ -1,9 +1,18 @@
 use std::{
-    collections::HashSet, iter::{self, Map}, marker::PhantomData, process::id, slice
+    collections::HashSet,
+    iter::{self, Map},
+    marker::PhantomData,
+    process::id,
+    slice,
 };
 
-use apheleia_ecs_new::{
-    NodeId, event_tracker::EventId, extensions::Extension, systems::system::SystemParam, types::NodeData, world::{self, World}
+use apheleia_ecs::{
+    NodeId,
+    event_tracker::EventId,
+    extensions::Extension,
+    systems::system::SystemParam,
+    types::NodeData,
+    world::{self, World},
 };
 use crossterm::event::Event;
 use log::info;
@@ -24,8 +33,7 @@ impl<E: Extension> WorldQuery for &E {
 
     unsafe fn fetch<'w>(world: *mut World, id: NodeId) -> Self::Item<'w> {
         let world = unsafe { &*world };
-        world
-            .get_extension::<E>(id).expect("Unexpected error")
+        world.get_extension::<E>(id).expect("Unexpected error")
     }
 }
 
@@ -107,7 +115,7 @@ impl<const E: EventId> QueryFilter for WithEvent<E> {
 }
 
 pub struct With<T> {
-    marker: PhantomData<T>
+    marker: PhantomData<T>,
 }
 impl<T: Extension> QueryFilter for With<T> {
     fn matches(world: &World, id: NodeId) -> bool {

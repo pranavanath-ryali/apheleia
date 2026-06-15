@@ -1,4 +1,9 @@
-use apheleia_ecs_new::{NodeId, command::ContextCommand, extensions::Extension, world::{self, World}};
+use apheleia_ecs::{
+    NodeId,
+    command::ContextCommand,
+    extensions::Extension,
+    world::{self, World},
+};
 
 #[derive(Debug)]
 pub struct AddExtensionToNode<E: Extension>(pub NodeId, pub E);

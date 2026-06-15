@@ -1,9 +1,15 @@
 use std::ops::Deref;
 
-use apheleia_ecs_new::systems::{stages::SystemRunStage, system::SystemParam};
+use apheleia_ecs::systems::{stages::SystemRunStage, system::SystemParam};
 use crossterm::event::KeyEvent;
 
-use crate::{resources::AppEvents, types::{EVENT_FOCUS_GAINED, EVENT_FOCUS_LOST, EVENT_KEYS, EVENT_MOUSE, EVENT_RESIZE, EventData, EventType}};
+use crate::{
+    resources::AppEvents,
+    types::{
+        EVENT_FOCUS_GAINED, EVENT_FOCUS_LOST, EVENT_KEYS, EVENT_MOUSE, EVENT_RESIZE, EventData,
+        EventType,
+    },
+};
 
 pub struct OnEvent<'w, const E: usize> {
     data: &'w EventData,
@@ -14,8 +20,8 @@ impl<'w, const E: usize> OnEvent<'w, E> {
     }
 }
 impl<const E: usize> SystemParam for OnEvent<'static, E> {
-    unsafe fn fetch(world: *mut apheleia_ecs_new::world::World) -> Option<Self> {
-        let world = unsafe { &mut  *world };
+    unsafe fn fetch(world: *mut apheleia_ecs::world::World) -> Option<Self> {
+        let world = unsafe { &mut *world };
 
         if world.current_stage != SystemRunStage::Event {
             return None;
@@ -26,7 +32,7 @@ impl<const E: usize> SystemParam for OnEvent<'static, E> {
             return None;
         }
         if E == res.event_type.as_usize() {
-            return Some(OnEvent::new(&res.data))
+            return Some(OnEvent::new(&res.data));
         }
         None
     }
@@ -37,7 +43,7 @@ impl<'w> Deref for OnEvent<'w, { EVENT_KEYS }> {
 
     fn deref(&self) -> &Self::Target {
         if let EventData::Keys(key_event) = self.data {
-            return key_event
+            return key_event;
         }
         panic!("Unknown, event not found");
     }

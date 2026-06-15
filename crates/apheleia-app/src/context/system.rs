@@ -1,5 +1,7 @@
 use apheleia_core::buffer::Buffer;
-use apheleia_ecs_new::{NodeId, event_tracker::RENDER_DIRTY, systems::stages::SystemRunStage, world::World};
+use apheleia_ecs::{
+    NodeId, event_tracker::RENDER_DIRTY, systems::stages::SystemRunStage, world::World,
+};
 
 use crate::app::App;
 

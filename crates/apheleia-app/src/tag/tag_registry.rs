@@ -1,4 +1,4 @@
-use apheleia_ecs_new::NodeId;
+use apheleia_ecs::NodeId;
 use rustc_hash::FxHashMap;
 use smallvec::SmallVec;
 

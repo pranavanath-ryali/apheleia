@@ -17,19 +17,6 @@ version = "0.1.0"
 dependencies = [
  "apheleia-core",
  "apheleia-ecs",
- "apheleia-types",
- "crossterm",
- "indexmap",
- "rustc-hash",
- "tree-ds",
-]
-
-[[package]]
-name = "apheleia-app-new"
-version = "0.1.0"
-dependencies = [
- "apheleia-core",
- "apheleia-ecs-new",
  "chrono",
  "crossterm",
  "fern",
@@ -57,15 +44,6 @@ dependencies = [
 name = "apheleia-ecs"
 version = "0.1.0"
 dependencies = [
- "apheleia-types",
- "rustc-hash",
- "sparseset",
-]
-
-[[package]]
-name = "apheleia-ecs-new"
-version = "0.1.0"
-dependencies = [
  "apheleia-core",
  "chrono",
  "fern",
@@ -88,25 +66,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "apheleia-ui"
+name = "apheleia-widgets-depricated"
 version = "0.1.0"
 dependencies = [
  "apheleia-core",
- "chrono",
- "crossterm",
- "fern",
- "indexmap",
- "log",
- "rustc-hash",
- "tree-ds",
-]
-
-[[package]]
-name = "apheleia-widgets"
-version = "0.1.0"
-dependencies = [
- "apheleia-core",
- "apheleia-ui",
  "chrono",
  "fern",
  "log",
@@ -173,13 +136,6 @@ name = "core-foundation-sys"
 version = "0.8.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "773648b94d0e5d620f64f280777445740e61fe701025087ec8b57f45c791888b"
-
-[[package]]
-name = "core-hello-world"
-version = "0.1.0"
-dependencies = [
- "apheleia-core",
-]
 
 [[package]]
 name = "crossterm"
@@ -287,10 +243,6 @@ name = "hashbrown"
 version = "0.16.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "841d1cc9bed7f9236f321df977030373f4a4163ae1a7dbfe1a51a2c1a51d9100"
-
-[[package]]
-name = "hello-world"
-version = "0.1.0"
 
 [[package]]
 name = "iana-time-zone"
@@ -462,9 +414,9 @@ dependencies = [
 name = "rewrite-test"
 version = "0.1.0"
 dependencies = [
- "apheleia-app-new",
+ "apheleia-app",
  "apheleia-core",
- "apheleia-ecs-new",
+ "apheleia-ecs",
  "crossterm",
 ]
 
@@ -591,15 +543,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "simple_counter_app"
-version = "0.1.0"
-dependencies = [
- "chrono",
- "fern",
- "log",
-]
-
-[[package]]
 name = "smallvec"
 version = "1.15.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -662,13 +605,6 @@ dependencies = [
  "serde",
  "spin",
  "thiserror",
-]
-
-[[package]]
-name = "ui-hello-world"
-version = "0.1.0"
-dependencies = [
- "apheleia-app",
 ]
 
 [[package]]

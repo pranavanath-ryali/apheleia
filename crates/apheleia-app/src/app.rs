@@ -1,7 +1,7 @@
 use std::{collections::VecDeque, io, mem::take, time::Duration};
 
 use apheleia_core::{buffer::Buffer, renderer::Renderer, terminal, types::Vec2};
-use apheleia_ecs_new::{
+use apheleia_ecs::{
     NodeId,
     event_tracker::RENDER_DIRTY,
     systems::{stages::SystemRunStage, system::IntoSystem},

@@ -1,6 +1,6 @@
 use std::fmt::Debug;
 
-use apheleia_ecs_new::{
+use apheleia_ecs::{
     command::ContextCommand,
     systems::{
         stages::SystemRunStage,
