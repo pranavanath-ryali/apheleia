@@ -3,7 +3,7 @@ use apheleia_app_new::{
     setup_logger, types::EVENT_KEYS,
 };
 use apheleia_core::{rich_strings::RichString, types::Vec2};
-use apheleia_ecs_new::constants::PRE_STAGE;
+use apheleia_ecs::constants::PRE_STAGE;
 use crossterm::event::KeyModifiers;
 
 use crate::widget::BasicTextDefiner;

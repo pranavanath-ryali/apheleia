@@ -1,5 +1,5 @@
 [package]
-name = "apheleia-widgets"
+name = "apheleia-widgets-depricated"
 version.workspace = true
 edition.workspace = true
 

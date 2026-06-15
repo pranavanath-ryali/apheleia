@@ -1,2 +1,6 @@
 pub(crate) mod store;
-pub mod container;
+mod container;
+
+use std::{any::Any, fmt::Debug};
+
+pub trait Extension : Debug + Any {}

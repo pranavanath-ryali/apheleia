@@ -1,5 +1,19 @@
-use crate::contexts::node::NodeContext;
+use std::fmt::Debug;
 
-pub trait NodeDefiner {
-    fn setup(&self, ctx: &mut NodeContext);
+use crate::context::node::NodeContext;
+
+pub trait NodeDefiner: Debug {
+    fn setup(&mut self, ctx: &mut NodeContext);
+}
+
+#[derive(Debug)]
+pub struct EmptyNode;
+impl NodeDefiner for EmptyNode {
+    fn setup(&mut self, ctx: &mut NodeContext) {}
+}
+
+impl Default for Box<dyn NodeDefiner> {
+    fn default() -> Self {
+        Box::new(EmptyNode)
+    }
 }

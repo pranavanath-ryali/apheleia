@@ -6,5 +6,5 @@ edition.workspace = true
 [dependencies]
 crossterm.workspace = true
 apheleia-core.workspace = true
-apheleia-app-new.workspace = true
-apheleia-ecs-new.workspace = true
+apheleia-app.workspace = true
+apheleia-ecs.workspace = true

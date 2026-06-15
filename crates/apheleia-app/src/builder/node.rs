@@ -1,90 +1,48 @@
-// use std::mem::take;
-//
-// use apheleia_types::{ContextCommand, vec2::Vec2};
-//
-// use crate::node_definer::NodeDefiner;
-//
-// pub struct NodeBuilder {
-//     class: Option<String>,
-//     parent_class: Option<String>,
-//
-//     position: Vec2,
-//     size: Option<Vec2>,
-//     node: Box<dyn NodeDefiner>,
-//
-//     commands: Vec<Box<dyn ContextCommand>>,
-// }
-// impl Default for NodeBuilder {
-//     fn default() -> Self {
-//         Self {
-//             class: None,
-//             parent_class: None,
-//             position: Vec2::zero(),
-//             size: None,
-//             node: Box::new(EmptyNode::default()),
-//             commands: vec![],
-//         }
-//     }
-// }
-// impl NodeBuilder {
-//     pub fn set_class(mut self, class: &str) -> Self {
-//         self.class = Some(class);
-//         self
-//     }
-//
-//     pub fn set_parent_class(mut self, parent: &str) -> Self {
-//         self.parent_class = Some(parent);
-//         self
-//     }
-//
-//     pub fn set_position(mut self, position: Vec2) -> Self {
-//         self.position = position;
-//         self
-//     }
-//
-//     pub fn set_size(mut self, size: Vec2) -> Self {
-//         self.size = Some(size);
-//         self
-//     }
-//
-//     pub fn node(mut self, node: Box<dyn NodeDefiner>) -> Self {
-//         self.node = node;
-//         self
-//     }
-//
-//     pub fn build(&mut self) -> Vec<Box<dyn ContextCommand>> {
-//         take(&mut self.commands)
-//     }
-// }
+use std::{collections::VecDeque, mem::replace};
 
-use apheleia_types::{ContextCommand, node_data::NodeData, vec2::Vec2};
-use indexmap::{IndexSet, indexset};
-
-use crate::node_definer::NodeDefiner;
+use crate::{
+    commands::node::{
+        CalculateGlobalPositionForNode, CalculateGlobalSizeForNode, CreateNode,
+        RelateNodeWithParent, SetDataForNode,
+    },
+    node_definer::{EmptyNode, NodeDefiner},
+};
+use apheleia_core::types::Vec2;
+use apheleia_ecs_new::{NodeId, command::ContextCommand, types::NodeData, world::World};
+use indexmap::IndexSet;
 
 /// [`NodeBuilder`] automates the creation process of a node during the setup process with any extensions and systems
 pub struct NodeBuilder {
-    pub tags: IndexSet<usize>,
+    id: NodeId,
+    parent_id: NodeId,
+    world: *mut World,
 
+    tags: IndexSet<usize>,
     data: NodeData,
     node: Box<dyn NodeDefiner>,
 
-    commands: Vec<Box<dyn ContextCommand>>,
+    commands: VecDeque<Box<dyn ContextCommand>>,
 }
-impl Default for NodeBuilder {
-    fn default() -> Self {
+impl NodeBuilder {
+    pub fn new(parent_id: NodeId, world: &mut World) -> NodeBuilder {
+        let id = world.create_node();
+
+        let mut commands: VecDeque<Box<dyn ContextCommand>> = Default::default();
+        commands.push_back(CreateNode::new(id));
+
         Self {
-            tags: indexset! {},
+            id,
+            parent_id,
+            world,
 
-            data: NodeData::new(Vec2::zero(), Vec2::zero()),
-            node: todo!("Create Empty Node"),
+            tags: Default::default(),
+            data: NodeData::default(),
+            node: Box::new(EmptyNode),
 
-            commands: vec![],
+            commands,
         }
     }
-}
 
-impl NodeBuilder {
     pub fn tag<const TAG: usize>(mut self) -> Self {
         self.tags.insert(TAG);
         self
@@ -103,27 +61,21 @@ impl NodeBuilder {
         self.node = Box::new(node);
         self
     }
-}
+    pub(crate) fn execute(
+        mut self,
+    ) -> (
+        VecDeque<Box<dyn ContextCommand>>,
+        (NodeId, Box<dyn NodeDefiner>),
+    ) {
+        self.commands
+            .push_back(RelateNodeWithParent::new(self.id, self.parent_id));
+        self.commands
+            .push_back(SetDataForNode::new(self.id, self.data));
+        self.commands
+            .push_back(CalculateGlobalPositionForNode::new(self.id));
+        self.commands
+            .push_back(CalculateGlobalSizeForNode::new(self.id));
 
-#[cfg(test)]
-mod tests {
-    use apheleia_types::{node_data::NodeData, vec2::Vec2};
-    use indexmap::indexset;
-
-    use crate::{builder::node::NodeBuilder, node_definer::NodeDefiner};
-
-    #[test]
-    fn test_node_builder() {
-        let builder = NodeBuilder::default()
-            .tag::<0>()
-            .tag::<123>()
-            .position(Vec2 { x: 10, y: 10 })
-            .size(Vec2 { x: 5, y: 3 });
-
-        assert_eq!(builder.tags, indexset! {0, 123});
-        assert_eq!(builder.data, NodeData {
-            position: Vec2 { x: 10, y: 10 },
-            size: Vec2 { x: 5, y: 3 }
-        });
+        (self.commands, (self.id, self.node))
     }
 }

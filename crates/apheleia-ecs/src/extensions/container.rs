@@ -1,7 +1,9 @@
 use std::any::Any;
 
-use apheleia_types::{Extension, ExtensionId, MAX_NODES};
+use log::info;
 use sparseset::SparseSet;
+
+use crate::{ExtensionId, MAX_NODES, extensions::Extension};
 
 pub trait ExtensionContainer<T: Extension>: Any {
     fn insert(&mut self, id: ExtensionId, extension: T);
@@ -19,6 +21,7 @@ impl<T: Extension> ExtensionContainerSingle<T> {
 }
 impl<T: Extension> ExtensionContainer<T> for ExtensionContainerSingle<T> {
     fn insert(&mut self, id: ExtensionId, extension: T) {
+        info!("[ECS] Addind Extension {:#?}", extension);
         assert!(self.extensions.insert(id, extension), "Extension already exists with ID: {}", id);
     }
 

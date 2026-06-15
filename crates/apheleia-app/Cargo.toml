@@ -4,11 +4,16 @@ version.workspace = true
 edition.workspace = true
 
 [dependencies]
-apheleia-types.workspace = true
 apheleia-core.workspace = true
-apheleia-ecs.workspace = true
+# apheleia-types.workspace = true
+apheleia-ecs-new.workspace = true
+
+crossterm.workspace = true
 
 indexmap.workspace = true
-tree-ds.workspace = true
-crossterm.workspace = true
 rustc-hash.workspace = true
+smallvec.workspace = true
+tree-ds.workspace = true
+log.workspace = true
+fern.workspace = true
+chrono.workspace = true
