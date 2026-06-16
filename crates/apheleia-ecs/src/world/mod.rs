@@ -1,6 +1,5 @@
-mod buffer_store;
-mod event_tracker;
-mod tag_registry;
+pub mod events;
+pub mod tags;
 
 use std::{collections::VecDeque, mem::take};
 
@@ -10,8 +9,10 @@ use smallvec::SmallVec;
 use tree_ds::prelude::{Node, NodeRemovalStrategy, Tree};
 
 use crate::{
+    buffer_store::BufferStore,
     commands::ContextCommand,
     constants::MAX_NODES,
+    event_tracker::EventTracker,
     extensions::{Extension, store::ExtensionStore},
     id_generator::IdGenerator,
     nodedata::{data::NodeData, store::NodeDataStore},
@@ -21,8 +22,8 @@ use crate::{
         store::SystemStore,
         system::{IntoSystem, System},
     },
+    tags::{registry::TagRegistry, TagTrait},
     types::{EventId, NodeId, Tag},
-    world::{buffer_store::BufferStore, event_tracker::EventTracker, tag_registry::TagRegistry},
 };
 
 pub struct World {
@@ -43,7 +44,7 @@ pub struct World {
     system_store: SystemStore,
     buffer_store: BufferStore,
 
-    commands: VecDeque<Box<dyn ContextCommand>>, // TODO: Maybe switch to SmallVec
+    commands: VecDeque<Box<dyn ContextCommand>>,
 }
 impl Default for World {
     fn default() -> Self {
@@ -74,90 +75,6 @@ impl Default for World {
     }
 }
 impl World {
-    // ==================[TAG_REGISTRY FUNCTIONS]==================
-    /// Tags a node with the given [`Tag`] and register it to the [`TagRegistry`]
-    ///
-    /// # Arguments
-    ///
-    /// * `tag` - The [`Tag`] that is associated with the node
-    /// * `node` - The [`NodeId`] of the node to be tagged
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// const MY_BUTTON_TAG: Tag = 0;
-    /// const MY_CONTAINER_TAG: Tag = 1;
-    ///
-    /// let mut world = World::default();
-    ///
-    /// let button_node = world.create_node();
-    /// let container_node = world.create_node();
-    ///
-    /// world.tag_node(MY_BUTTON_TAG, button_node);
-    /// world.tag_node(MY_CONTAINER_TAG, container_node);
-    ///
-    /// ```
-    #[inline]
-    pub fn tag_node(&mut self, node: NodeId, tag: Tag) {
-        self.tag_registry.tag_node(node, tag);
-    }
-
-    /// Returns all nodes associated with the given [`Tag`]
-    ///
-    /// Returns `None` if no nodes have been tagged with the given [`Tag`]
-    ///
-    /// # Arguments
-    ///
-    /// * `tag` - The [`Tag`] to look up
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// const MY_BUTTON_TAG: Tag = 0;
-    /// if let Some(nodes) = world.get_nodes_tagged(MY_BUTTON_TAG) {
-    ///     for id in nodes {
-    ///         println!("{}", id);
-    ///     }
-    /// }
-    /// ```
-    #[inline]
-    pub fn get_nodes_tagged(&self, tag: Tag) -> Option<&SmallVec<[usize; 8]>> {
-        self.tag_registry.get_nodes(tag)
-    }
-
-    // ==================[EVENT_TRACKER FUNCTIONS]==================
-    #[inline]
-    pub fn add_local_event(&mut self, node_id: NodeId, event_id: EventId) {
-        self.event_tracker.add_local_event(node_id, event_id);
-    }
-    #[inline]
-    pub fn is_local_event(&self, node_id: NodeId, event_id: EventId) -> bool {
-        self.event_tracker.is_local_event(node_id, event_id)
-    }
-    #[inline]
-    pub fn clear_local_events(&mut self) {
-        self.event_tracker.clear_local_events();
-    }
-    #[inline]
-    pub fn get_nodes_with_event(
-        &mut self,
-        event_id: EventId,
-    ) -> Option<&mut indexmap::IndexSet<usize>> {
-        self.event_tracker.get_nodes_with_event(event_id)
-    }
-    #[inline]
-    pub fn add_global_event(&mut self, tag: Tag, event_id: EventId) {
-        self.event_tracker.add_global_event(tag, event_id);
-    }
-    #[inline]
-    pub fn is_global_event(&self, tag: Tag, event_id: EventId) -> bool {
-        self.event_tracker.is_global_event(tag, event_id)
-    }
-    #[inline]
-    pub fn clear_global_events(&mut self) {
-        self.event_tracker.clear_global_events();
-    }
-
     // ==================[RELATIONS FUNCTIONS]==================
     /// Returns mutable reference to current relations of type [`Tree`]
     #[inline]
