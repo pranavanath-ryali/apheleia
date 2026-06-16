@@ -95,11 +95,11 @@ impl World {
     ///
     /// world.tag_node(MY_BUTTON_TAG, button_node);
     /// world.tag_node(MY_CONTAINER_TAG, container_node);
-    /// 
+    ///
     /// ```
     #[inline]
-    pub fn tag_node(&mut self, tag: Tag, node: NodeId) {
-        self.tag_registry.tag_node(tag, node);
+    pub fn tag_node(&mut self, node: NodeId, tag: Tag) {
+        self.tag_registry.tag_node(node, tag);
     }
 
     /// Returns all nodes associated with the given [`Tag`]
@@ -178,16 +178,29 @@ impl World {
                 .add_node(Node::new(child, None), Some(&parent))
                 .unwrap();
 
-            info!("[ECS] Child NodeID: {} related with Parent NodeID: {}", child, parent);
+            info!(
+                "[ECS] Child NodeID: {} related with Parent NodeID: {}",
+                child, parent
+            );
             return;
-        } 
+        }
 
         // Retain children, and move the subtree along with the child if it has any
         assert!(self.relations.get_node_by_id(&child).is_some());
-        let subtree  = self.relations.get_subtree(&child, None).expect("Couldn't get subtree");
-        self.relations.remove_node(&child, NodeRemovalStrategy::RemoveNodeAndChildren).expect("Couldn't remove node from relations");
-        self.relations.add_subtree(&parent, subtree).expect("Couldn't add subtree to relations");
-        info!("[ECS] Moved Child NodeID and all its children: {} to parent NodeID: {}", child, parent);
+        let subtree = self
+            .relations
+            .get_subtree(&child, None)
+            .expect("Couldn't get subtree");
+        self.relations
+            .remove_node(&child, NodeRemovalStrategy::RemoveNodeAndChildren)
+            .expect("Couldn't remove node from relations");
+        self.relations
+            .add_subtree(&parent, subtree)
+            .expect("Couldn't add subtree to relations");
+        info!(
+            "[ECS] Moved Child NodeID and all its children: {} to parent NodeID: {}",
+            child, parent
+        );
     }
 
     // ==================[NODEDATA FUNCTIONS]==================

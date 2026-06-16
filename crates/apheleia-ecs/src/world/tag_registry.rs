@@ -9,7 +9,7 @@ pub struct TagRegistry {
     map: FxHashMap<Tag, SmallVec<[NodeId; 8]>>,
 }
 impl TagRegistry {
-    pub fn tag_node(&mut self, tag: usize, node: NodeId) {
+    pub fn tag_node(&mut self, node: NodeId, tag: usize) {
         self.map.entry(tag).and_modify(|v| v.push(node)).or_insert({
             let mut v = SmallVec::<[NodeId; _]>::new();
             v.push(node);
