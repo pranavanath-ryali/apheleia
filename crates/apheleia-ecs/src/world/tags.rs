@@ -22,7 +22,7 @@ impl World {
     /// world.tag_node(MyButtonTag, button_node);
     /// ```
     #[inline]
-    pub fn tag_node<T: TagTrait + 'static>(&mut self, node: NodeId, tag: T) {
+    pub fn tag_node<T: TagTrait>(&mut self, node: NodeId, tag: T) {
         self.tag_registry.tag_node(node, tag);
     }
 
@@ -47,7 +47,7 @@ impl World {
     /// }
     /// ```
     #[inline]
-    pub fn get_nodes_tagged<T: TagTrait + 'static>(&self) -> Option<&SmallVec<[usize; 8]>> {
+    pub fn get_nodes_tagged<T: TagTrait>(&self) -> Option<&SmallVec<[usize; 8]>> {
         self.tag_registry.get_nodes::<T>()
     }
 }

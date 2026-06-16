@@ -1,5 +1,7 @@
 //! [`EventTracker`] related methods implemented for [`World`]
 
+use crate::events::EventTrait;
+
 use super::*;
 
 impl World {
@@ -9,38 +11,39 @@ impl World {
     /// # Arguments
     ///
     /// * `node` - The [`NodeId`] of the node to associate the local event with
-    /// * `event` - The [`EventId`] of the event to register
+    /// * `event` - The event to register
     ///
     /// # Example
     ///
     /// ```rust
     /// ```
     #[inline]
-    pub fn add_local_event(&mut self, node: NodeId, event: EventId) {
+    pub fn add_local_event<E: EventTrait>(&mut self, node: NodeId, event: E) {
         self.event_tracker.add_local_event(node, event);
     }
     #[inline]
-    pub fn is_local_event(&self, node_id: NodeId, event_id: EventId) -> bool {
-        self.event_tracker.is_local_event(node_id, event_id)
+    pub fn is_local_event<E: EventTrait>(&self, node_id: NodeId, event: E) -> bool {
+        self.event_tracker.is_local_event(node_id, event)
     }
     #[inline]
     pub fn clear_local_events(&mut self) {
         self.event_tracker.clear_local_events();
     }
     #[inline]
-    pub fn get_nodes_with_event(
+    pub fn get_nodes_with_event<E: EventTrait>(
         &mut self,
-        event_id: EventId,
+        event: E,
     ) -> Option<&mut indexmap::IndexSet<usize>> {
-        self.event_tracker.get_nodes_with_event(event_id)
+        self.event_tracker.get_nodes_with_event::<E>()
+    }
+
+    #[inline]
+    pub fn add_global_event<E: EventTrait>(&mut self, tag: Tag, event: E) {
+        self.event_tracker.add_global_event(tag, event);
     }
     #[inline]
-    pub fn add_global_event(&mut self, tag: Tag, event_id: EventId) {
-        self.event_tracker.add_global_event(tag, event_id);
-    }
-    #[inline]
-    pub fn is_global_event(&self, tag: Tag, event_id: EventId) -> bool {
-        self.event_tracker.is_global_event(tag, event_id)
+    pub fn is_global_event<E: EventTrait>(&self, tag: Tag, event: E) -> bool {
+        self.event_tracker.is_global_event(tag, event)
     }
     #[inline]
     pub fn clear_global_events(&mut self) {

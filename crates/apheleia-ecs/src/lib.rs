@@ -1,7 +1,6 @@
 mod id_generator;
 
 pub(crate) mod buffer_store;
-pub(crate) mod event_tracker;
 
 pub mod extensions;
 pub mod nodedata;
@@ -11,6 +10,7 @@ pub mod utils;
 pub mod world;
 pub mod commands;
 pub mod tags;
+pub mod events;
 
 pub mod types {
     pub type NodeId = usize;

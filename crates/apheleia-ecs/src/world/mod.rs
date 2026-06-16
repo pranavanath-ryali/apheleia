@@ -9,21 +9,11 @@ use smallvec::SmallVec;
 use tree_ds::prelude::{Node, NodeRemovalStrategy, Tree};
 
 use crate::{
-    buffer_store::BufferStore,
-    commands::ContextCommand,
-    constants::MAX_NODES,
-    event_tracker::EventTracker,
-    extensions::{Extension, store::ExtensionStore},
-    id_generator::IdGenerator,
-    nodedata::{data::NodeData, store::NodeDataStore},
-    resources::{Resource, store::ResourceStore},
-    systems::{
+    buffer_store::BufferStore, commands::ContextCommand, constants::MAX_NODES, events::tracker::EventTracker, extensions::{Extension, store::ExtensionStore}, id_generator::IdGenerator, nodedata::{data::NodeData, store::NodeDataStore}, resources::{Resource, store::ResourceStore}, systems::{
         stages::SystemRunStage,
         store::SystemStore,
         system::{IntoSystem, System},
-    },
-    tags::{registry::TagRegistry, TagTrait},
-    types::{EventId, NodeId, Tag},
+    }, tags::{TagTrait, registry::TagRegistry}, types::{EventId, NodeId, Tag}
 };
 
 pub struct World {
