@@ -3,9 +3,8 @@ use log::info;
 use rustc_hash::FxHashMap;
 use smallvec::SmallVec;
 
-use crate::{NodeId, Tag};
+use crate::types::{EventId, NodeId, Tag};
 
-pub type EventId = u16;
 
 pub const RENDER_DIRTY: u16 = 0;
 

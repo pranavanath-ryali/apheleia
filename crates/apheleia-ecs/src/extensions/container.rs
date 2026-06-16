@@ -3,7 +3,7 @@ use std::any::Any;
 use log::info;
 use sparseset::SparseSet;
 
-use crate::{ExtensionId, MAX_NODES, extensions::Extension};
+use crate::{constants::MAX_NODES, extensions::Extension, types::ExtensionId};
 
 pub trait ExtensionContainer<T: Extension>: Any {
     fn insert(&mut self, id: ExtensionId, extension: T);

@@ -1,16 +1,14 @@
+use rustc_hash::FxHashMap;
 use std::any::{Any, TypeId};
 
-use log::info;
-use rustc_hash::FxHashMap;
-
 use crate::{
-    ExtensionId, NodeId,
     constants::MAX_EXTENSIONS,
     extensions::{
         Extension,
-        container::{self, ExtensionContainer, ExtensionContainerSingle},
+        container::{ExtensionContainer, ExtensionContainerSingle},
     },
     id_generator::IdGenerator,
+    types::{ExtensionId, NodeId},
 };
 
 pub(crate) struct ExtensionStore {

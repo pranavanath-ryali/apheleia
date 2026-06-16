@@ -1,9 +1,7 @@
-use std::mem::{replace, swap};
-
 use log::info;
 use rustc_hash::FxHashMap;
 
-use crate::{NodeId, types::NodeData};
+use crate::{nodedata::data::NodeData, types::NodeId};
 
 /// Stores NodeData for every NodeId.
 #[derive(Default)]

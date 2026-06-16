@@ -4,13 +4,10 @@ use log::{info, warn};
 use rustc_hash::FxHashMap;
 
 use crate::{
-    SystemId,
-    constants::{MAX_SYSTEMS, SYSTEMS_MAX_PRIORITY_CHANGE},
-    id_generator::IdGenerator,
-    systems::{
+    constants::{MAX_SYSTEMS, SYSTEMS_MAX_PRIORITY_CHANGE}, id_generator::IdGenerator, systems::{
         stages::SystemRunStage,
         system::{IntoSystem, System},
-    }, world::World,
+    }, types::SystemId, world::World
 };
 
 pub struct SystemStore {

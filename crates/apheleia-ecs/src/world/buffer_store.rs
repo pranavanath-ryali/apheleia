@@ -2,7 +2,7 @@ use apheleia_core::buffer::Buffer;
 use log::{info, warn};
 use rustc_hash::FxHashMap;
 
-use crate::{NodeId, types::NodeData, world::World};
+use crate::{nodedata::data::NodeData, types::NodeId};
 
 #[derive(Default)]
 pub struct BufferStore {

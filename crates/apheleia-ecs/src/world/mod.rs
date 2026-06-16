@@ -1,31 +1,28 @@
-use std::{
-    collections::{HashMap, VecDeque},
-    mem::take,
-    ptr,
-};
+mod buffer_store;
+mod event_tracker;
+mod tag_registry;
+
+use std::{collections::VecDeque, mem::take};
 
 use apheleia_core::buffer::Buffer;
 use log::{info, warn};
-use rustc_hash::{FxBuildHasher, FxHashMap};
-use tree_ds::prelude::{Node, Tree};
+use smallvec::SmallVec;
+use tree_ds::prelude::{Node, NodeRemovalStrategy, Tree};
 
 use crate::{
-    NodeId, Tag,
-    buffer_store::BufferStore,
-    command::ContextCommand,
+    commands::ContextCommand,
     constants::MAX_NODES,
-    event_tracker::{EventId, EventTracker},
     extensions::{Extension, store::ExtensionStore},
     id_generator::IdGenerator,
-    nodedata_store::NodeDataStore,
+    nodedata::{data::NodeData, store::NodeDataStore},
     resources::{Resource, store::ResourceStore},
     systems::{
         stages::SystemRunStage,
         store::SystemStore,
         system::{IntoSystem, System},
     },
-    tag::tag_registry::TagRegistry,
-    types::NodeData,
+    types::{EventId, NodeId, Tag},
+    world::{buffer_store::BufferStore, event_tracker::EventTracker, tag_registry::TagRegistry},
 };
 
 pub struct World {
@@ -77,17 +74,58 @@ impl Default for World {
     }
 }
 impl World {
-    /// Tags a node
+    // ==================[TAG_REGISTRY FUNCTIONS]==================
+    /// Tags a node with the given [`Tag`] and register it to the [`TagRegistry`]
+    ///
+    /// # Arguments
+    ///
+    /// * `tag` - The [`Tag`] that is associated with the node
+    /// * `node` - The [`NodeId`] of the node to be tagged
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// const MY_BUTTON_TAG: Tag = 0;
+    /// const MY_CONTAINER_TAG: Tag = 1;
+    ///
+    /// let mut world = World::default();
+    ///
+    /// let button_node = world.create_node();
+    /// let container_node = world.create_node();
+    ///
+    /// world.tag_node(MY_BUTTON_TAG, button_node);
+    /// world.tag_node(MY_CONTAINER_TAG, container_node);
+    /// 
+    /// ```
     #[inline]
     pub fn tag_node(&mut self, tag: Tag, node: NodeId) {
         self.tag_registry.tag_node(tag, node);
     }
-    /// Gets all nodes given tag
+
+    /// Returns all nodes associated with the given [`Tag`]
+    ///
+    /// Returns `None` if no nodes have been tagged with the given [`Tag`]
+    ///
+    /// # Arguments
+    ///
+    /// * `tag` - The [`Tag`] to look up
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// const MY_BUTTON_TAG: Tag = 0;
+    /// if let Some(nodes) = world.get_nodes_tagged(MY_BUTTON_TAG) {
+    ///     for id in nodes {
+    ///         println!("{}", id);
+    ///     }
+    /// }
+    /// ```
     #[inline]
-    pub fn get_nodes_tagged(&self, tag: Tag) -> Option<&smallvec::SmallVec<[usize; 4]>> {
+    pub fn get_nodes_tagged(&self, tag: Tag) -> Option<&SmallVec<[usize; 8]>> {
         self.tag_registry.get_nodes(tag)
     }
 
+    // ==================[EVENT_TRACKER FUNCTIONS]==================
     #[inline]
     pub fn add_local_event(&mut self, node_id: NodeId, event_id: EventId) {
         self.event_tracker.add_local_event(node_id, event_id);
@@ -101,7 +139,10 @@ impl World {
         self.event_tracker.clear_local_events();
     }
     #[inline]
-    pub fn get_nodes_with_event(&mut self, event_id: EventId) -> Option<&mut indexmap::IndexSet<usize>> {
+    pub fn get_nodes_with_event(
+        &mut self,
+        event_id: EventId,
+    ) -> Option<&mut indexmap::IndexSet<usize>> {
         self.event_tracker.get_nodes_with_event(event_id)
     }
     #[inline]
@@ -117,6 +158,7 @@ impl World {
         self.event_tracker.clear_global_events();
     }
 
+    // ==================[RELATIONS FUNCTIONS]==================
     /// Returns mutable reference to current relations of type [`Tree`]
     #[inline]
     pub fn get_relations_mut(&mut self) -> &mut Tree<NodeId, NodeId> {
@@ -128,6 +170,27 @@ impl World {
         &self.relations
     }
 
+    pub fn relate_node_with_parent(&mut self, child: NodeId, parent: NodeId) {
+        assert!(self.relations.get_node_by_id(&parent).is_some());
+
+        if self.relations.get_node_by_id(&child).is_none() {
+            self.relations
+                .add_node(Node::new(child, None), Some(&parent))
+                .unwrap();
+
+            info!("[ECS] Child NodeID: {} related with Parent NodeID: {}", child, parent);
+            return;
+        } 
+
+        // Retain children, and move the subtree along with the child if it has any
+        assert!(self.relations.get_node_by_id(&child).is_some());
+        let subtree  = self.relations.get_subtree(&child, None).expect("Couldn't get subtree");
+        self.relations.remove_node(&child, NodeRemovalStrategy::RemoveNodeAndChildren).expect("Couldn't remove node from relations");
+        self.relations.add_subtree(&parent, subtree).expect("Couldn't add subtree to relations");
+        info!("[ECS] Moved Child NodeID and all its children: {} to parent NodeID: {}", child, parent);
+    }
+
+    // ==================[NODEDATA FUNCTIONS]==================
     /// Create a [`NodeId`] and return
     pub fn create_node(&mut self) -> NodeId {
         let id = self.nodeid_gen.next();
@@ -157,6 +220,7 @@ impl World {
         self.nodedata_store.set_data(id, data);
     }
 
+    // ==================[RESOURCE_STORE FUNCTIONS]==================
     // [`ResourceStore`] functions
     /// Add and register given [`Resource`].
     #[inline]
@@ -180,6 +244,7 @@ impl World {
         self.resource_store.get_resource_mut::<R>()
     }
 
+    // ==================[EXTENSION_STORE FUNCTIONS]==================
     // [`ExtensionStore`] functions
     /// Add an extension and bind it to the given [`NodeId`]
     #[inline]
@@ -205,6 +270,7 @@ impl World {
         self.extension_store.get_nodes_with_extension::<E>()
     }
 
+    // ==================[SYSTEM_STORE FUNCTIONS]==================
     // [`SystemStore`] functions
     /// Convert given function to a [`System`] and register
     #[inline]
@@ -233,6 +299,7 @@ impl World {
         self.system_store.run_systems_for_stage(stage, ptr);
     }
 
+    // ==================[BUFFER_STORE FUNCTIONS]==================
     // [`BufferStore`] functions
     /// Get [`Buffer`] for the given [`NodeId`]
     #[inline]
@@ -243,6 +310,7 @@ impl World {
         None
     }
 
+    // ==================[COMMANDS FUNCTIONS]==================
     /// Add [`ContextCommand`] to queue
     #[inline]
     pub fn add_command(&mut self, command: Box<dyn ContextCommand>) {

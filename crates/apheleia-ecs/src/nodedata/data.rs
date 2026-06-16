@@ -19,7 +19,7 @@ impl Default for NodeData {
             size: Vec2::zero(),
 
             global_position: None,
-            global_size: None
+            global_size: None,
         }
     }
 }
