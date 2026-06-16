@@ -1,11 +1,12 @@
-pub mod events;
-pub mod tags;
-pub mod resources;
-pub mod extensions;
-pub mod systems;
-pub mod commands;
 pub mod buffers;
+pub mod commands;
+pub mod events;
+pub mod extensions;
 pub mod nodedata;
+pub mod relations;
+pub mod resources;
+pub mod systems;
+pub mod tags;
 
 use std::{collections::VecDeque, mem::take};
 
@@ -81,51 +82,4 @@ impl Default for World {
             commands: Default::default(),
         }
     }
-}
-impl World {
-    // ==================[RELATIONS FUNCTIONS]==================
-    /// Returns mutable reference to current relations of type [`Tree`]
-    #[inline]
-    pub fn get_relations_mut(&mut self) -> &mut Tree<NodeId, NodeId> {
-        &mut self.relations
-    }
-    /// Returns reference to current relations of type [`Tree`]
-    #[inline]
-    pub fn get_relations(&self) -> &Tree<NodeId, NodeId> {
-        &self.relations
-    }
-
-    pub fn relate_node_with_parent(&mut self, child: NodeId, parent: NodeId) {
-        assert!(self.relations.get_node_by_id(&parent).is_some());
-
-        if self.relations.get_node_by_id(&child).is_none() {
-            self.relations
-                .add_node(Node::new(child, None), Some(&parent))
-                .unwrap();
-
-            info!(
-                "[ECS] Child NodeID: {} related with Parent NodeID: {}",
-                child, parent
-            );
-            return;
-        }
-
-        // Retain children, and move the subtree along with the child if it has any
-        assert!(self.relations.get_node_by_id(&child).is_some());
-        let subtree = self
-            .relations
-            .get_subtree(&child, None)
-            .expect("Couldn't get subtree");
-        self.relations
-            .remove_node(&child, NodeRemovalStrategy::RemoveNodeAndChildren)
-            .expect("Couldn't remove node from relations");
-        self.relations
-            .add_subtree(&parent, subtree)
-            .expect("Couldn't add subtree to relations");
-        info!(
-            "[ECS] Moved Child NodeID and all its children: {} to parent NodeID: {}",
-            child, parent
-        );
-    }
-
 }
