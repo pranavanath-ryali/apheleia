@@ -5,7 +5,7 @@ use apheleia_ecs::{
     NodeId,
     event_tracker::RENDER_DIRTY,
     systems::{stages::SystemRunStage, system::IntoSystem},
-    world::World,
+    world::{self, World},
 };
 use crossterm::event::{KeyCode, KeyModifiers, poll};
 use indexmap::indexset;
@@ -147,7 +147,7 @@ impl App {
 
         let ids: Vec<NodeId> = self.world.get_registered_nodes().iter().copied().collect();
         for id in &ids {
-            self.world.add_local_event(*id, RENDER_DIRTY);
+            self.world.add_event(*id, RENDER_DIRTY);
         }
         self.world.current_stage = SystemRunStage::Render;
         self.world.run_systems_on_stage(SystemRunStage::Render);
@@ -200,7 +200,7 @@ impl App {
         self.render_flip();
 
         while self.world.running {
-            self.world.clear_local_events();
+            self.world.clear_events();
             self.world.clear_global_events();
 
             self.event();

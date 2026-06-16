@@ -15,7 +15,7 @@ impl SystemContext {
 
     pub fn mark_render_dirty(&mut self, id: NodeId) {
         let world = unsafe { &mut *self.world };
-        world.add_local_event(id, RENDER_DIRTY);
+        world.add_event(id, RENDER_DIRTY);
     }
 
     pub fn get_buffer(&mut self, id: NodeId) -> Option<&mut Buffer> {
