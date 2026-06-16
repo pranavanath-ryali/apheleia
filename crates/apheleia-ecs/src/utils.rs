@@ -114,8 +114,6 @@ mod test_utils {
         let node_1 = world.create_node();
         let node_2 = world.create_node();
 
-        world.
-
         world.set_data(node_0, NodeData {
             position: Vec2 { x: 3, y: 3 },
             ..Default::default()

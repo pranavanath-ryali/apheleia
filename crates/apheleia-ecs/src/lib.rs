@@ -16,8 +16,6 @@ pub mod types {
     pub type NodeId = usize;
     pub type ExtensionId = usize;
     pub type SystemId = usize;
-    pub type EventId = u16;
-    pub type Tag = usize;
 }
 
 pub mod constants {

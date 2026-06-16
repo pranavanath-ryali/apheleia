@@ -6,15 +6,14 @@ use rustc_hash::FxHashMap;
 use smallvec::SmallVec;
 
 use crate::{
-    events::EventTrait,
-    types::{EventId, NodeId, Tag},
+    events::EventTrait, tags::TagTrait, types::NodeId
 };
 
 #[derive(Default)]
 pub struct EventTracker {
     localevents_to_nodeid: FxHashMap<TypeId, IndexSet<NodeId>>,
     local_events: FxHashMap<NodeId, SmallVec<[TypeId; 8]>>,
-    global_events: FxHashMap<Tag, SmallVec<[TypeId; 8]>>,
+    global_events: FxHashMap<TypeId, SmallVec<[TypeId; 8]>>,
 }
 impl EventTracker {
     pub fn add_local_event<E: EventTrait>(&mut self, node_id: NodeId, _event: E) {
@@ -67,9 +66,10 @@ impl EventTracker {
         self.local_events.clear();
     }
 
-    pub fn add_global_event<E: EventTrait>(&mut self, tag: Tag, _event: E) {
+    pub fn add_global_event<T: TagTrait, E: EventTrait>(&mut self, _tag: T, _event: E) {
+        let tag = TypeId::of::<T>();
         let event = TypeId::of::<E>();
-        info!("[ECS] Marked Tag: {} with event: {:#?}", tag, _event);
+        info!("[ECS] Marked Tag: {:?} with event: {:?}", _tag, _event);
         self.global_events
             .entry(tag)
             .and_modify(|v| {
@@ -84,7 +84,8 @@ impl EventTracker {
             });
     }
 
-    pub fn is_global_event<E: EventTrait>(&self, tag: Tag, _event: E) -> bool {
+    pub fn is_global_event<T: TagTrait, E: EventTrait>(&self, _tag: T, _event: E) -> bool {
+        let tag = TypeId::of::<T>();
         let event = TypeId::of::<E>();
         if let Some(global_events) = self.global_events.get(&tag)
             && global_events.contains(&event)
