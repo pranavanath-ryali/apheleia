@@ -3,9 +3,6 @@ name = "apheleia-ecs"
 version.workspace = true
 edition.workspace = true
 
-[lib]
-proc-macro = true
-
 [dependencies]
 apheleia-core.workspace = true
 
