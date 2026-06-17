@@ -44,7 +44,7 @@ impl EventTracker {
             });
     }
 
-    pub fn is_local_event<E: EventTrait>(&self, node_id: NodeId, _event: E) -> bool {
+    pub fn is_local_event<E: EventTrait>(&self, node_id: NodeId) -> bool {
         let event = TypeId::of::<E>();
         if let Some(local_events) = self.local_events.get(&node_id)
             && local_events.contains(&event)
@@ -84,7 +84,7 @@ impl EventTracker {
             });
     }
 
-    pub fn is_global_event<T: TagTrait, E: EventTrait>(&self, _tag: T, _event: E) -> bool {
+    pub fn is_global_event<T: TagTrait, E: EventTrait>(&self) -> bool {
         let tag = TypeId::of::<T>();
         let event = TypeId::of::<E>();
         if let Some(global_events) = self.global_events.get(&tag)

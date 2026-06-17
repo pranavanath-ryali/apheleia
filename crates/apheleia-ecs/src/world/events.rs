@@ -27,7 +27,6 @@ impl World {
     /// # Arguments
     ///
     /// * `node` - The [`NodeId`] of the node
-    /// * `event` - The event to check if `node` is marked for
     ///
     /// # Example
     ///
@@ -36,11 +35,11 @@ impl World {
     ///
     /// world.add_event(node, RenderDirty);
     ///
-    /// assert!(world.is_event(node, RenderDirty));
+    /// assert!(world.is_event::<RenderDirty>(node));
     /// ```
     #[inline]
-    pub fn is_event<E: EventTrait>(&self, node: NodeId, event: E) -> bool {
-        self.event_tracker.is_local_event(node, event)
+    pub fn is_event<E: EventTrait>(&self, node: NodeId) -> bool {
+        self.event_tracker.is_local_event::<E>(node)
     }
 
     /// Clear all local events currently tracked in [`EventTracker`]
@@ -88,11 +87,6 @@ impl World {
 
     /// Check if a `tag` is marked for a certain `event`
     ///
-    /// # Arguments
-    ///
-    /// * `tag` - The tag to check for
-    /// * `event` - The event to check if `tag` is marked for
-    ///
     /// # Example
     ///
     /// ```rust
@@ -102,11 +96,11 @@ impl World {
     ///
     /// world.add_global_event(MyButtonTag, RenderDirty);
     ///
-    /// assert!(world.is_global_event(MyButtonTag, RenderDirty));
+    /// assert!(world.is_global_event::<MyButtonTag, RenderDirty>());
     /// ```
     #[inline]
-    pub fn is_global_event<T: TagTrait, E: EventTrait>(&self, tag: T, event: E) -> bool {
-        self.event_tracker.is_global_event(tag, event)
+    pub fn is_global_event<T: TagTrait, E: EventTrait>(&self) -> bool {
+        self.event_tracker.is_global_event::<T, E>()
     }
 
     /// Clear all global events currently tracked in [`EventTracker`]

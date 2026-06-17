@@ -3,19 +3,18 @@ use std::collections::HashSet;
 use crate::{extensions::Extension, nodedata::data::NodeData, types::NodeId, world::World};
 
 /// A trait for querying [`Extension`]s, [`NodeId`]s, and [`NodeData`] from [`World`]
-pub trait WorldQuery {
+pub trait QueryType {
     type Item<'w>;
 
     fn match_ids(world: &World) -> Vec<NodeId>;
 
     /// # Safety
-    /// This function is unsafe because it will dereference the raw pointer of [`World`] which is
-    /// provided
+    /// This function will dereference the given raw pointer of [`World`]
     unsafe fn fetch<'w>(world: *mut World, id: NodeId) -> Self::Item<'w>;
 }
 
-/// Implement [`WorldQuery`] for reference to [`Extension`]
-impl<E: Extension> WorldQuery for &E {
+/// Implement [`QueryType`] for reference to [`Extension`]
+impl<E: Extension> QueryType for &E {
     type Item<'w> = &'w E;
 
     fn match_ids(world: &World) -> Vec<NodeId> {
@@ -28,8 +27,8 @@ impl<E: Extension> WorldQuery for &E {
     }
 }
 
-/// Implement [`WorldQuery`] for mutable referece to [`Extension`]
-impl<E: Extension> WorldQuery for &mut E {
+/// Implement [`QueryType`] for mutable referece to [`Extension`]
+impl<E: Extension> QueryType for &mut E {
     type Item<'w> = &'w mut E;
 
     fn match_ids(world: &World) -> Vec<NodeId> {
@@ -44,7 +43,7 @@ impl<E: Extension> WorldQuery for &mut E {
     }
 }
 
-impl WorldQuery for NodeData {
+impl QueryType for NodeData {
     type Item<'w> = NodeData;
 
     fn match_ids(world: &World) -> Vec<NodeId> {
@@ -59,7 +58,7 @@ impl WorldQuery for NodeData {
     }
 }
 
-impl WorldQuery for NodeId {
+impl QueryType for NodeId {
     type Item<'w> = NodeId;
 
     fn match_ids(world: &World) -> Vec<NodeId> {
@@ -73,7 +72,7 @@ impl WorldQuery for NodeId {
 
 macro_rules! impl_world_query {
     ( $($query:ident),+ ) => {
-        impl<$($query: WorldQuery),+> WorldQuery for ($($query,)*) {
+        impl<$($query: QueryType),+> QueryType for ($($query,)*) {
             type Item<'w> = ($($query::Item<'w>),*);
 
             fn match_ids(world: &World) -> Vec<NodeId> {

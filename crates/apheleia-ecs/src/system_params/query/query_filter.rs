@@ -1,7 +1,8 @@
 use std::marker::PhantomData;
 
-use crate::{extensions::Extension, types::NodeId, world::World};
+use crate::{events::EventTrait, extensions::Extension, types::NodeId, world::World};
 
+/// A trait for filtering [`NodeId`] from a [`Query`]
 pub trait QueryFilter {
     fn matches(world: &World, id: NodeId) -> bool;
 }
@@ -12,13 +13,7 @@ impl QueryFilter for () {
     }
 }
 
-// pub struct WithEvent<const E: EventId>;
-// impl<const E: EventId> QueryFilter for WithEvent<E> {
-//     fn matches(world: &World, id: NodeId) -> bool {
-//         world.is_local_event(id, E)
-//     }
-// }
-
+/// A [`QueryFilter`] that validates if the node has the [`Extension`] binded to it
 pub struct With<T: Extension> {
     marker: PhantomData<T>,
 }
@@ -28,12 +23,23 @@ impl<T: Extension> QueryFilter for With<T> {
     }
 }
 
+/// A [`QueryFilter`] that validates if the node has the [`Extension`] not binded to it
 pub struct Without<T: Extension> {
     marker: PhantomData<T>,
 }
 impl<T: Extension> QueryFilter for Without<T> {
     fn matches(world: &World, id: NodeId) -> bool {
         world.get_extension::<T>(id).is_none()
+    }
+}
+
+/// A [`QueryFilter`] that validates if the node has the given `local event`
+pub struct WithEvent<E: EventTrait> {
+    _marker: PhantomData<E>,
+}
+impl<E: EventTrait> QueryFilter for WithEvent<E> {
+    fn matches(world: &World, id: NodeId) -> bool {
+        world.is_event::<E>(id)
     }
 }
 
