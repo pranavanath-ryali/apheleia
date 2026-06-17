@@ -1,14 +1,8 @@
 use std::collections::VecDeque;
 
 use apheleia_ecs::{
-    NodeId,
-    command::ContextCommand,
-    extensions::Extension,
-    resources::Resource,
-    systems::{stages::SystemRunStage, system::IntoSystem},
+    commands::{ContextCommand, extension::AddExtensionToNode, resource::AddResource, system::AddSystem}, extensions::Extension, resources::Resource, systems::system::IntoSystem, types::{NodeId, SystemRunStage}
 };
-
-use crate::commands::{extension::AddExtensionToNode, resource::AddResource, system::AddSystem};
 
 pub struct NodeContext {
     id: NodeId,
@@ -34,7 +28,7 @@ impl NodeContext {
     pub fn add_system<Params: 'static>(
         &mut self,
         stage: SystemRunStage,
-        priority: u8,
+        priority: u16,
         system: impl IntoSystem<Params>,
     ) {
         self.commands

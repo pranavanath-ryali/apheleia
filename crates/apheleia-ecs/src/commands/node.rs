@@ -17,14 +17,31 @@ pub struct CalculateGlobalPositionForNode(pub NodeId);
 #[derive(Debug)]
 pub struct CalculateGlobalSizeForNode(pub NodeId);
 
+impl SetDataForNode {
+    pub fn new(id: NodeId, data: NodeData) -> Box<Self> {
+        Box::new(Self(id, data))
+    }
+}
 impl ContextCommand for SetDataForNode {
     fn execute(self: Box<Self>, world: &mut crate::world::World) {
         world.set_data(self.0, self.1);
     }
 }
+
+impl RelateChildWithParent {
+    pub fn new(child: NodeId, parent: NodeId) -> Box<Self> {
+        Box::new(Self { child, parent })
+    }
+}
 impl ContextCommand for RelateChildWithParent {
     fn execute(self: Box<Self>, world: &mut crate::world::World) {
         world.relate_node_with_parent(self.child, self.parent);
+    }
+}
+
+impl CalculateGlobalPositionForNode {
+    pub fn new(id: NodeId) -> Box<Self> {
+        Box::new(Self(id))
     }
 }
 impl ContextCommand for CalculateGlobalPositionForNode {
@@ -34,6 +51,12 @@ impl ContextCommand for CalculateGlobalPositionForNode {
             .get_nodedata_mut(self.0)
             .expect("Unexpected error trying to unwrap nodedata")
             .global_position = Some(position);
+    }
+}
+
+impl CalculateGlobalSizeForNode {
+    pub fn new(id: NodeId) -> Box<Self> {
+        Box::new(Self(id))
     }
 }
 impl ContextCommand for CalculateGlobalSizeForNode {

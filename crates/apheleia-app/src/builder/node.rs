@@ -1,15 +1,16 @@
 use std::{collections::VecDeque, mem::replace};
 
-use crate::{
-    commands::node::{
-        CalculateGlobalPositionForNode, CalculateGlobalSizeForNode, CreateNode,
-        RelateNodeWithParent, SetDataForNode,
-    },
-    node_definer::{EmptyNode, NodeDefiner},
-};
+use crate::node_definer::{EmptyNode, NodeDefiner};
 use apheleia_core::types::Vec2;
 use apheleia_ecs::{
-    commands::ContextCommand, nodedata::data::NodeData, types::NodeId, world::World,
+    commands::ContextCommand,
+    commands::node::{
+        CalculateGlobalPositionForNode, CalculateGlobalSizeForNode, RelateChildWithParent,
+        SetDataForNode,
+    },
+    nodedata::data::NodeData,
+    types::NodeId,
+    world::World,
 };
 use indexmap::IndexSet;
 
@@ -26,11 +27,10 @@ pub struct NodeBuilder<'w> {
     commands: VecDeque<Box<dyn ContextCommand>>,
 }
 impl<'w> NodeBuilder<'w> {
-    pub fn new(parent_id: NodeId, world: &mut World) -> NodeBuilder {
+    pub fn new(parent_id: NodeId, world: &'w mut World) -> NodeBuilder {
         let id = world.create_node();
 
         let mut commands: VecDeque<Box<dyn ContextCommand>> = Default::default();
-        commands.push_back(CreateNode::new(id));
 
         Self {
             id,
@@ -70,7 +70,7 @@ impl<'w> NodeBuilder<'w> {
         (NodeId, Box<dyn NodeDefiner>),
     ) {
         self.commands
-            .push_back(RelateNodeWithParent::new(self.id, self.parent_id));
+            .push_back(RelateChildWithParent::new(self.id, self.parent_id));
         self.commands
             .push_back(SetDataForNode::new(self.id, self.data));
         self.commands
