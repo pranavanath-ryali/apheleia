@@ -4,17 +4,14 @@ use log::{info, warn};
 use rustc_hash::FxHashMap;
 
 use crate::{
-    constants::{MAX_SYSTEMS, SYSTEMS_MAX_PRIORITY_CHANGE}, id_generator::IdGenerator, systems::{
-        stages::SystemRunStage,
-        system::{IntoSystem, System},
-    }, types::SystemId, world::World
+    constants::{MAX_SYSTEMS, SYSTEMS_MAX_PRIORITY_CHANGE}, id_generator::IdGenerator, systems::system::{IntoSystem, System}, types::{SystemId, SystemRunStage}, world::World
 };
 
 pub struct SystemStore {
     // TODO: Maybe make ID Generator obsolete and register by system's typeid
     id_generator: IdGenerator<SystemId>,
 
-    stage_to_priority_ids: FxHashMap<SystemRunStage, BTreeMap<u8, SystemId>>,
+    stage_to_priority_ids: FxHashMap<SystemRunStage, BTreeMap<u16, SystemId>>,
     id_to_systems: FxHashMap<SystemId, Box<dyn System>>,
     typesids: Vec<TypeId>,
 }
@@ -35,7 +32,7 @@ impl SystemStore {
     pub fn add_system<Params: 'static>(
         &mut self,
         stage: SystemRunStage,
-        priority: u8,
+        priority: u16,
         system: impl IntoSystem<Params>,
     ) {
         let id = self.id_generator.next();
@@ -63,7 +60,7 @@ impl SystemStore {
                 }
             })
             .or_insert_with(|| {
-                let mut map: BTreeMap<u8, SystemId> = BTreeMap::default();
+                let mut map: BTreeMap<_, SystemId> = BTreeMap::default();
                 map.insert(priority, id);
                 map
             });
@@ -73,7 +70,7 @@ impl SystemStore {
     }
 
     // TODO: Refactor
-    pub fn add_system_boxed(&mut self, stage: SystemRunStage, priority: u8, system: Box<dyn System>) {
+    pub fn add_system_boxed(&mut self, stage: SystemRunStage, priority: u16, system: Box<dyn System>) {
         let id = self.id_generator.next();
         let system_typeid = system.id();
 
@@ -99,7 +96,7 @@ impl SystemStore {
                 }
             })
             .or_insert_with(|| {
-                let mut map: BTreeMap<u8, SystemId> = BTreeMap::default();
+                let mut map: BTreeMap<_, SystemId> = BTreeMap::default();
                 map.insert(priority, id);
                 map
             });

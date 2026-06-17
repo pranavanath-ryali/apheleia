@@ -6,7 +6,9 @@ impl World {
     /// # Arguments
     ///
     /// * `stage` - The stage at which the system is run at and registered to
-    /// * `priority` - The priority and order at which systems are run
+    /// * `priority` - The priority and order at which systems are run. If two systems have the same
+    ///   priority, the priority for the second system automatically increments until it finds a
+    ///   priority that is unreserved. This increment does have a limit defined by [`SYSTEMS_MAX_PRIORITY_CHANGE`]; exceeding it will panic.
     /// * `system` - The function itself that implements [`IntoSystem`]
     ///
     /// # Example
@@ -24,18 +26,20 @@ impl World {
     pub fn add_system<Params: 'static>(
         &mut self,
         stage: SystemRunStage,
-        priority: u8,
+        priority: u16,
         system: impl IntoSystem<Params>,
     ) {
         self.system_store.add_system(stage, priority, system);
     }
-    
+
     /// Add given [`Box<dyn System>`] and register to [`World`]
     ///
     /// # Arguments
     ///
     /// * `stage` - The stage at which the system is run at and registered to
-    /// * `priority` - The priority and order at which systems are run
+    /// * `priority` - The priority and order at which systems are run. If two systems have the same
+    ///   priority, the priority for the second system automatically increments until it finds a
+    ///   priority that is unreserved. This increment does have a limit defined by [`SYSTEMS_MAX_PRIORITY_CHANGE`]; exceeding it will panic.
     /// * `system` - The boxed value of [`System`] itself
     ///
     /// # Example
@@ -53,7 +57,7 @@ impl World {
     pub fn add_system_boxed(
         &mut self,
         stage: SystemRunStage,
-        priority: u8,
+        priority: u16,
         system: Box<dyn System>,
     ) {
         self.system_store.add_system_boxed(stage, priority, system);

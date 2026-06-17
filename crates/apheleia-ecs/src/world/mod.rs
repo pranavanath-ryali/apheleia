@@ -19,19 +19,17 @@ use crate::{
     buffer_store::BufferStore,
     commands::ContextCommand,
     constants::MAX_NODES,
-    events::EventTrait,
-    events::tracker::EventTracker,
+    events::{EventTrait, tracker::EventTracker},
     extensions::{Extension, store::ExtensionStore},
     id_generator::IdGenerator,
     nodedata::{data::NodeData, store::NodeDataStore},
     resources::{Resource, store::ResourceStore},
     systems::{
-        stages::SystemRunStage,
         store::SystemStore,
         system::{IntoSystem, System},
     },
     tags::{TagTrait, registry::TagRegistry},
-    types::NodeId,
+    types::{NodeId, SystemRunStage},
 };
 use indexmap::IndexSet;
 
