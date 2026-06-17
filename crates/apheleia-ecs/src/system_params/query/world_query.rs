@@ -73,7 +73,7 @@ impl WorldQuery for NodeId {
 
 macro_rules! impl_world_query {
     ( $($query:ident),+ ) => {
-        impl<$($query: WorldQuery),*> WorldQuery for ($($query,)*) {
+        impl<$($query: WorldQuery),+> WorldQuery for ($($query,)*) {
             type Item<'w> = ($($query::Item<'w>),*);
 
             fn match_ids(world: &World) -> Vec<NodeId> {
