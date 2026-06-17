@@ -6,3 +6,4 @@ pub mod types;
 
 pub use crossterm::style::{Attribute, Color};
 pub use crossterm::terminal;
+pub use crossterm::event::{KeyEvent, MouseEvent};

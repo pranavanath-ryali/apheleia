@@ -8,22 +8,24 @@ use crate::{
     node_definer::{EmptyNode, NodeDefiner},
 };
 use apheleia_core::types::Vec2;
-use apheleia_ecs::{NodeId, command::ContextCommand, types::NodeData, world::World};
+use apheleia_ecs::{
+    commands::ContextCommand, nodedata::data::NodeData, types::NodeId, world::World,
+};
 use indexmap::IndexSet;
 
 /// [`NodeBuilder`] automates the creation process of a node during the setup process with any extensions and systems
-pub struct NodeBuilder {
+pub struct NodeBuilder<'w> {
     id: NodeId,
     parent_id: NodeId,
-    world: *mut World,
 
     tags: IndexSet<usize>,
     data: NodeData,
     node: Box<dyn NodeDefiner>,
 
+    world: &'w mut World,
     commands: VecDeque<Box<dyn ContextCommand>>,
 }
-impl NodeBuilder {
+impl<'w> NodeBuilder<'w> {
     pub fn new(parent_id: NodeId, world: &mut World) -> NodeBuilder {
         let id = world.create_node();
 
@@ -33,12 +35,12 @@ impl NodeBuilder {
         Self {
             id,
             parent_id,
-            world,
 
             tags: Default::default(),
             data: NodeData::default(),
             node: Box::new(EmptyNode),
 
+            world,
             commands,
         }
     }

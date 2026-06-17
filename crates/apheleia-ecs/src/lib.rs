@@ -1,4 +1,4 @@
-mod id_generator;
+pub mod id_generator;
 
 pub(crate) mod buffer_store;
 
@@ -14,9 +14,13 @@ pub mod utils;
 pub mod world;
 
 pub mod types {
+    use apheleia_core::{KeyEvent, MouseEvent, types::Vec2};
+
     pub type NodeId = usize;
     pub(crate) type ExtensionId = usize;
     pub(crate) type SystemId = usize;
+
+    pub type EventType = u8;
 
     /// Defines the stage at which a system runs and what capabilities it can access
     ///
@@ -36,6 +40,19 @@ pub mod types {
         Event,
         Update,
         Render,
+    }
+
+    #[derive(Default)]
+    pub enum EventData {
+        Resize(Vec2),
+        Keys(KeyEvent),
+        Mouse(MouseEvent),
+
+        FocusGained,
+        FocusLost,
+
+        #[default]
+        None,
     }
 }
 
@@ -63,4 +80,11 @@ pub mod constants {
     /// The very last priority slot. Reserved for systems that must run after everything else — such as
     /// rendering, debug overlays, or third-party crates that consume fully-resolved state.
     pub const LAST: u16 = 479;
+
+    pub const EVENT_NONE: u8 = 0;
+    pub const EVENT_RESIZE: u8 = 1;
+    pub const EVENT_KEYS: u8 = 2;
+    pub const EVENT_MOUSE: u8 = 3;
+    pub const EVENT_FOCUS_GAINED: u8 = 4;
+    pub const EVENT_FOCUS_LOST: u8 = 5;
 }

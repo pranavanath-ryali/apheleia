@@ -2,9 +2,12 @@ use std::{collections::VecDeque, io, mem::take, time::Duration};
 
 use apheleia_core::{buffer::Buffer, renderer::Renderer, terminal, types::Vec2};
 use apheleia_ecs::{
-    events::RenderDirty, systems::{stages::SystemRunStage, system::IntoSystem}, types::NodeId, world::{self, World}
+    events::RenderDirty,
+    systems::system::IntoSystem,
+    types::{EventData, NodeId, SystemRunStage},
+    world::World,
 };
-use crossterm::event::{KeyCode, KeyModifiers, poll};
+use crossterm::event::{Event, poll, read};
 use indexmap::indexset;
 use log::{info, warn};
 use tree_ds::prelude::{Node, Tree};
@@ -14,8 +17,6 @@ use crate::{
     context::node::NodeContext,
     into_resource::IntoResource,
     node_definer::NodeDefiner,
-    resources::AppEvents,
-    types::{self, EventData, EventType},
 };
 
 pub struct App {
@@ -71,7 +72,7 @@ impl App {
     pub fn add_system<Params: 'static>(
         mut self,
         stage: SystemRunStage,
-        priority: u8,
+        priority: u16,
         system: impl IntoSystem<Params>,
     ) -> Self {
         self.world.add_system(stage, priority, system);
@@ -88,42 +89,19 @@ impl App {
             self.world.apppend_commands(ctx.get_commands());
         }
         self.world.execute_commands();
-
-        // Setup [`World`] for event
-        info!("[APP] Setting up basic resources");
-        self.world.add_resource(AppEvents {
-            data: EventData::None,
-            event_type: EventType::None,
-        });
     }
 
     pub fn event(&mut self) -> io::Result<()> {
-        // TODO: Implement event function
         info!("[APP] Event Poll");
         if poll(Duration::from_nanos(1_000_000_000 / 15))? {
-            let resource = self.world.get_resource_mut::<AppEvents>().unwrap();
-            match crossterm::event::read()? {
-                crossterm::event::Event::FocusGained => {
-                    resource.data = EventData::FocusGained;
-                    resource.event_type = types::EventType::FocusGained;
-                }
-                crossterm::event::Event::FocusLost => {
-                    resource.data = EventData::FocusLost;
-                    resource.event_type = types::EventType::FocusLost;
-                }
-                crossterm::event::Event::Key(event) => {
-                    resource.data = EventData::Keys(event);
-                    resource.event_type = types::EventType::Keys;
-                }
-                crossterm::event::Event::Mouse(event) => {
-                    resource.data = EventData::Mouse(event);
-                    resource.event_type = types::EventType::Mouse;
-                }
-                crossterm::event::Event::Paste(_) => (), // TODO: Implement Paste Event
-                crossterm::event::Event::Resize(width, height) => todo!(), // TODO:
-                                                          // Implement
-                                                          // Resize event
-            }
+            self.world.app_event_data = match read()? {
+                Event::FocusGained => EventData::FocusGained,
+                Event::FocusLost => EventData::FocusLost,
+                Event::Key(key_event) => EventData::Keys(key_event),
+                Event::Mouse(mouse_event) => EventData::Mouse(mouse_event),
+                Event::Paste(_) => EventData::None,
+                Event::Resize(width, height) => EventData::Resize(Vec2 { x: width, y: height }),
+            };
 
             info!("[APP] Event Stage");
             self.world.current_stage = SystemRunStage::Event;

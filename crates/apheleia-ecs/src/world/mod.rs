@@ -18,7 +18,7 @@ use tree_ds::prelude::{Node, NodeRemovalStrategy, Tree};
 use crate::{
     buffer_store::BufferStore,
     commands::ContextCommand,
-    constants::MAX_NODES,
+    constants::{EVENT_NONE, MAX_NODES},
     events::{EventTrait, tracker::EventTracker},
     extensions::{Extension, store::ExtensionStore},
     id_generator::IdGenerator,
@@ -29,18 +29,19 @@ use crate::{
         system::{IntoSystem, System},
     },
     tags::{TagTrait, registry::TagRegistry},
-    types::{NodeId, SystemRunStage},
+    types::{EventData, EventType, NodeId, SystemRunStage},
 };
 use indexmap::IndexSet;
 
 pub struct World {
     pub running: bool,
-
-    pub nodeid_gen: IdGenerator<NodeId>,
-    relations: Tree<NodeId, NodeId>,
-
     pub current_stage: SystemRunStage,
 
+    pub app_event_type: EventType,
+    pub app_event_data: EventData,
+
+    nodeid_gen: IdGenerator<NodeId>,
+    relations: Tree<NodeId, NodeId>,
     tag_registry: TagRegistry,
     registered_nodes: VecDeque<NodeId>,
 
@@ -62,11 +63,13 @@ impl Default for World {
 
         Self {
             running: true,
-            nodeid_gen: IdGenerator::new(MAX_NODES),
-            relations,
-
             current_stage: SystemRunStage::Event,
 
+            app_event_type: EVENT_NONE,
+            app_event_data: EventData::None,
+
+            nodeid_gen: IdGenerator::new(MAX_NODES),
+            relations,
             registered_nodes: Default::default(),
             tag_registry: Default::default(),
 
