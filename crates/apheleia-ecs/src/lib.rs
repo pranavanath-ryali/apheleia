@@ -11,6 +11,7 @@ pub mod world;
 pub mod commands;
 pub mod tags;
 pub mod events;
+pub mod system_params;
 
 pub mod types {
     pub type NodeId = usize;

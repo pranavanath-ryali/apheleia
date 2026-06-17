@@ -43,15 +43,15 @@ pub struct World {
 
     pub current_stage: SystemRunStage,
 
-    registered_nodes: VecDeque<NodeId>,
     tag_registry: TagRegistry,
+    registered_nodes: VecDeque<NodeId>,
 
+    buffer_store: BufferStore,
     event_tracker: EventTracker,
     nodedata_store: NodeDataStore,
     extension_store: ExtensionStore,
     resource_store: ResourceStore,
     system_store: SystemStore,
-    buffer_store: BufferStore,
 
     commands: VecDeque<Box<dyn ContextCommand>>,
 }

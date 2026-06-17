@@ -5,7 +5,6 @@ use log::info;
 
 pub mod app;
 pub mod into_resource;
-pub mod tag;
 pub mod commands;
 pub mod builder;
 pub mod node_definer;

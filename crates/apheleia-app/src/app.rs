@@ -2,10 +2,7 @@ use std::{collections::VecDeque, io, mem::take, time::Duration};
 
 use apheleia_core::{buffer::Buffer, renderer::Renderer, terminal, types::Vec2};
 use apheleia_ecs::{
-    NodeId,
-    event_tracker::RENDER_DIRTY,
-    systems::{stages::SystemRunStage, system::IntoSystem},
-    world::{self, World},
+    events::RenderDirty, systems::{stages::SystemRunStage, system::IntoSystem}, types::NodeId, world::{self, World}
 };
 use crossterm::event::{KeyCode, KeyModifiers, poll};
 use indexmap::indexset;
@@ -147,7 +144,7 @@ impl App {
 
         let ids: Vec<NodeId> = self.world.get_registered_nodes().iter().copied().collect();
         for id in &ids {
-            self.world.add_event(*id, RENDER_DIRTY);
+            self.world.add_event(*id, RenderDirty);
         }
         self.world.current_stage = SystemRunStage::Render;
         self.world.run_systems_on_stage(SystemRunStage::Render);
@@ -173,7 +170,7 @@ impl App {
         warn!("[APP] Rendering node buffers with RENDER_DIRTY event into Main Buffer");
         let set = take(
             self.world
-                .get_nodes_with_event(RENDER_DIRTY)
+                .get_nodes_with_event::<RenderDirty>()
                 .unwrap_or(&mut indexset! {}),
         );
         for id in &set {
