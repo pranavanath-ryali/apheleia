@@ -1,3 +1,8 @@
+pub mod node;
+pub mod extension;
+pub mod resource;
+pub mod system;
+
 use core::fmt::Debug;
 
 use crate::world::World;

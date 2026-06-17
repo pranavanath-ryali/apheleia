@@ -44,7 +44,7 @@ pub mod constants {
     pub(crate) const MAX_EXTENSIONS: usize = 1024;
     pub(crate) const MAX_SYSTEMS: usize = u16::MAX as usize;
 
-    pub(crate) const SYSTEMS_MAX_PRIORITY_CHANGE: u16 = 32;
+    pub const SYSTEMS_MAX_PRIORITY_CHANGE: u16 = 32;
 
     /// The very first priority slot. Reserved for foundational systems that must run before everything
     /// else — such as layout engines, animation drivers, or third-party crates that produce data other
