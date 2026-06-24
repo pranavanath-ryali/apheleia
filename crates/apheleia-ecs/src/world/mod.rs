@@ -18,7 +18,7 @@ use tree_ds::prelude::{Node, NodeRemovalStrategy, Tree};
 use crate::{
     buffer_store::BufferStore,
     commands::ContextCommand,
-    constants::{EVENT_NONE, MAX_NODES},
+    constants::{MAX_NODES},
     events::{EventTrait, tracker::EventTracker},
     extensions::{Extension, store::ExtensionStore},
     id_generator::IdGenerator,
@@ -37,16 +37,11 @@ pub struct World {
     pub running: bool,
     pub current_stage: SystemRunStage,
 
-    pub app_event_type: EventType,
-    pub app_event_data: EventData,
-
     nodeid_gen: IdGenerator<NodeId>,
     relations: Tree<NodeId, NodeId>,
     tag_registry: TagRegistry,
     registered_nodes: VecDeque<NodeId>,
 
-    buffer_store: BufferStore,
-    event_tracker: EventTracker,
     nodedata_store: NodeDataStore,
     extension_store: ExtensionStore,
     resource_store: ResourceStore,
@@ -65,20 +60,15 @@ impl Default for World {
             running: true,
             current_stage: SystemRunStage::Event,
 
-            app_event_type: EVENT_NONE,
-            app_event_data: EventData::None,
-
             nodeid_gen: IdGenerator::new(MAX_NODES),
             relations,
             registered_nodes: Default::default(),
             tag_registry: Default::default(),
 
-            event_tracker: Default::default(),
             nodedata_store: Default::default(),
             extension_store: Default::default(),
             resource_store: Default::default(),
             system_store: Default::default(),
-            buffer_store: Default::default(),
 
             commands: Default::default(),
         }

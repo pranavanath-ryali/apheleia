@@ -1,9 +1,12 @@
 use std::ops::Deref;
 
 use apheleia_core::{KeyEvent, MouseEvent, types::Vec2};
+use log::info;
 
 use crate::{
-    constants::{EVENT_KEYS, EVENT_MOUSE, EVENT_RESIZE}, systems::system::SystemParam, types::{EventData, EventType, SystemRunStage}
+    constants::{EVENT_KEYS, EVENT_MOUSE, EVENT_RESIZE},
+    systems::system::SystemParam,
+    types::{EventData, EventType, SystemRunStage},
 };
 
 pub struct OnAppEvent<'w, const EVENT_TYPE: EventType> {
@@ -24,7 +27,6 @@ impl<const EVENT_TYPE: EventType> SystemParam for OnAppEvent<'static, EVENT_TYPE
                 data: &world.app_event_data,
             });
         }
-
         None
     }
 }

@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use crate::{events::EventTrait, extensions::Extension, types::NodeId, world::World};
+use crate::{events::EventTrait, extensions::Extension, tags::TagTrait, types::NodeId, world::World};
 
 /// A trait for filtering [`NodeId`] from a [`Query`]
 pub trait QueryFilter {
@@ -30,6 +30,18 @@ pub struct Without<T: Extension> {
 impl<T: Extension> QueryFilter for Without<T> {
     fn matches(world: &World, id: NodeId) -> bool {
         world.get_extension::<T>(id).is_none()
+    }
+}
+
+pub struct WithTag<T: TagTrait> {
+    marker: PhantomData<T>
+}
+impl<T: TagTrait> QueryFilter for WithTag<T> {
+    fn matches(world: &World, id: NodeId) -> bool {
+        if let Some(nodes) = world.get_nodes_tagged::<T>() {
+            return nodes.contains(&id);
+        }
+        false
     }
 }
 

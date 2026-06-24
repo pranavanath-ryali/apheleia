@@ -57,12 +57,12 @@ dependencies = [
 ]
 
 [[package]]
-name = "apheleia-types"
+name = "apheleia-widgets"
 version = "0.1.0"
 dependencies = [
- "crossterm",
- "indexmap",
- "tree-ds",
+ "apheleia-app",
+ "apheleia-core",
+ "apheleia-ecs",
 ]
 
 [[package]]
@@ -136,6 +136,13 @@ name = "core-foundation-sys"
 version = "0.8.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "773648b94d0e5d620f64f280777445740e61fe701025087ec8b57f45c791888b"
+
+[[package]]
+name = "core-test"
+version = "0.1.0"
+dependencies = [
+ "apheleia-core",
+]
 
 [[package]]
 name = "crossterm"
@@ -417,6 +424,7 @@ dependencies = [
  "apheleia-app",
  "apheleia-core",
  "apheleia-ecs",
+ "apheleia-widgets",
  "crossterm",
 ]
 

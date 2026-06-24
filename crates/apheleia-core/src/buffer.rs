@@ -1,7 +1,7 @@
 use indexmap::IndexMap;
 use rustc_hash::FxHashMap;
 
-use crate::{rich_strings::RichString, style::Style, types::Vec2};
+use crate::{node_buffer::NodeBuffer, rich_strings::RichString, style::Style, types::Vec2};
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Cell {
@@ -40,85 +40,31 @@ impl Buffer {
         }
     }
 
-    pub fn get_size(&self) -> Vec2 {
-        self.size
-    }
-
-    pub fn resize(&mut self, new_size: Vec2) {
-        if self.size.x > new_size.x {
-            self.cells.iter_mut().for_each(|row| {
-                row.truncate(new_size.x as usize);
-            });
-        } else if self.size.x < new_size.x {
-            self.cells.iter_mut().for_each(|row| {
-                row.resize(new_size.x as usize, Cell::default());
-            });
-        }
-
-        if self.size.y > new_size.y {
-            self.cells.truncate(new_size.y as usize);
-        } else if self.size.y < new_size.y {
-            self.cells.resize_with(new_size.y as usize, || {
-                vec![Cell::default(); new_size.x as usize]
-            });
-        }
-
-        self.size = new_size;
-    }
-
-    pub fn write_string(&mut self, position: Vec2, text: String, style: Option<Style>) {
-        let rich_string: RichString = match style {
-            Some(style) => RichString::to_rich(&text, style),
-            None => RichString::new(&text),
-        };
-        self.write_rich_string(position, rich_string);
-    }
-
-    pub fn write_rich_string(&mut self, position: Vec2, rich_string: RichString) {
-        let mut offset = Vec2::zero();
-        for (c, style) in rich_string.iter() {
-            if c == '\n' {
-                offset.y += 1;
-                offset.x = offset.x.saturating_sub(1);
-                continue;
-            }
-
-            if position.x + offset.x > self.size.x - 1 || position.y + offset.y > self.size.y - 1 {
-                continue;
-            }
-
-            let cell =
-                &mut self.cells[(position.y + offset.y) as usize][(position.x + offset.x) as usize];
-
-            cell.c = c;
-            cell.style = style;
-            cell.written = true;
-
-            offset.x += 1;
-        }
-    }
-
     // pub fn render_buffer(&mut self, offset_x: u16, offset_y: u16, buf: &mut Buffer) {
-    pub fn render_buffer(&mut self, offset: Vec2, buf: &mut Buffer) {
-        for (y, row) in buf.cells.iter().enumerate() {
-            for (x, cell) in row.iter().enumerate() {
-                if offset.x + x as u16 >= self.size.x || offset.y + y as u16 >= self.size.y {
+    pub fn render_buffer(&mut self, offset: Vec2, buf: &mut NodeBuffer) {
+        for (y, map) in buf.diffed_cells.iter() {
+            for (x, cell) in map.iter() {
+                let pos_x = offset.x + x;
+                let pos_y = offset.y + y;
+                if pos_x >= self.size.x || pos_y >= self.size.y {
                     continue;
                 }
 
-                if *cell == self.cells[y + offset.y as usize][x + offset.x as usize] {
+                if *cell == self.cells[(offset.y + y) as usize][(x + offset.x) as usize] {
                     continue;
                 }
 
-                if !cell.written {
-                    continue;
-                }
-
-                self.cells[y + offset.y as usize][x + offset.x as usize] = *cell;
+                self.cells[pos_y as usize][pos_x as usize] = *cell;
                 self.diffed_cells
-                    .entry(y as u16 + offset.y)
-                    .or_default()
-                    .insert(x as u16 + offset.x, *cell);
+                    .entry(pos_y)
+                    .and_modify(|map| {
+                        map.insert(pos_x, *cell);
+                    })
+                    .or_insert_with(|| {
+                        let mut map: IndexMap<u16, Cell> = IndexMap::default();
+                        map.insert(pos_x, *cell);
+                        map
+                    });
             }
         }
     }
@@ -135,138 +81,138 @@ impl Buffer {
         self.diffed_cells.clear();
     }
 }
-
-#[cfg(test)]
-mod test_buffer {
-    use crate::style::StyleFlags;
-
-    use super::*;
-
-    #[test]
-    fn test_write() {
-        let mut buffer = Buffer::new(Vec2 { x: 10, y: 1 });
-        buffer.write_rich_string(Vec2 { x: 5, y: 0 }, RichString::new("He</bold/>llo"));
-
-        assert_eq!(
-            buffer.cells[0],
-            vec![
-                Cell::default(),
-                Cell::default(),
-                Cell::default(),
-                Cell::default(),
-                Cell::default(),
-                Cell {
-                    c: 'H',
-                    style: Style {
-                        ..Default::default()
-                    },
-                    written: true
-                },
-                Cell {
-                    c: 'e',
-                    style: Style {
-                        ..Default::default()
-                    },
-                    written: true
-                },
-                Cell {
-                    c: 'l',
-                    style: Style {
-                        flags: StyleFlags::BOLD,
-                        ..Default::default()
-                    },
-                    written: true
-                },
-                Cell {
-                    c: 'l',
-                    style: Style {
-                        flags: StyleFlags::BOLD,
-                        ..Default::default()
-                    },
-                    written: true
-                },
-                Cell {
-                    c: 'o',
-                    style: Style {
-                        flags: StyleFlags::BOLD,
-                        ..Default::default()
-                    },
-                    written: true
-                },
-            ]
-        );
-    }
-
-    #[test]
-    fn test_resize() {
-        let mut buffer = Buffer::new(Vec2 { x: 10, y: 1 });
-        buffer.write_string(Vec2::zero(), "HelloWorld".to_string(), None);
-
-        buffer.resize(Vec2 { x: 20, y: 1 });
-        assert_eq!(
-            buffer.cells[0],
-            [
-                Cell {
-                    c: 'H',
-                    style: Default::default(),
-                    written: true
-                },
-                Cell {
-                    c: 'e',
-                    style: Default::default(),
-                    written: true
-                },
-                Cell {
-                    c: 'l',
-                    style: Default::default(),
-                    written: true
-                },
-                Cell {
-                    c: 'l',
-                    style: Default::default(),
-                    written: true
-                },
-                Cell {
-                    c: 'o',
-                    style: Default::default(),
-                    written: true
-                },
-                Cell {
-                    c: 'W',
-                    style: Default::default(),
-                    written: true
-                },
-                Cell {
-                    c: 'o',
-                    style: Default::default(),
-                    written: true
-                },
-                Cell {
-                    c: 'r',
-                    style: Default::default(),
-                    written: true
-                },
-                Cell {
-                    c: 'l',
-                    style: Default::default(),
-                    written: true
-                },
-                Cell {
-                    c: 'd',
-                    style: Default::default(),
-                    written: true
-                },
-                Cell::default(),
-                Cell::default(),
-                Cell::default(),
-                Cell::default(),
-                Cell::default(),
-                Cell::default(),
-                Cell::default(),
-                Cell::default(),
-                Cell::default(),
-                Cell::default(),
-            ]
-        );
-    }
-}
+//
+// #[cfg(test)]
+// mod test_buffer {
+//     use crate::style::StyleFlags;
+//
+//     use super::*;
+//
+//     #[test]
+//     fn test_write() {
+//         let mut buffer = Buffer::new(Vec2 { x: 10, y: 1 });
+//         buffer.write_rich_string(Vec2 { x: 5, y: 0 }, RichString::new("He</bold/>llo"));
+//
+//         assert_eq!(
+//             buffer.cells[0],
+//             vec![
+//                 Cell::default(),
+//                 Cell::default(),
+//                 Cell::default(),
+//                 Cell::default(),
+//                 Cell::default(),
+//                 Cell {
+//                     c: 'H',
+//                     style: Style {
+//                         ..Default::default()
+//                     },
+//                     written: true
+//                 },
+//                 Cell {
+//                     c: 'e',
+//                     style: Style {
+//                         ..Default::default()
+//                     },
+//                     written: true
+//                 },
+//                 Cell {
+//                     c: 'l',
+//                     style: Style {
+//                         flags: StyleFlags::BOLD,
+//                         ..Default::default()
+//                     },
+//                     written: true
+//                 },
+//                 Cell {
+//                     c: 'l',
+//                     style: Style {
+//                         flags: StyleFlags::BOLD,
+//                         ..Default::default()
+//                     },
+//                     written: true
+//                 },
+//                 Cell {
+//                     c: 'o',
+//                     style: Style {
+//                         flags: StyleFlags::BOLD,
+//                         ..Default::default()
+//                     },
+//                     written: true
+//                 },
+//             ]
+//         );
+//     }
+//
+//     #[test]
+//     fn test_resize() {
+//         let mut buffer = Buffer::new(Vec2 { x: 10, y: 1 });
+//         buffer.write_string(Vec2::zero(), "HelloWorld".to_string(), None);
+//
+//         buffer.resize(Vec2 { x: 20, y: 1 });
+//         assert_eq!(
+//             buffer.cells[0],
+//             [
+//                 Cell {
+//                     c: 'H',
+//                     style: Default::default(),
+//                     written: true
+//                 },
+//                 Cell {
+//                     c: 'e',
+//                     style: Default::default(),
+//                     written: true
+//                 },
+//                 Cell {
+//                     c: 'l',
+//                     style: Default::default(),
+//                     written: true
+//                 },
+//                 Cell {
+//                     c: 'l',
+//                     style: Default::default(),
+//                     written: true
+//                 },
+//                 Cell {
+//                     c: 'o',
+//                     style: Default::default(),
+//                     written: true
+//                 },
+//                 Cell {
+//                     c: 'W',
+//                     style: Default::default(),
+//                     written: true
+//                 },
+//                 Cell {
+//                     c: 'o',
+//                     style: Default::default(),
+//                     written: true
+//                 },
+//                 Cell {
+//                     c: 'r',
+//                     style: Default::default(),
+//                     written: true
+//                 },
+//                 Cell {
+//                     c: 'l',
+//                     style: Default::default(),
+//                     written: true
+//                 },
+//                 Cell {
+//                     c: 'd',
+//                     style: Default::default(),
+//                     written: true
+//                 },
+//                 Cell::default(),
+//                 Cell::default(),
+//                 Cell::default(),
+//                 Cell::default(),
+//                 Cell::default(),
+//                 Cell::default(),
+//                 Cell::default(),
+//                 Cell::default(),
+//                 Cell::default(),
+//                 Cell::default(),
+//             ]
+//         );
+//     }
+// }

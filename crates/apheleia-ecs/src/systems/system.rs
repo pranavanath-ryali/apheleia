@@ -61,3 +61,7 @@ macro_rules! impl_into_system {
 impl_into_system!();
 impl_into_system!(P0);
 impl_into_system!(P0, P1);
+impl_into_system!(P0, P1, P2);
+impl_into_system!(P0, P1, P2, P3);
+impl_into_system!(P0, P1, P2, P3, P4);
+impl_into_system!(P0, P1, P2, P3, P4, P5);

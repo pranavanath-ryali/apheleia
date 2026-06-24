@@ -21,6 +21,15 @@ impl TagRegistry {
         info!("[ECS] Tagged NodeId: {} with Tag: {:#?}", node, _tag);
     }
 
+    pub fn tag_node_typeid(&mut self, node: NodeId, tag: TypeId) {
+        self.map.entry(tag).and_modify(|v| v.push(node)).or_insert({
+            let mut v = SmallVec::<[NodeId; _]>::new();
+            v.push(node);
+            v
+        });
+        info!("[ECS] Tagged NodeId: {} with TagType: {:#?}", node, tag);
+    }
+
     pub fn get_nodes<T: TagTrait>(&self) -> Option<&SmallVec<[NodeId; 8]>> {
         let tag = TypeId::of::<T>();
         self.map.get(&tag)

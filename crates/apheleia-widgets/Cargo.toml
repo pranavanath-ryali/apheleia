@@ -1,11 +1,9 @@
 [package]
-name = "rewrite-test"
+name = "apheleia-widgets"
 version.workspace = true
 edition.workspace = true
 
 [dependencies]
-crossterm.workspace = true
-apheleia-core.workspace = true
 apheleia-app.workspace = true
 apheleia-ecs.workspace = true
-apheleia-widgets.workspace = true
+apheleia-core.workspace = true

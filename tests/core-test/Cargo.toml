@@ -1,0 +1,7 @@
+[package]
+name = "core-test"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+apheleia-core.workspace = true

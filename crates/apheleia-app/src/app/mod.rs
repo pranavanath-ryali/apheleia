@@ -2,10 +2,11 @@ use std::{collections::VecDeque, io, mem::take, time::Duration};
 
 use apheleia_core::{buffer::Buffer, renderer::Renderer, terminal, types::Vec2};
 use apheleia_ecs::{
+    constants::{EVENT_FOCUS_GAINED, EVENT_FOCUS_LOST, EVENT_KEYS, EVENT_MOUSE, EVENT_RESIZE},
     events::RenderDirty,
     systems::system::IntoSystem,
     types::{EventData, NodeId, SystemRunStage},
-    world::World,
+    world::{self, World},
 };
 use crossterm::event::{Event, poll, read};
 use indexmap::indexset;
@@ -13,9 +14,7 @@ use log::{info, warn};
 use tree_ds::prelude::{Node, Tree};
 
 use crate::{
-    builder::node::NodeBuilder,
-    context::node::NodeContext,
-    into_resource::IntoResource,
+    builder::node::NodeBuilder, context::node::NodeContext, into_resource::IntoResource,
     node_definer::NodeDefiner,
 };
 
@@ -82,8 +81,8 @@ impl App {
     pub fn setup(&mut self) {
         self.world.execute_commands();
         info!("[APP] Executing NodeDefiners");
-        let mut definers = take(&mut self.definers);
-        for definer in definers.iter_mut() {
+        let definers = take(&mut self.definers);
+        for definer in definers {
             let mut ctx = NodeContext::new(definer.0);
             definer.1.setup(&mut ctx);
             self.world.apppend_commands(ctx.get_commands());
@@ -94,13 +93,30 @@ impl App {
     pub fn event(&mut self) -> io::Result<()> {
         info!("[APP] Event Poll");
         if poll(Duration::from_nanos(1_000_000_000 / 15))? {
-            self.world.app_event_data = match read()? {
-                Event::FocusGained => EventData::FocusGained,
-                Event::FocusLost => EventData::FocusLost,
-                Event::Key(key_event) => EventData::Keys(key_event),
-                Event::Mouse(mouse_event) => EventData::Mouse(mouse_event),
-                Event::Paste(_) => EventData::None,
-                Event::Resize(width, height) => EventData::Resize(Vec2 { x: width, y: height }),
+            match read()? {
+                Event::FocusGained => {
+                    self.world.app_event_data = EventData::FocusGained;
+                    self.world.app_event_type = EVENT_FOCUS_GAINED;
+                }
+                Event::FocusLost => {
+                    self.world.app_event_data = EventData::FocusLost;
+                    self.world.app_event_type = EVENT_FOCUS_LOST;
+                }
+                Event::Key(key_event) => {
+                    self.world.app_event_data = EventData::Keys(key_event);
+                    self.world.app_event_type = EVENT_KEYS;
+                }
+                Event::Mouse(mouse_event) => {
+                    self.world.app_event_data = EventData::Mouse(mouse_event);
+                    self.world.app_event_type = EVENT_MOUSE;
+                }
+                Event::Paste(_) => {
+                    todo!()
+                }
+                Event::Resize(x, y) => {
+                    self.world.app_event_data = EventData::Resize(Vec2 { x, y });
+                    self.world.app_event_type = EVENT_RESIZE;
+                }
             };
 
             info!("[APP] Event Stage");

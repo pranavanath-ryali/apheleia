@@ -1,5 +1,7 @@
 //! [`TagRegistry`] related methods implemented into [`World`]
 
+use std::any::TypeId;
+
 use super::*;
 
 impl World {
@@ -24,6 +26,11 @@ impl World {
     #[inline]
     pub fn tag_node<T: TagTrait>(&mut self, node: NodeId, tag: T) {
         self.tag_registry.tag_node(node, tag);
+    }
+
+    #[inline]
+    pub fn tag_node_typeid(&mut self, node: NodeId, tag: TypeId) {
+        self.tag_registry.tag_node_typeid(node, tag);
     }
 
     /// Returns all nodes associated with the given [`Tag`]

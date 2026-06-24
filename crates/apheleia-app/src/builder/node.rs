@@ -1,14 +1,17 @@
-use std::{collections::VecDeque, mem::replace};
+use std::{any::TypeId, collections::VecDeque, mem::replace};
 
 use crate::node_definer::{EmptyNode, NodeDefiner};
 use apheleia_core::types::Vec2;
 use apheleia_ecs::{
-    commands::ContextCommand,
-    commands::node::{
-        CalculateGlobalPositionForNode, CalculateGlobalSizeForNode, RelateChildWithParent,
-        SetDataForNode,
+    commands::{
+        ContextCommand,
+        node::{
+            CalculateGlobalPositionForNode, CalculateGlobalSizeForNode, RelateChildWithParent,
+            SetDataForNode,
+        }, tag::TagNode,
     },
     nodedata::data::NodeData,
+    tags::TagTrait,
     types::NodeId,
     world::World,
 };
@@ -19,7 +22,7 @@ pub struct NodeBuilder<'w> {
     id: NodeId,
     parent_id: NodeId,
 
-    tags: IndexSet<usize>,
+    tags: IndexSet<TypeId>,
     data: NodeData,
     node: Box<dyn NodeDefiner>,
 
@@ -45,8 +48,8 @@ impl<'w> NodeBuilder<'w> {
         }
     }
 
-    pub fn tag<const TAG: usize>(mut self) -> Self {
-        self.tags.insert(TAG);
+    pub fn tag<T: TagTrait>(mut self, _tag: T) -> Self {
+        self.tags.insert(TypeId::of::<T>());
         self
     }
 
@@ -77,6 +80,10 @@ impl<'w> NodeBuilder<'w> {
             .push_back(CalculateGlobalPositionForNode::new(self.id));
         self.commands
             .push_back(CalculateGlobalSizeForNode::new(self.id));
+
+        for tag in self.tags {
+            self.commands.push_back(TagNode::new(self.id, tag));
+        }
 
         (self.commands, (self.id, self.node))
     }
