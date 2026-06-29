@@ -1,7 +1,7 @@
 use std::{collections::VecDeque, io, mem::take, time::Duration};
 
 use apheleia_core::{
-    buffer::{self, Buffer},
+    buffer::{Buffer},
     renderer::Renderer,
     terminal,
     types::Vec2,
@@ -16,7 +16,9 @@ use log::{info, warn};
 use tree_ds::prelude::{Node, Tree};
 
 use crate::{
-    builder::node::NodeBuilder, context::node::NodeContext, events::app_events::AppEvents, into_resource::IntoResource, node_buffers::NodeBuffers, node_definer::NodeDefiner, types::EventData
+    builder::node::NodeBuilder, context::node::NodeContext, events::app_events::AppEvents,
+    into_resource::IntoResource, node_buffers::NodeBuffers, node_definer::NodeDefiner,
+    types::EventData,
 };
 
 pub struct App {
