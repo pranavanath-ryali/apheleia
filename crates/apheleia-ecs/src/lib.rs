@@ -1,7 +1,5 @@
 pub mod id_generator;
 
-pub(crate) mod buffer_store;
-
 pub mod commands;
 pub mod events;
 pub mod extensions;
@@ -40,19 +38,7 @@ pub mod types {
         Event,
         Update,
         Render,
-    }
-
-    #[derive(Default)]
-    pub enum EventData {
-        Resize(Vec2),
-        Keys(KeyEvent),
-        Mouse(MouseEvent),
-
-        FocusGained,
-        FocusLost,
-
-        #[default]
-        None,
+        RenderFlip,
     }
 }
 

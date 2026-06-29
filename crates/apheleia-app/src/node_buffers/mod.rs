@@ -1,15 +1,18 @@
-use apheleia_core::buffer::Buffer;
+use apheleia_core::node_buffer::NodeBuffer;
+use apheleia_ecs::{nodedata::data::NodeData, resources::Resource, types::NodeId};
 use log::{info, warn};
 use rustc_hash::FxHashMap;
 
-use crate::{nodedata::data::NodeData, types::NodeId};
-
-#[derive(Default)]
-pub struct BufferStore {
-    id_to_buffer: FxHashMap<NodeId, Buffer>,
+#[derive(Debug, Default)]
+pub struct NodeBuffers {
+    id_to_buffer: FxHashMap<NodeId, NodeBuffer>
 }
-impl BufferStore {
-    pub fn get_buffer_mut(&mut self, data: NodeData, id: NodeId) -> Option<&mut Buffer> {
+impl NodeBuffers {
+    pub(crate) fn get_buffer(&mut self, id: NodeId) -> Option<&mut NodeBuffer> {
+        self.id_to_buffer.get_mut(&id)
+    }
+
+    pub fn create_or_get_buffer(&mut self, data: NodeData, id: NodeId) -> Option<&mut NodeBuffer> {
         if self.id_to_buffer.contains_key(&id) {
             info!("[ECS] NodeBuffer exists for NodeID: {}", id);
             return self.id_to_buffer.get_mut(&id);
@@ -18,7 +21,7 @@ impl BufferStore {
             && (size.x != 0 && size.y != 0)
         {
             warn!("[ECS] Created new NodeBuffer of size: {:?} for node: {}", size, id);
-            self.id_to_buffer.insert(id, Buffer::new(size));
+            self.id_to_buffer.insert(id, NodeBuffer::new(size));
             return Some(self.id_to_buffer.get_mut(&id).unwrap());
         }
 
@@ -27,3 +30,6 @@ impl BufferStore {
         None
     }
 }
+
+
+impl Resource for NodeBuffers {}

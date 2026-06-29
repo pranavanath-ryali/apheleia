@@ -45,15 +45,15 @@ impl<T: TagTrait> QueryFilter for WithTag<T> {
     }
 }
 
-/// A [`QueryFilter`] that validates if the node has the given `local event`
-pub struct WithEvent<E: EventTrait> {
-    _marker: PhantomData<E>,
-}
-impl<E: EventTrait> QueryFilter for WithEvent<E> {
-    fn matches(world: &World, id: NodeId) -> bool {
-        world.is_event::<E>(id)
-    }
-}
+// /// A [`QueryFilter`] that validates if the node has the given `local event`
+// pub struct WithEvent<E: EventTrait> {
+//     _marker: PhantomData<E>,
+// }
+// impl<E: EventTrait> QueryFilter for WithEvent<E> {
+//     fn matches(world: &World, id: NodeId) -> bool {
+//         world.is_event::<E>(id)
+//     }
+// }
 
 macro_rules! impl_query_filter {
     ( $($filter:ident),+ ) => {

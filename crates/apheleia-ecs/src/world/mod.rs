@@ -1,6 +1,4 @@
-pub mod buffers;
 pub mod commands;
-pub mod events;
 pub mod extensions;
 pub mod nodedata;
 pub mod relations;
@@ -10,16 +8,13 @@ pub mod tags;
 
 use std::{collections::VecDeque, mem::take};
 
-use apheleia_core::buffer::Buffer;
 use log::{info, warn};
 use smallvec::SmallVec;
 use tree_ds::prelude::{Node, NodeRemovalStrategy, Tree};
 
 use crate::{
-    buffer_store::BufferStore,
     commands::ContextCommand,
-    constants::{MAX_NODES},
-    events::{EventTrait, tracker::EventTracker},
+    constants::MAX_NODES,
     extensions::{Extension, store::ExtensionStore},
     id_generator::IdGenerator,
     nodedata::{data::NodeData, store::NodeDataStore},
@@ -29,9 +24,8 @@ use crate::{
         system::{IntoSystem, System},
     },
     tags::{TagTrait, registry::TagRegistry},
-    types::{EventData, EventType, NodeId, SystemRunStage},
+    types::{NodeId, SystemRunStage},
 };
-use indexmap::IndexSet;
 
 pub struct World {
     pub running: bool,

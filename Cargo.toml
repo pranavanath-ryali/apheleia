@@ -22,3 +22,4 @@ log = { version = "0.4", features = ["release_max_level_off"] }
 fern = "0.7"
 chrono = "0.4"
 num-traits = "0.2.19"
+bitvec = "1.1.1"

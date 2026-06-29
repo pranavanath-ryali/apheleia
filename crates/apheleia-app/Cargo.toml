@@ -17,3 +17,4 @@ tree-ds.workspace = true
 log.workspace = true
 fern.workspace = true
 chrono.workspace = true
+bitvec.workspace = true
