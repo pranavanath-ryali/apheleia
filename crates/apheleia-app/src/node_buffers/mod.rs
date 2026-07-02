@@ -13,20 +13,14 @@ impl NodeBuffers {
     }
 
     pub fn create_or_get_buffer(&mut self, data: NodeData, id: NodeId) -> Option<&mut NodeBuffer> {
-        if self.id_to_buffer.contains_key(&id) {
-            info!("[ECS] NodeBuffer exists for NodeID: {}", id);
-            return self.id_to_buffer.get_mut(&id);
-        }
-        else if let Some(size) = data.global_size
-            && (size.x != 0 && size.y != 0)
-        {
-            warn!("[ECS] Created new NodeBuffer of size: {:?} for node: {}", size, id);
-            self.id_to_buffer.insert(id, NodeBuffer::new(size));
-            return Some(self.id_to_buffer.get_mut(&id).unwrap());
+        if let Some(size) = data.global_size && (size.x != 0 || size.y != 0) {
+            return Some(self.id_to_buffer.entry(id).or_insert_with(|| {
+                info!("[ECS] Creating new NodeBuffer of size: {:?} for node: {}", size, id);
+                NodeBuffer::new(size)
+            }));
         }
 
         info!("[ECS] Skipped creating NodeBuffer since one of the dimension for global_size is 0 for NodeID: {}", id);
-
         None
     }
 }

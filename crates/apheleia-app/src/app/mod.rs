@@ -92,7 +92,7 @@ impl App {
         }
         self.world.execute_commands();
 
-        info!("[APP] Setting up App Resources");
+        info!("[APP] Setting up Default Resources");
         self.world.add_resource(NodeBuffers::default());
         self.world.add_resource(AppEvents::default());
     }
