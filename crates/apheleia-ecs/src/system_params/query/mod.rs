@@ -19,13 +19,13 @@ pub mod query_type;
 /// # Type Parameters
 ///
 /// * `Q`: The [`QueryType`] that defines what component data will be fetched.
-/// * `F`: The [`QueryFilter`] used to narrow down the results (e.g., tracking additions or mutations). 
+/// * `F`: The [`QueryFilter`] used to narrow down the results (e.g., tracking additions or mutations).
 ///   Defaults to `()`, which applies no filtering.
 ///
 /// # Safety
 ///
-/// This struct contains a raw pointer (`*mut World`) and uses a lifetime parameter `'w` 
-/// to bound its access to the world. Ensure that the `Query` does not outlive the 
+/// This struct contains a raw pointer (`*mut World`) and uses a lifetime parameter `'w`
+/// to bound its access to the world. Ensure that the `Query` does not outlive the
 /// `World` it points to, and that aliasing rules for components are strictly enforced.
 pub struct Query<'w, Q: QueryType, F: QueryFilter = ()> {
     world: *mut World,
@@ -35,7 +35,8 @@ pub struct Query<'w, Q: QueryType, F: QueryFilter = ()> {
 
 impl<'w, Q: QueryType, F: QueryFilter> Query<'w, Q, F> {
     pub(crate) fn new(world: &'w mut World) -> Self {
-        let mut ids = Q::match_ids(world);
+        let mut ids = Q::match_ids(world)
+            .unwrap_or_else(|| world.get_registered_nodes().iter().copied().collect());
         ids.retain(|id| F::matches(world, *id));
 
         Self {
