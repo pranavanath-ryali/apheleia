@@ -1,7 +1,6 @@
 pub mod id_generator;
 
 pub mod commands;
-pub mod events;
 pub mod extensions;
 pub mod nodedata;
 pub mod resources;

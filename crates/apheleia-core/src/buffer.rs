@@ -1,3 +1,4 @@
+use chrono::offset;
 use indexmap::IndexMap;
 use rustc_hash::FxHashMap;
 
@@ -41,7 +42,8 @@ impl Buffer {
     }
 
     // pub fn render_buffer(&mut self, offset_x: u16, offset_y: u16, buf: &mut Buffer) {
-    pub fn render_buffer(&mut self, offset: Vec2, buf: &mut NodeBuffer) {
+    pub fn render_buffer(&mut self, buf: &mut NodeBuffer) {
+        let offset = buf.global_position;
         for (y, map) in buf.diffed_cells.iter() {
             for (x, cell) in map.iter() {
                 let pos_x = offset.x + x;

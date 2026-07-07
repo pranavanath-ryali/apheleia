@@ -1,11 +1,6 @@
 use std::{collections::VecDeque, io, mem::take, time::Duration};
 
-use apheleia_core::{
-    buffer::{Buffer},
-    renderer::Renderer,
-    terminal,
-    types::Vec2,
-};
+use apheleia_core::{buffer::Buffer, renderer::Renderer, terminal, types::Vec2};
 use apheleia_ecs::{
     systems::system::IntoSystem,
     types::{NodeId, SystemRunStage},
@@ -16,8 +11,15 @@ use log::{info, warn};
 use tree_ds::prelude::{Node, Tree};
 
 use crate::{
-    builder::node::NodeBuilder, context::node::NodeContext, events::app_events::AppEvents,
-    into_resource::IntoResource, node_buffers::NodeBuffers, node_definer::NodeDefiner,
+    builder::node::NodeBuilder,
+    context::node::NodeContext,
+    events::{
+        app_events::AppEvents,
+        event_registry::{EventRegistry, RenderDirty},
+    },
+    into_resource::IntoResource,
+    node_buffers::NodeBuffers,
+    node_definer::NodeDefiner,
     types::EventData,
 };
 
@@ -95,6 +97,7 @@ impl App {
         info!("[APP] Setting up Default Resources");
         self.world.add_resource(NodeBuffers::default());
         self.world.add_resource(AppEvents::default());
+        self.world.add_resource(EventRegistry::default());
     }
 
     pub fn event(&mut self) -> io::Result<()> {
@@ -146,26 +149,45 @@ impl App {
 
         warn!("[APP] Rendering all node buffers into Main Buffer");
         let ids: Vec<NodeId> = self.world.get_registered_nodes().iter().copied().collect();
+        let buffers = self.world.get_resource_mut::<NodeBuffers>().unwrap();
         for id in ids {
-            let data = *self.world.get_nodedata(id).unwrap();
-            let buffers = self.world.get_resource_mut::<NodeBuffers>().unwrap();
-
-            if let Some(buffer) = buffers.get_buffer(id)
-                && let Some(position) = data.global_position
-            {
-                self.buffer.render_buffer(position, buffer);
+            if let Some(buffer) = buffers.get_buffer(id) {
+                self.buffer.render_buffer(buffer);
             }
         }
+
         info!("[APP] Rendering Main Buffer to stdout");
         self.renderer.render(&mut self.buffer);
     }
     fn render(&mut self) {
         // TODO: Use event based dirty render
-        // info!("[APP] Render Stage");
-        // self.world.current_stage = SystemRunStage::Render;
-        // self.world.run_systems_on_stage(SystemRunStage::Render);
-        //
-        // warn!("[APP] Rendering node buffers with RENDER_DIRTY event into Main Buffer");
+        info!("[APP] Render Stage");
+        self.world.current_stage = SystemRunStage::Render;
+        self.world.run_systems_on_stage(SystemRunStage::Render);
+
+        warn!("[APP] Rendering node buffers with RENDER_DIRTY event into Main Buffer");
+
+        let set = self.world.get_resource_mut::<EventRegistry>().unwrap().get_local_events(RenderDirty);
+        if let Some(set) = self
+            .world
+            .get_resource::<EventRegistry>()
+            .unwrap()
+            .get_local_events(RenderDirty)
+        {
+            let set = set.iter().copied().collect::<Vec<NodeId>>();
+            let buffers = self.world.get_resource_mut::<NodeBuffers>().unwrap();
+            for &id in set.iter() {
+                info!(
+                    "[APP] NodeID: {} was marked RenderDirty. Rendering its NodeBuffer into main terminal buffer",
+                    id
+                );
+
+                if let Some(buffer) = buffers.get_buffer(id) {
+                    self.buffer.render_buffer(buffer);
+                }
+            }
+        }
+
         // let set = take(
         //     self.world
         //         .get_nodes_with_event::<RenderDirty>()

@@ -1,6 +1,5 @@
-use apheleia_core::buffer::Buffer;
 use apheleia_ecs::{
-    events::RenderDirty, systems::system::SystemParam, types::{NodeId, SystemRunStage}, world::World
+    systems::system::SystemParam, world::World
 };
 
 pub struct SystemContext<'w> {

@@ -13,10 +13,10 @@ impl NodeBuffers {
     }
 
     pub fn create_or_get_buffer(&mut self, data: NodeData, id: NodeId) -> Option<&mut NodeBuffer> {
-        if let Some(size) = data.global_size && (size.x != 0 || size.y != 0) {
+        if let Some(size) = data.global_size && let Some(global_position) = data.global_position && (size.x != 0 || size.y != 0) {
             return Some(self.id_to_buffer.entry(id).or_insert_with(|| {
                 info!("[ECS] Creating new NodeBuffer of size: {:?} for node: {}", size, id);
-                NodeBuffer::new(size)
+                NodeBuffer::new(global_position, size)
             }));
         }
 

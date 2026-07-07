@@ -5,12 +5,14 @@ use crate::{buffer::Cell, rich_strings::RichString, types::Vec2};
 
 #[derive(Debug)]
 pub struct NodeBuffer {
+    pub(crate) global_position: Vec2,
     pub(crate) size: Vec2,
     pub(crate) diffed_cells: FxHashMap<u16, IndexMap<u16, Cell>>,
 }
 impl NodeBuffer {
-    pub fn new(size: Vec2) -> Self {
+    pub fn new(global_position: Vec2, size: Vec2) -> Self {
         Self {
+            global_position,
             size,
             diffed_cells: Default::default(),
         }

@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use crate::{events::EventTrait, extensions::Extension, tags::TagTrait, types::NodeId, world::World};
+use crate::{extensions::Extension, tags::TagTrait, types::NodeId, world::World};
 
 /// A trait for filtering [`NodeId`] from a [`Query`]
 pub trait QueryFilter {

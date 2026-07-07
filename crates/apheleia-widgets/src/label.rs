@@ -1,7 +1,7 @@
 use apheleia_app::{context::system::SystemContext, node_definer::NodeDefiner};
 use apheleia_core::{rich_strings::RichString, types::Vec2};
 use apheleia_ecs::{
-    constants::FIRST, events::RenderDirty, extensions::Extension, system_params::query::{Query, query_filter::WithEvent}, types::{NodeId, SystemRunStage}
+    constants::FIRST, events::RenderDirtyaaa, extensions::Extension, system_params::query::{Query, query_filter::WithEvent}, types::{NodeId, SystemRunStage}
 };
 
 #[derive(Default, Debug)]
@@ -69,7 +69,7 @@ impl NodeDefiner for LabelWidget {
     }
 }
 
-fn render_label(query: Query<(NodeId, &LabelExtension), WithEvent<RenderDirty>>, mut ctx: SystemContext) {
+fn render_label(query: Query<(NodeId, &LabelExtension), WithEvent<RenderDirtyaaa>>, mut ctx: SystemContext) {
     for (id, label_ext) in query.iter() {
         let buffer = ctx.get_buffer(id).unwrap();
 
