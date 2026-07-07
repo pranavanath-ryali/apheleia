@@ -54,10 +54,6 @@ impl App {
         }
     }
 
-    pub fn get_world_mut(&mut self) -> &mut World {
-        &mut self.world
-    }
-
     pub fn add_resource(mut self, resource: impl IntoResource) -> Self {
         resource.insert_into(&mut self.world);
         self
