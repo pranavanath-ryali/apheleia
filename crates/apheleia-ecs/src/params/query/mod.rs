@@ -2,7 +2,7 @@ use core::slice;
 use std::marker::PhantomData;
 
 use crate::{
-    system_params::query::{query_filter::QueryFilter, query_type::QueryType},
+    params::query::{query_filter::QueryFilter, query_type::QueryType},
     systems::system::SystemParam,
     types::NodeId,
     world::World,

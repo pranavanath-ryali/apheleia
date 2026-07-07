@@ -1,5 +1,7 @@
 use std::collections::HashSet;
 
+use apheleia_core::node_buffer::NodeBuffer;
+
 use crate::{extensions::Extension, nodedata::data::NodeData, types::NodeId, world::World};
 
 /// A trait for querying [`Extension`]s, [`NodeId`]s, and [`NodeData`] from [`World`]
@@ -48,8 +50,8 @@ impl<E: Extension> QueryType for &mut E {
 impl QueryType for NodeData {
     type Item<'w> = NodeData;
 
-    fn match_ids(world: &World) -> Option<Vec<NodeId>> {
-        Some(world.get_registered_nodes().iter().copied().collect())
+    fn match_ids(_world: &World) -> Option<Vec<NodeId>> {
+        None
     }
 
     unsafe fn fetch<'w>(world: *mut World, id: NodeId) -> Self::Item<'w> {
@@ -63,8 +65,8 @@ impl QueryType for NodeData {
 impl QueryType for NodeId {
     type Item<'w> = NodeId;
 
-    fn match_ids(world: &World) -> Option<Vec<NodeId>> {
-        Some(world.get_registered_nodes().iter().copied().collect())
+    fn match_ids(_world: &World) -> Option<Vec<NodeId>> {
+        None
     }
 
     unsafe fn fetch<'w>(_world: *mut World, id: NodeId) -> Self::Item<'w> {

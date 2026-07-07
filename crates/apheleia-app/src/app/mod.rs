@@ -11,16 +11,7 @@ use log::{info, warn};
 use tree_ds::prelude::{Node, Tree};
 
 use crate::{
-    builder::node::NodeBuilder,
-    context::node::NodeContext,
-    events::{
-        app_events::AppEvents,
-        event_registry::{EventRegistry, RenderDirty},
-    },
-    into_resource::IntoResource,
-    node_buffers::NodeBuffers,
-    node_definer::NodeDefiner,
-    types::EventData,
+    builder::node::NodeBuilder, context::node::NodeContext, into_resource::IntoResource, node_buffers::NodeBuffers, node_definer::NodeDefiner, resources::{app_events::AppEvents, event_tracker::{EventRegistry, RenderDirty}}, types::EventData
 };
 
 pub struct App {

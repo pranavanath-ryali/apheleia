@@ -4,7 +4,7 @@ pub mod commands;
 pub mod extensions;
 pub mod nodedata;
 pub mod resources;
-pub mod system_params;
+pub mod params;
 pub mod systems;
 pub mod tags;
 pub mod utils;
