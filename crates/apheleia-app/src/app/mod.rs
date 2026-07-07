@@ -11,7 +11,14 @@ use log::{info, warn};
 use tree_ds::prelude::{Node, Tree};
 
 use crate::{
-    builder::node::NodeBuilder, context::node::NodeContext, into_resource::IntoResource, node_buffers::NodeBuffers, node_definer::NodeDefiner, resources::{app_events::AppEvents, event_tracker::{EventRegistry, RenderDirty}}, types::EventData
+    builder::node::NodeBuilder,
+    context::node::NodeContext,
+    into_resource::IntoResource,
+    node_definer::NodeDefiner,
+    resources::{
+        app_events::AppEvents, buffer_store::NodeBuffers, event_tracker::{EventRegistry, RenderDirty}
+    },
+    types::EventData,
 };
 
 pub struct App {
@@ -158,7 +165,11 @@ impl App {
 
         warn!("[APP] Rendering node buffers with RENDER_DIRTY event into Main Buffer");
 
-        let set = self.world.get_resource_mut::<EventRegistry>().unwrap().get_local_events(RenderDirty);
+        let set = self
+            .world
+            .get_resource_mut::<EventRegistry>()
+            .unwrap()
+            .get_local_events(RenderDirty);
         if let Some(set) = self
             .world
             .get_resource::<EventRegistry>()
