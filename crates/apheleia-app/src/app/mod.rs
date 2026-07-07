@@ -16,7 +16,9 @@ use crate::{
     into_resource::IntoResource,
     node_definer::NodeDefiner,
     resources::{
-        app_events::AppEvents, buffer_store::NodeBuffers, event_tracker::{EventRegistry, RenderDirty}
+        app_events::AppEvents,
+        buffer_store::NodeBuffers,
+        event_tracker::{EventRegistry, RenderDirty},
     },
     types::EventData,
 };
