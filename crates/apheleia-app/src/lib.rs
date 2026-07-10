@@ -11,6 +11,7 @@ pub mod events;
 pub mod into_resource;
 pub mod node_definer;
 pub mod resources;
+pub mod params;
 
 pub mod types {
     use super::*;

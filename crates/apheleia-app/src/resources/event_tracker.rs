@@ -33,6 +33,13 @@ impl EventRegistry {
         self.localevents_to_ids.get(&TypeId::of::<E>())
     }
 
+    pub fn is_local_event<E: EventMarker>(&self, id: NodeId) -> bool {
+        if let Some(set) = self.localevents_to_ids.get(&TypeId::of::<E>()) {
+            return set.contains(&id);
+        }
+        false
+    }
+
     pub fn clear(&mut self) {
         self.localevents_to_ids.clear();
     }
