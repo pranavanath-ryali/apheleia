@@ -1,15 +1,7 @@
-use apheleia_app::{context::system::SystemContext, node_definer::NodeDefiner};
-use apheleia_core::{rich_strings::RichString, types::Vec2};
-use apheleia_ecs::{
-    constants::FIRST, events::RenderDirtyaaa, extensions::Extension, system_params::query::{Query, query_filter::WithEvent}, types::{NodeId, SystemRunStage}
-};
-
-#[derive(Default, Debug)]
-pub enum TextDirection {
-    #[default]
-    Horizontal,
-    Vertical,
-}
+use apheleia_app::{node_definer::NodeDefiner, params::query_filters::OnRender};
+use apheleia_core::{node_buffer::NodeBuffer, rich_strings::RichString, types::Vec2};
+use apheleia_ecs::{constants::STAGE, extensions::Extension, params::query::Query, types::NodeId};
+use log::info;
 
 #[derive(Default, Debug)]
 pub enum HorizontalAlignment {
@@ -27,12 +19,9 @@ pub enum VerticalAlignment {
     Bottom,
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct LabelExtension {
     pub text: RichString,
-    render_text: RichString,
-
-    direction: TextDirection,
 
     pub horizontal_alignment: HorizontalAlignment,
     pub vertical_alignment: VerticalAlignment,
@@ -41,51 +30,52 @@ impl Extension for LabelExtension {}
 
 #[derive(Debug)]
 pub struct LabelWidget {
-    label_ext: LabelExtension,
+    ext: LabelExtension,
 }
 impl LabelWidget {
-    pub fn new(text: RichString) -> Self {
+    pub fn new(text: &str) -> Self {
         Self {
-            label_ext: LabelExtension {
-                text,
-                ..Default::default()
+            ext: LabelExtension {
+                text: RichString::new(text),
+
+                horizontal_alignment: HorizontalAlignment::Left,
+                vertical_alignment: VerticalAlignment::Top,
             },
         }
     }
 
     pub fn horizontal_alignment(mut self, alignment: HorizontalAlignment) -> Self {
-        self.label_ext.horizontal_alignment = alignment;
+        self.ext.horizontal_alignment = alignment;
         self
     }
+
     pub fn vertical_alignment(mut self, alignment: VerticalAlignment) -> Self {
-        self.label_ext.vertical_alignment = alignment;
+        self.ext.vertical_alignment = alignment;
         self
     }
 }
 impl NodeDefiner for LabelWidget {
     fn setup(self: Box<Self>, ctx: &mut apheleia_app::context::node::NodeContext) {
-        ctx.add_extension(self.label_ext);
-        ctx.add_system(SystemRunStage::Render, FIRST, render_label);
+        ctx.add_extension(self.ext);
+        ctx.add_system(apheleia_ecs::types::SystemRunStage::Render, STAGE, render_label);
     }
 }
 
-fn render_label(query: Query<(NodeId, &LabelExtension), WithEvent<RenderDirtyaaa>>, mut ctx: SystemContext) {
-    for (id, label_ext) in query.iter() {
-        let buffer = ctx.get_buffer(id).unwrap();
-
+fn render_label(query: Query<(&LabelExtension, NodeBuffer), OnRender>) {
+    for (ext, buffer) in query.iter() {
         let mut position = Vec2::zero();
 
-        position.x = match label_ext.horizontal_alignment {
+        position.x = match ext.horizontal_alignment {
             HorizontalAlignment::Left => 0,
-            HorizontalAlignment::Center => (buffer.size.x / 2) - (label_ext.text.len() / 2) as u16,
-            HorizontalAlignment::Right => buffer.size.x - label_ext.text.len() as u16,
+            HorizontalAlignment::Center => (buffer.size.x / 2) - (ext.text.len() / 2) as u16,
+            HorizontalAlignment::Right => buffer.size.x - ext.text.len() as u16,
         };
-        position.y = match label_ext.vertical_alignment {
+        position.y = match ext.vertical_alignment {
             VerticalAlignment::Top => 0,
             VerticalAlignment::Center => buffer.size.y / 2,
             VerticalAlignment::Bottom => buffer.size.y - 1,
         };
 
-        buffer.write_rich_string(position, label_ext.text.clone());
+        buffer.write_rich_string(position, &ext.text);
     }
 }

@@ -2,9 +2,7 @@ use std::{collections::VecDeque, io, mem::take, time::Duration};
 
 use apheleia_core::{buffer::Buffer, renderer::Renderer, terminal, types::Vec2};
 use apheleia_ecs::{
-    systems::system::IntoSystem,
-    types::{NodeId, SystemRunStage},
-    world::World,
+    resources::buffer_store::BufferStore, systems::system::IntoSystem, types::{NodeId, SystemRunStage}, world::World
 };
 use crossterm::event::{Event, poll, read};
 use log::{info, warn};
@@ -17,7 +15,6 @@ use crate::{
     node_definer::NodeDefiner,
     resources::{
         app_events::AppEvents,
-        buffer_store::NodeBuffers,
         event_tracker::{EventRegistry, RenderDirty},
     },
     types::EventData,
@@ -91,7 +88,7 @@ impl App {
         self.world.execute_commands();
 
         info!("[APP] Setting up Default Resources");
-        self.world.add_resource(NodeBuffers::default());
+        self.world.add_resource(BufferStore::default());
         self.world.add_resource(AppEvents::default());
         self.world.add_resource(EventRegistry::default());
     }
@@ -145,7 +142,7 @@ impl App {
 
         warn!("[APP] Rendering all node buffers into Main Buffer");
         let ids: Vec<NodeId> = self.world.get_registered_nodes().iter().copied().collect();
-        let buffers = self.world.get_resource_mut::<NodeBuffers>().unwrap();
+        let buffers = self.world.get_resource_mut::<BufferStore>().unwrap();
         for id in ids {
             if let Some(buffer) = buffers.get_buffer(id) {
                 self.buffer.render_buffer(buffer);
@@ -175,7 +172,7 @@ impl App {
             .get_local_events(RenderDirty)
         {
             let set = set.iter().copied().collect::<Vec<NodeId>>();
-            let buffers = self.world.get_resource_mut::<NodeBuffers>().unwrap();
+            let buffers = self.world.get_resource_mut::<BufferStore>().unwrap();
             for &id in set.iter() {
                 info!(
                     "[APP] NodeID: {} was marked RenderDirty. Rendering its NodeBuffer into main terminal buffer",

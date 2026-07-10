@@ -27,29 +27,32 @@ impl RichString {
         let mut text: &str = text;
         let mut raw_text: String = String::new();
         let mut spans: Vec<Span> = Default::default();
-        loop {
-            if let Some(start_index) = text.find("</") {
-                let end_index = text.find("/>").filter(|&v| v > start_index).expect(
-                    "Expected closing delimiter for scoped style markup. Couldn't find '/>'",
-                );
-                let style = Style::from_markup(&text[(start_index + 2)..end_index]);
-                spans.push(Span {
-                    start: start_index,
-                    end: None,
-                    style,
-                });
+        let mut run = false;
+        while let Some(start_index) = text.find("</") {
+            run = true;
+            let end_index = text
+                .find("/>")
+                .filter(|&v| v > start_index)
+                .expect("Expected closing delimiter for scoped style markup. Couldn't find '/>'");
+            let style = Style::from_markup(&text[(start_index + 2)..end_index]);
+            spans.push(Span {
+                start: start_index,
+                end: None,
+                style,
+            });
 
-                text = &text[(end_index + 2)..];
-                println!("HMM: {}", text);
-
-                if let Some(next_start) = text.find("</") {
-                    raw_text.push_str(&text[0..next_start]);
-                    continue;
-                }
-
-                raw_text.push_str(text);
-                break;
+            text = &text[(end_index + 2)..];
+            if let Some(next_start) = text.find("</") {
+                raw_text.push_str(&text[0..next_start]);
+                continue;
             }
+
+            raw_text.push_str(text);
+            break;
+        }
+
+        if !run {
+            raw_text = String::from(text);
         }
 
         Self {

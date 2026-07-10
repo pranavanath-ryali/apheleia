@@ -1,4 +1,5 @@
 use indexmap::IndexMap;
+use log::info;
 use rustc_hash::FxHashMap;
 
 use crate::{buffer::Cell, rich_strings::RichString, types::Vec2};
@@ -6,7 +7,7 @@ use crate::{buffer::Cell, rich_strings::RichString, types::Vec2};
 #[derive(Debug)]
 pub struct NodeBuffer {
     pub(crate) global_position: Vec2,
-    pub(crate) size: Vec2,
+    pub size: Vec2,
     pub(crate) diffed_cells: FxHashMap<u16, IndexMap<u16, Cell>>,
 }
 impl NodeBuffer {
@@ -22,11 +23,9 @@ impl NodeBuffer {
         self.size
     }
 
-    pub fn write_rich_string(&mut self, position: Vec2, text: &str) {
-        let rich_string = RichString::new(text);
-
+    pub fn write_rich_string(&mut self, position: Vec2, text: &RichString) {
         let mut offset = Vec2::zero();
-        for (c, style) in rich_string.iter() {
+        for (c, style) in text.iter() {
             if c == '\n' {
                 offset.y += 1;
                 offset.x = offset.x.saturating_sub(1);
@@ -36,7 +35,6 @@ impl NodeBuffer {
             if position.x + offset.x > self.size.x - 1 || position.y + offset.y > self.size.y - 1 {
                 continue;
             }
-            println!("Ayy we skipped?");
 
             // TODO: Work on multi-width characters
             let cell = Cell {

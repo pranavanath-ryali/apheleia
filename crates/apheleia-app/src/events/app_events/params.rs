@@ -3,7 +3,7 @@ use std::ops::Deref;
 use apheleia_core::{KeyEvent, MouseEvent, types::Vec2};
 use apheleia_ecs::{systems::system::SystemParam, types::SystemRunStage};
 
-use crate::{events::app_events::AppEvents, types::EventData};
+use crate::{resources::app_events::AppEvents, types::EventData};
 
 pub struct OnAppEvent<'w> {
     event_data: &'w EventData,
@@ -11,12 +11,11 @@ pub struct OnAppEvent<'w> {
 impl SystemParam for OnAppEvent<'static> {
     unsafe fn fetch<'w>(world: *mut apheleia_ecs::world::World) -> Option<Self> {
         let world = unsafe { &mut *world };
-        if world.current_stage == SystemRunStage::Event {
-            return Some(OnAppEvent {
-                event_data: &world.get_resource::<AppEvents>().unwrap().event_data,
-            });
-        }
-        None
+        assert!(world.current_stage == SystemRunStage::Event);
+
+        Some(OnAppEvent {
+            event_data: &world.get_resource::<AppEvents>().unwrap().event_data,
+        })
     }
 }
 impl<'w> Deref for OnAppEvent<'w> {
@@ -34,9 +33,7 @@ impl SystemParam for OnKeys<'static> {
     unsafe fn fetch<'w>(world: *mut apheleia_ecs::world::World) -> Option<Self> {
         let world = unsafe { &mut *world };
 
-        if world.current_stage != SystemRunStage::Event {
-            return None;
-        }
+        assert!(world.current_stage == SystemRunStage::Event);
 
         let data = &world.get_resource::<AppEvents>().unwrap().event_data;
         if let EventData::Keys(key_event) = data {
@@ -61,9 +58,7 @@ impl SystemParam for OnMouse<'static> {
     unsafe fn fetch<'w>(world: *mut apheleia_ecs::world::World) -> Option<Self> {
         let world = unsafe { &mut *world };
 
-        if world.current_stage != SystemRunStage::Event {
-            return None;
-        }
+        assert!(world.current_stage == SystemRunStage::Event);
 
         let data = &world.get_resource::<AppEvents>().unwrap().event_data;
         if let EventData::Mouse(mouse_event) = data {

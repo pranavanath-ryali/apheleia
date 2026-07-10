@@ -2,7 +2,10 @@ use std::collections::HashSet;
 
 use apheleia_core::node_buffer::NodeBuffer;
 
-use crate::{extensions::Extension, nodedata::data::NodeData, types::NodeId, world::World};
+use crate::{
+    extensions::Extension, nodedata::data::NodeData, resources::buffer_store::BufferStore,
+    types::NodeId, world::World,
+};
 
 /// A trait for querying [`Extension`]s, [`NodeId`]s, and [`NodeData`] from [`World`]
 pub trait QueryType {
@@ -14,7 +17,7 @@ pub trait QueryType {
 
     /// # Safety
     /// This function will dereference the given raw pointer of [`World`]
-    unsafe fn fetch<'w>(world: *mut World, id: NodeId) -> Self::Item<'w>;
+    unsafe fn fetch<'w>(world: *mut World, id: NodeId) -> Option<Self::Item<'w>>;
 }
 
 /// Implement [`QueryType`] for reference to [`Extension`]
@@ -25,9 +28,9 @@ impl<E: Extension> QueryType for &E {
         Some(world.get_nodes_with_extension::<E>())
     }
 
-    unsafe fn fetch<'w>(world: *mut World, id: NodeId) -> Self::Item<'w> {
+    unsafe fn fetch<'w>(world: *mut World, id: NodeId) -> Option<Self::Item<'w>> {
         let world = unsafe { &*world };
-        world.get_extension::<E>(id).expect("Unexpected error")
+        world.get_extension::<E>(id)
     }
 }
 
@@ -39,11 +42,26 @@ impl<E: Extension> QueryType for &mut E {
         Some(world.get_nodes_with_extension::<E>())
     }
 
-    unsafe fn fetch<'w>(world: *mut World, id: NodeId) -> Self::Item<'w> {
+    unsafe fn fetch<'w>(world: *mut World, id: NodeId) -> Option<Self::Item<'w>> {
         let world = unsafe { &mut *world };
+        world.get_extension_mut::<E>(id)
+    }
+}
+
+impl QueryType for NodeBuffer {
+    type Item<'w> = &'w mut NodeBuffer;
+
+    fn match_ids(_world: &World) -> Option<Vec<NodeId>> {
+        None
+    }
+
+    unsafe fn fetch<'w>(world: *mut World, id: NodeId) -> Option<Self::Item<'w>> {
+        let world = unsafe { &mut *world };
+        let data = *world.get_nodedata(id).unwrap();
         world
-            .get_extension_mut::<E>(id)
-            .expect("Unexpected extension does not exist for node")
+            .get_resource_mut::<BufferStore>()
+            .unwrap()
+            .create_or_get_buffer(data, id)
     }
 }
 
@@ -54,11 +72,12 @@ impl QueryType for NodeData {
         None
     }
 
-    unsafe fn fetch<'w>(world: *mut World, id: NodeId) -> Self::Item<'w> {
+    unsafe fn fetch<'w>(world: *mut World, id: NodeId) -> Option<Self::Item<'w>> {
         let world = unsafe { &*world };
-        *world
-            .get_nodedata(id)
-            .expect("Unexpeted. No NodeData for node")
+        if let Some(data) = world.get_nodedata(id) {
+            return Some(*data);
+        }
+        None
     }
 }
 
@@ -69,8 +88,8 @@ impl QueryType for NodeId {
         None
     }
 
-    unsafe fn fetch<'w>(_world: *mut World, id: NodeId) -> Self::Item<'w> {
-        id
+    unsafe fn fetch<'w>(_world: *mut World, id: NodeId) -> Option<Self::Item<'w>> {
+        Some(id)
     }
 }
 
@@ -97,8 +116,14 @@ macro_rules! impl_world_query {
                     .collect())
             }
 
-            unsafe fn fetch<'w>(world: *mut World, id: NodeId) -> Self::Item<'w> {
-                unsafe { ($( $query::fetch(world, id) ),+) }
+            unsafe fn fetch<'w>(world: *mut World, id: NodeId) -> Option<Self::Item<'w>> {
+                unsafe {
+                $(
+                    let $query = $query::fetch(world, id)?;
+                )+
+
+                Some( ($($query),+) )
+                }
             }
         }
     };

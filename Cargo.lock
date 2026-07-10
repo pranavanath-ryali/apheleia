@@ -64,6 +64,9 @@ dependencies = [
  "apheleia-app",
  "apheleia-core",
  "apheleia-ecs",
+ "chrono",
+ "fern",
+ "log",
 ]
 
 [[package]]
@@ -449,7 +452,11 @@ dependencies = [
  "apheleia-app",
  "apheleia-core",
  "apheleia-ecs",
+ "apheleia-widgets",
+ "chrono",
  "crossterm",
+ "fern",
+ "log",
 ]
 
 [[package]]

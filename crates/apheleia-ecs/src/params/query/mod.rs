@@ -1,6 +1,8 @@
 use core::slice;
 use std::marker::PhantomData;
 
+use log::warn;
+
 use crate::{
     params::query::{query_filter::QueryFilter, query_type::QueryType},
     systems::system::SystemParam,
@@ -51,12 +53,12 @@ impl<'w, Q: QueryType, F: QueryFilter> Query<'w, Q, F> {
         self.ids.is_empty()
     }
 
-    pub fn get_single(&self) -> Option<Q::Item<'_>> {
-        if self.is_empty() {
-            return None;
-        }
-        Some(unsafe { Q::fetch(self.world, self.ids[0]) })
-    }
+    // pub fn get_single(&self) -> Option<Q::Item<'_>> {
+    //     if self.is_empty() {
+    //         return None;
+    //     }
+    //     Some(unsafe { Q::fetch(self.world, self.ids[0]) })
+    // }
 
     pub fn iter(&self) -> QueryIter<'_, Q> {
         QueryIter::new(self.world, self.ids.iter())
@@ -83,9 +85,13 @@ impl<'a, Q: QueryType> Iterator for QueryIter<'a, Q> {
     type Item = Q::Item<'a>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if let Some(id) = self.ids.next() {
+        while self.ids.len() > 0 {
+            let id = *self.ids.next().unwrap();
             let world = unsafe { &mut *self.world };
-            return Some(unsafe { Q::fetch(world, *id) });
+
+            if let Some(query) = unsafe { Q::fetch(world, id) } {
+                return Some(query);
+            }
         }
         None
     }

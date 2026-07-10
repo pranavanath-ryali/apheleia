@@ -1,14 +1,15 @@
 use apheleia_core::node_buffer::NodeBuffer;
-use apheleia_ecs::{nodedata::data::NodeData, resources::Resource, types::NodeId};
 use log::{info, warn};
 use rustc_hash::FxHashMap;
 
+use crate::{nodedata::data::NodeData, resources::Resource, types::NodeId};
+
 #[derive(Debug, Default)]
-pub struct NodeBuffers {
+pub struct BufferStore {
     id_to_buffer: FxHashMap<NodeId, NodeBuffer>
 }
-impl NodeBuffers {
-    pub(crate) fn get_buffer(&mut self, id: NodeId) -> Option<&mut NodeBuffer> {
+impl BufferStore {
+    pub fn get_buffer(&mut self, id: NodeId) -> Option<&mut NodeBuffer> {
         self.id_to_buffer.get_mut(&id)
     }
 
@@ -26,4 +27,4 @@ impl NodeBuffers {
 }
 
 
-impl Resource for NodeBuffers {}
+impl Resource for BufferStore {}
