@@ -58,6 +58,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "apheleia-macro"
+version = "0.1.0"
+
+[[package]]
 name = "apheleia-widgets"
 version = "0.1.0"
 dependencies = [

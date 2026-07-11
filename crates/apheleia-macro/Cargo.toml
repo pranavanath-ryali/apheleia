@@ -1,0 +1,6 @@
+[package]
+name = "apheleia-macro"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
