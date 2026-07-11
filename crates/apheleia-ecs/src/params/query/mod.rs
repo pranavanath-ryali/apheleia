@@ -13,7 +13,7 @@ use crate::{
 pub mod query_filter;
 pub mod query_type;
 
-/// A query for searching and filtering [`Extension`]s, [`NodeData`]s, [`NodeId`]s, etc within the ECS world.
+/// System param for searching and filtering data stored in the [`World`].
 ///
 /// `Query` provides an interface to fetch data from the `World` based on a data query `Q`
 /// and an optional filter `F`.
