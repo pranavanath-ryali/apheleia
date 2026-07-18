@@ -1,8 +1,7 @@
 use std::{any::TypeId, collections::VecDeque, default, mem::replace};
 
 use crate::{
-    app::App,
-    node_definer::{EmptyNode, NodeDefiner},
+    app::App, builder, node_definer::{EmptyNode, NodeDefiner}
 };
 use apheleia_ecs::{
     commands::{
@@ -49,17 +48,9 @@ impl<'w> NodeBuilder<'w> {
         }
     }
 
-    // pub fn create_node(mut self, f: impl FnOnce(NodeBuilder) -> NodeBuilder) -> Self {
-    //     info!("[APP] building new node");
-    //     let builder = f(NodeBuilder::new(0, &mut self.world));
-    //     let (mut commands, definer) = builder.execute();
-    //
-    //     self.world.apppend_commands(&mut commands);
-    //     self.definers.push_back(definer);
-    //     self
-    // }
     pub fn create_child(mut self, f: impl FnOnce(NodeBuilder) -> NodeBuilder) -> Self {
         let builder = f(NodeBuilder::new(self.id, self.app));
+        // println!("Hmm {:#?}", builder.build());
         self.children.push(builder.build());
         self
     }
@@ -85,7 +76,13 @@ impl<'w> NodeBuilder<'w> {
     }
 
     pub(crate) fn build(self) -> (VecDeque<Box<dyn ContextCommand>>, (NodeId, Box<dyn NodeDefiner>)) {
-        let commands: VecDeque<Box<dyn ContextCommand>> = Default::default();
+        let mut commands: VecDeque<Box<dyn ContextCommand>> = Default::default();
+        
+        commands.push_back(RelateChildWithParent::new(self.id, self.parent_id));
+        commands.push_back(SetDataForNode::new(self.id, self.data));
+        commands.push_back(ComputeBoundsForNode::new(self.id));
+        commands.push_back(ComputeGlobalBoundsForNode::new(self.id));
+
         (commands, (self.id, self.definer))
     }
 

@@ -7,7 +7,7 @@ use apheleia_ecs::{
     constants::STAGE,
     runtime_expressions::{Constant, Expr, ExprVec, Expression},
 };
-use apheleia_widgets::label::LabelWidget;
+use apheleia_widgets::{container::ContainerWidget, label::LabelWidget};
 use crossterm::event::KeyCode;
 use log::info;
 
@@ -17,22 +17,26 @@ fn main() {
         .create_node(|builder| {
             builder
                 .position(ExprVec {
-                    x: Expression(Expr::Value(Box::new(
-                        Constant(5),
-                    ))),
-                    y: Expression(Expr::Value(Box::new(
-                        Constant(1),
-                    ))),
+                    x: Expression(Expr::Value(Box::new(Constant(5)))),
+                    y: Expression(Expr::Value(Box::new(Constant(1)))),
                 })
                 .size(ExprVec {
-                    x: Expression(Expr::Value(Box::new(
-                        Constant(10),
-                    ))),
-                    y: Expression(Expr::Value(Box::new(
-                        Constant(1),
-                    ))),
+                    x: Expression(Expr::Value(Box::new(Constant(50)))),
+                    y: Expression(Expr::Value(Box::new(Constant(10)))),
                 })
-                .node(LabelWidget::new("Hello There"))
+                .node(ContainerWidget::new().rounded())
+                .create_child(|builder| {
+                    builder
+                        .position(ExprVec {
+                            x: Expression(Expr::Value(Box::new(Constant(5)))),
+                            y: Expression(Expr::Value(Box::new(Constant(1)))),
+                        })
+                        .size(ExprVec {
+                            x: Expression(Expr::Value(Box::new(Constant(10)))),
+                            y: Expression(Expr::Value(Box::new(Constant(1)))),
+                        })
+                        .node(LabelWidget::new("Hello"))
+                })
         })
         .run();
 }
