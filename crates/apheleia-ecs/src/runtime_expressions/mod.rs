@@ -1,16 +1,20 @@
 pub mod values;
 
 use apheleia_core::types::Vec2;
+use log::warn;
 
-use crate::world::{self, World};
+use crate::{
+    types::NodeId,
+    world::{self, World},
+};
 
 pub trait ExprValue {
-    fn result(&self, world: &World) -> u32;
+    fn result(&self, id: NodeId, world: &World) -> u32;
 }
 
 pub struct Constant(pub u32);
 impl ExprValue for Constant {
-    fn result(&self, _world: &World) -> u32 {
+    fn result(&self, _id: NodeId, _world: &World) -> u32 {
         self.0
     }
 }
@@ -24,28 +28,28 @@ pub enum Expr {
     Multiply(Box<Expr>, Box<Expr>),
 }
 
-fn compute_expression(expr: &Expr, world: &World) -> u32 {
+fn compute_expression(expr: &Expr, id: NodeId, world: &World) -> u32 {
     match expr {
-        Expr::Value(value) => value.result(world),
+        Expr::Value(value) => value.result(id, world),
         Expr::Add(left_expr, right_expr) => {
-            compute_expression(left_expr, world) + compute_expression(right_expr, world)
+            compute_expression(left_expr, id, world) + compute_expression(right_expr, id, world)
         }
         Expr::Sub(left_expr, right_expr) => {
-            compute_expression(left_expr, world) - compute_expression(right_expr, world)
+            compute_expression(left_expr, id, world) - compute_expression(right_expr, id, world)
         }
         Expr::Divide(left_expr, right_expr) => {
-            compute_expression(left_expr, world) / compute_expression(right_expr, world)
+            compute_expression(left_expr, id, world) / compute_expression(right_expr, id, world)
         }
         Expr::Multiply(left_expr, right_expr) => {
-            compute_expression(left_expr, world) * compute_expression(right_expr, world)
+            compute_expression(left_expr, id, world) * compute_expression(right_expr, id, world)
         }
     }
 }
 
 pub struct Expression(pub Expr);
 impl Expression {
-    pub fn compute_result(&self, world: &World) -> u32 {
-        compute_expression(&self.0, world)
+    pub fn compute_result(&self, id: NodeId, world: &World) -> u32 {
+        compute_expression(&self.0, id, world)
     }
 }
 
@@ -54,10 +58,11 @@ pub struct ExprVec {
     pub y: Expression,
 }
 impl ExprVec {
-    pub fn compute_result(&self, world: &World) -> Vec2 {
+    pub fn compute_result(&self, id: NodeId, world: &World) -> Vec2 {
+        warn!("Computing Result for ID: {}", id);
         Vec2 {
-            x: self.x.compute_result(world),
-            y: self.y.compute_result(world),
+            x: self.x.compute_result(id, world),
+            y: self.y.compute_result(id, world),
         }
     }
 }

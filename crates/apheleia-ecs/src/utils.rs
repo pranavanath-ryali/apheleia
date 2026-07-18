@@ -1,5 +1,5 @@
 use apheleia_core::types::Vec2;
-use log::info;
+use log::{info, warn};
 
 use crate::{types::NodeId, world::World};
 
@@ -39,7 +39,8 @@ pub fn calculate_global_position(world: &World, id: NodeId) -> Vec2 {
         .iter()
         .filter(|id| **id != 0_usize)
         .for_each(|node_id| {
-            let pos = world.get_nodedata(*node_id).unwrap().get_global_position().unwrap();
+            let pos = world.get_nodedata(*node_id).unwrap().get_position().unwrap();
+            warn!("for node: {}, Traversing: {:?}", id, pos);
             position.x += pos.x;
             position.y += pos.y;
         });

@@ -1,6 +1,13 @@
-use apheleia_app::{node_definer::NodeDefiner, params::query_filters::OnRender};
+use apheleia_app::{builder, node_definer::NodeDefiner, params::query_filters::OnRender};
 use apheleia_core::{node_buffer::NodeBuffer, style::Style, types::Vec2};
-use apheleia_ecs::{constants::STAGE, extensions::Extension, nodedata::data::NodeData, params::query::Query};
+use apheleia_ecs::{
+    constants::STAGE,
+    extensions::Extension,
+    nodedata::data::NodeData,
+    params::query::Query,
+    runtime_expressions::{Constant, Expr, ExprVec, Expression, values::ParentWidth},
+    types::SystemRunStage,
+};
 
 use crate::label::{LabelExtension, LabelWidget, render_label};
 
@@ -75,7 +82,7 @@ impl BorderExtension {
 pub struct ContainerWidget {
     border_ext: Option<BorderExtension>,
 
-    header_label_ext: Option<LabelExtension>,
+    header_label_ext: Option<LabelWidget>,
     header_margin: u16,
 }
 impl ContainerWidget {
@@ -89,7 +96,7 @@ impl ContainerWidget {
     }
 
     pub fn header(mut self, label: LabelWidget) -> Self {
-        self.header_label_ext = Some(label.ext);
+        self.header_label_ext = Some(label);
         self
     }
     pub fn header_margin(mut self, margin: u16) -> Self {
@@ -127,23 +134,31 @@ impl NodeDefiner for ContainerWidget {
     fn setup(self: Box<Self>, ctx: &mut apheleia_app::context::node::NodeContext) {
         if let Some(border_ext) = self.border_ext {
             ctx.add_extension(border_ext, None);
-            ctx.add_system(
-                apheleia_ecs::types::SystemRunStage::Render,
-                STAGE,
-                render_border,
-            );
+            ctx.add_system(SystemRunStage::Render, STAGE, render_border);
         }
 
-        // if let Some(header_label) = self.header_label_ext {
-        //     let id = ctx.create_node();
-        //     ctx.set_nodedata(NodeData {
-        //         position: Vec2 { x: self.header_margin, y: 0 },
-        //         size: Vec2 { x: 100, y: 1 },
-        //         ..Default::default()
-        //     }, Some(id));
-        //     ctx.add_extension(header_label, Some(id));
-        //     ctx.add_system(apheleia_ecs::types::SystemRunStage::Render, STAGE, render_label);
-        // }
+        if let Some(header_label) = self.header_label_ext {
+            ctx.create_node(|builder| {
+                builder
+                    .position(ExprVec {
+                        x: Expression(Expr::Value(Box::new(Constant(self.header_margin as u32)))),
+                        y: Expression(Expr::Value(Box::new(Constant(0)))),
+                    })
+                    .size(ExprVec {
+                        x: Expression(Expr::Sub(
+                            Box::new(Expr::Value(Box::new(ParentWidth))),
+                            Box::new(Expr::Multiply(
+                                Box::new(Expr::Value(Box::new(Constant(
+                                    self.header_margin as u32,
+                                )))),
+                                Box::new(Expr::Value(Box::new(Constant(2)))),
+                            )),
+                        )),
+                        y: Expression(Expr::Value(Box::new(Constant(1)))),
+                    })
+                    .node(header_label)
+            });
+        }
     }
 }
 

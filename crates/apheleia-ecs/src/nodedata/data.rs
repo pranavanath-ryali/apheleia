@@ -29,6 +29,8 @@ impl Debug for NodeData {
         f.debug_struct("NodeData")
             .field("global_position", &self.global_position)
             .field("global_size", &self.global_size)
+            .field("position", &self.position)
+            .field("size", &self.size)
             .finish()
     }
 }
@@ -85,9 +87,9 @@ impl NodeData {
     }
 
     pub fn compute_position(&self, world: &World) -> Vec2 {
-        self.position_expr.compute_result(world)
+        self.position_expr.compute_result(self.id, world)
     }
     pub fn compute_size(&self, world: &World) -> Vec2 {
-        self.size_expr.compute_result(world)
+        self.size_expr.compute_result(self.id, world)
     }
 }

@@ -2,7 +2,11 @@ use std::{collections::VecDeque, io, mem::take, time::Duration};
 
 use apheleia_core::{buffer::Buffer, renderer::Renderer, terminal, types::Vec2};
 use apheleia_ecs::{
-    commands::ContextCommand, resources::buffer_store::BufferStore, systems::system::IntoSystem, types::{NodeId, SystemRunStage}, world::World
+    commands::ContextCommand,
+    resources::buffer_store::BufferStore,
+    systems::system::IntoSystem,
+    types::{NodeId, SystemRunStage},
+    world::World,
 };
 use crossterm::event::{Event, poll, read};
 use log::{info, warn};
@@ -88,15 +92,24 @@ impl App {
     pub fn setup(&mut self) {
         self.world.execute_commands();
         info!("[APP] Executing NodeDefiners");
-        let definers = take(&mut self.definers);
-        let mut commands: VecDeque<Box<dyn ContextCommand>> = Default::default();
-        for definer in definers {
-            let mut ctx = NodeContext::new(definer.0, &mut self.world);
-            definer.1.setup(&mut ctx);
-            commands.append(ctx.get_commands());
+
+        loop {
+            let definers = take(&mut self.definers);
+
+            if definers.is_empty() {
+                break;
+            }
+
+            let mut commands: VecDeque<Box<dyn ContextCommand>> = Default::default();
+            for definer in definers {
+                let mut ctx = NodeContext::new(definer.0, self);
+                definer.1.setup(&mut ctx);
+                commands.append(ctx.get_commands());
+            }
+
+            self.world.apppend_commands(&mut commands);
+            self.world.execute_commands();
         }
-        self.world.apppend_commands(&mut commands);
-        self.world.execute_commands();
 
         info!("[APP] Setting up Default Resources");
         self.world.add_resource(BufferStore::default());
@@ -107,7 +120,7 @@ impl App {
     pub fn event(&mut self) -> io::Result<()> {
         info!("[APP] Event Poll");
         let app_events = self.world.get_resource_mut::<AppEvents>().unwrap();
-        if poll(Duration::from_nanos(1_000_000_000 / 15))? {
+        if poll(Duration::from_nanos(1_000_000_000 / 10240))? {
             match read()? {
                 Event::FocusGained => {
                     app_events.event_data = EventData::FocusGained;
@@ -125,7 +138,10 @@ impl App {
                     todo!()
                 }
                 Event::Resize(x, y) => {
-                    app_events.event_data = EventData::Resize(Vec2 { x: x as u32, y: y as u32 });
+                    app_events.event_data = EventData::Resize(Vec2 {
+                        x: x as u32,
+                        y: y as u32,
+                    });
                 }
             };
 
@@ -159,7 +175,7 @@ impl App {
         }
 
         info!("[APP] Rendering Main Buffer to stdout");
-        self.renderer.render(&mut self.buffer);
+        self.renderer.render_flip(&mut self.buffer);
     }
     fn render(&mut self) {
         // TODO: Use event based dirty render
@@ -188,6 +204,8 @@ impl App {
                 }
             }
         }
+
+        self.renderer.render(&mut self.buffer);
     }
 
     pub fn run(&mut self) {
