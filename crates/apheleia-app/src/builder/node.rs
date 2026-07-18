@@ -1,19 +1,13 @@
-use std::{any::TypeId, collections::VecDeque, mem::replace};
+use std::{any::TypeId, collections::VecDeque, default, mem::replace};
 
 use crate::node_definer::{EmptyNode, NodeDefiner};
-use apheleia_core::types::Vec2;
 use apheleia_ecs::{
     commands::{
         ContextCommand,
         node::{
-            CalculateGlobalPositionForNode, CalculateGlobalSizeForNode, RelateChildWithParent,
-            SetDataForNode,
+            ComputeBoundsForNode, ComputeGlobalBoundsForNode, RelateChildWithParent, SetDataForNode
         }, tag::TagNode,
-    },
-    nodedata::data::NodeData,
-    tags::TagTrait,
-    types::NodeId,
-    world::World,
+    }, nodedata::data::NodeData, runtime_expressions::{ExprVec, Expression}, tags::TagTrait, types::NodeId, world::World
 };
 use indexmap::IndexSet;
 
@@ -32,19 +26,16 @@ pub struct NodeBuilder<'w> {
 impl<'w> NodeBuilder<'w> {
     pub fn new(parent_id: NodeId, world: &'w mut World) -> NodeBuilder {
         let id = world.create_node();
-
-        let mut commands: VecDeque<Box<dyn ContextCommand>> = Default::default();
-
         Self {
             id,
             parent_id,
 
             tags: Default::default(),
-            data: NodeData::default(),
+            data: NodeData::new(id),
             node: Box::new(EmptyNode),
 
             world,
-            commands,
+            commands: Default::default()
         }
     }
 
@@ -53,12 +44,13 @@ impl<'w> NodeBuilder<'w> {
         self
     }
 
-    pub fn position(mut self, position: Vec2) -> Self {
-        self.data.position = position;
+    // Functions for NodeData
+    pub fn position(mut self, expr: ExprVec) -> Self {
+        self.data.position_expr(expr);
         self
     }
-    pub fn size(mut self, size: Vec2) -> Self {
-        self.data.size = size;
+    pub fn size(mut self, expr: ExprVec) -> Self {
+        self.data.size_expr(expr);
         self
     }
 
@@ -76,11 +68,8 @@ impl<'w> NodeBuilder<'w> {
             .push_back(RelateChildWithParent::new(self.id, self.parent_id));
         self.commands
             .push_back(SetDataForNode::new(self.id, self.data));
-        self.commands
-            .push_back(CalculateGlobalPositionForNode::new(self.id));
-        self.commands
-            .push_back(CalculateGlobalSizeForNode::new(self.id));
-
+        self.commands.push_back(ComputeBoundsForNode::new(self.id));
+        self.commands.push_back(ComputeGlobalBoundsForNode::new(self.id));
         for tag in self.tags {
             self.commands.push_back(TagNode::new(self.id, tag));
         }

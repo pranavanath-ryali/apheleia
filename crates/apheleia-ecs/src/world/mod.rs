@@ -8,6 +8,7 @@ pub mod tags;
 
 use std::{collections::VecDeque, mem::take};
 
+use apheleia_core::types::Vec2;
 use log::{info, warn};
 use smallvec::SmallVec;
 use tree_ds::prelude::{Node, NodeRemovalStrategy, Tree};
@@ -28,6 +29,7 @@ use crate::{
 };
 
 pub struct World {
+    pub terminal_size: Vec2,
     pub running: bool,
     pub current_stage: SystemRunStage,
 
@@ -43,14 +45,15 @@ pub struct World {
 
     commands: VecDeque<Box<dyn ContextCommand>>,
 }
-impl Default for World {
-    fn default() -> Self {
+impl World {
+    pub fn new(terminal_size: Vec2) -> Self {
         let mut relations: Tree<NodeId, NodeId> = Tree::new(None);
         _ = relations.add_node(Node::new(0, None), None);
 
         warn!("[ECS] - Created new World");
 
         Self {
+            terminal_size,
             running: true,
             current_stage: SystemRunStage::Event,
 

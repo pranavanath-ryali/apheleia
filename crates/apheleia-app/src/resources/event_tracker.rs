@@ -15,7 +15,7 @@ pub struct EventRegistry {
     globalevents_to_tags: FxHashMap<TypeId, HashSet<TypeId>>,
 }
 impl EventRegistry {
-    pub fn add_local_event<E: EventMarker>(&mut self, _event: E, node: NodeId) {
+    pub fn add_local_event<E: EventMarker>(&mut self, node: NodeId) {
         let type_id = TypeId::of::<E>();
         self.localevents_to_ids
             .entry(type_id)

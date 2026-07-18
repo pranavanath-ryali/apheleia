@@ -40,7 +40,7 @@ impl Renderer {
         for y in 0..buf.size.y {
             let mut batch_text = String::new();
             let mut style = Style::default();
-            let mut start_x = 0u16;
+            let mut start_x = 0u32;
 
             for x in 0..buf.size.x {
                 let cell = buf.get_cell(Vec2 { x, y });
@@ -71,8 +71,8 @@ impl Renderer {
         for (y, map) in buf.get_diffed_cells().iter() {
             let mut batch_text = String::new();
             let mut style = Style::default();
-            let mut start_x = 0u16;
-            let mut offset = 0u16;
+            let mut start_x = 0u32;
+            let mut offset = 0u32;
 
             for (x, cell) in map.iter() {
                 if *x != start_x + offset + 1 {
@@ -123,8 +123,8 @@ impl Renderer {
 
 fn queue_batch(
     stdout: &mut Stdout,
-    x: u16,
-    y: u16,
+    x: u32,
+    y: u32,
     text: &String,
     style: Style,
 ) -> Result<(), Error> {
@@ -134,7 +134,7 @@ fn queue_batch(
 
     queue!(stdout, SetAttribute(Attribute::Reset))?;
 
-    queue!(stdout, MoveTo(x, y))?;
+    queue!(stdout, MoveTo(x as u16, y as u16))?;
     queue!(stdout, SetForegroundColor(style.fg))?;
     queue!(stdout, SetBackgroundColor(style.bg))?;
     queue_flags(stdout, style.flags)?;

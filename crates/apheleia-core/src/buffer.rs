@@ -24,7 +24,7 @@ impl Default for Cell {
 pub struct Buffer {
     pub size: Vec2,
     cells: Vec<Vec<Cell>>,
-    diffed_cells: FxHashMap<u16, IndexMap<u16, Cell>>,
+    diffed_cells: FxHashMap<u32, IndexMap<u32, Cell>>,
 }
 impl Buffer {
     pub fn new(size: Vec2) -> Self {
@@ -63,7 +63,7 @@ impl Buffer {
                         map.insert(pos_x, *cell);
                     })
                     .or_insert_with(|| {
-                        let mut map: IndexMap<u16, Cell> = IndexMap::default();
+                        let mut map: IndexMap<u32, Cell> = IndexMap::default();
                         map.insert(pos_x, *cell);
                         map
                     });
@@ -75,7 +75,7 @@ impl Buffer {
         &self.cells[position.y as usize][position.x as usize]
     }
 
-    pub fn get_diffed_cells(&self) -> &FxHashMap<u16, IndexMap<u16, Cell>> {
+    pub fn get_diffed_cells(&self) -> &FxHashMap<u32, IndexMap<u32, Cell>> {
         &self.diffed_cells
     }
 

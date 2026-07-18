@@ -57,16 +57,20 @@ impl QueryType for NodeBuffer {
 
     unsafe fn fetch<'w>(world: *mut World, id: NodeId) -> Option<Self::Item<'w>> {
         let world = unsafe { &mut *world };
-        let data = *world.get_nodedata(id).unwrap();
+
+        let data = world.get_nodedata(id).unwrap();
+        let global_position = data.get_global_position();
+        let global_size = data.get_global_size();
+
         world
             .get_resource_mut::<BufferStore>()
             .unwrap()
-            .create_or_get_buffer(data, id)
+            .create_or_get_buffer(global_position, global_size, id)
     }
 }
 
 impl QueryType for NodeData {
-    type Item<'w> = NodeData;
+    type Item<'w> = &'w NodeData;
 
     fn match_ids(_world: &World) -> Option<Vec<NodeId>> {
         None
@@ -75,7 +79,7 @@ impl QueryType for NodeData {
     unsafe fn fetch<'w>(world: *mut World, id: NodeId) -> Option<Self::Item<'w>> {
         let world = unsafe { &*world };
         if let Some(data) = world.get_nodedata(id) {
-            return Some(*data);
+            return Some(data);
         }
         None
     }

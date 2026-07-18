@@ -9,6 +9,7 @@ pub mod systems;
 pub mod tags;
 pub mod utils;
 pub mod world;
+pub mod runtime_expressions;
 
 pub mod types {
     use apheleia_core::{KeyEvent, MouseEvent, types::Vec2};

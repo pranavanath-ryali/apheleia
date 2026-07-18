@@ -2,7 +2,7 @@ use std::{collections::VecDeque, io, mem::take, time::Duration};
 
 use apheleia_core::{buffer::Buffer, renderer::Renderer, terminal, types::Vec2};
 use apheleia_ecs::{
-    resources::buffer_store::BufferStore, systems::system::IntoSystem, types::{NodeId, SystemRunStage}, world::World
+    commands::ContextCommand, resources::buffer_store::BufferStore, systems::system::IntoSystem, types::{NodeId, SystemRunStage}, world::World
 };
 use crossterm::event::{Event, poll, read};
 use log::{info, warn};
@@ -34,8 +34,8 @@ impl App {
         let size = {
             let (width, height) = terminal::size().expect("Failed to get terminal size");
             Vec2 {
-                x: width,
-                y: height,
+                x: width as u32,
+                y: height as u32,
             }
         };
 
@@ -43,7 +43,7 @@ impl App {
         _ = relations.add_node(Node::new(0, None), None);
 
         App {
-            world: Default::default(),
+            world: World::new(size),
             renderer: Default::default(),
             buffer: Buffer::new(size),
 
@@ -80,11 +80,13 @@ impl App {
         self.world.execute_commands();
         info!("[APP] Executing NodeDefiners");
         let definers = take(&mut self.definers);
+        let mut commands: VecDeque<Box<dyn ContextCommand>> = Default::default();
         for definer in definers {
-            let mut ctx = NodeContext::new(definer.0);
+            let mut ctx = NodeContext::new(definer.0, &mut self.world);
             definer.1.setup(&mut ctx);
-            self.world.apppend_commands(ctx.get_commands());
+            commands.append(ctx.get_commands());
         }
+        self.world.apppend_commands(&mut commands);
         self.world.execute_commands();
 
         info!("[APP] Setting up Default Resources");
@@ -114,7 +116,7 @@ impl App {
                     todo!()
                 }
                 Event::Resize(x, y) => {
-                    app_events.event_data = EventData::Resize(Vec2 { x, y });
+                    app_events.event_data = EventData::Resize(Vec2 { x: x as u32, y: y as u32 });
                 }
             };
 
@@ -130,8 +132,6 @@ impl App {
         info!("[APP] Update Stage");
         self.world.current_stage = SystemRunStage::Update;
         self.world.run_systems_on_stage(SystemRunStage::Update);
-
-        self.world.execute_commands();
     }
     fn render_flip(&mut self) {
         info!("[APP] Render Flip");
@@ -160,11 +160,6 @@ impl App {
 
         warn!("[APP] Rendering node buffers with RENDER_DIRTY event into Main Buffer");
 
-        let set = self
-            .world
-            .get_resource_mut::<EventRegistry>()
-            .unwrap()
-            .get_local_events(RenderDirty);
         if let Some(set) = self
             .world
             .get_resource::<EventRegistry>()
@@ -184,27 +179,6 @@ impl App {
                 }
             }
         }
-
-        // let set = take(
-        //     self.world
-        //         .get_nodes_with_event::<RenderDirty>()
-        //         .unwrap_or(&mut indexset! {}),
-        // );
-        // for id in &set {
-        //     info!("[APP] NodeId: {} was marked RENDER_DIRTY", id);
-        //     let data = *self.world.get_nodedata(*id).unwrap();
-        //     if let Some(buffer) = self.world.get_buffer(*id)
-        //         && let Some(position) = data.global_position
-        //     {
-        //         self.buffer.render_buffer(position, buffer);
-        //     }
-        // }
-        // if !set.is_empty() {
-        //     info!("[APP] Rendering Main Buffer to stdout");
-        //     self.renderer.render(&mut self.buffer);
-        // } else {
-        //     info!("[APP] Skipped Rendering Main Buffer since no nodes are marked dirty");
-        // }
     }
 
     pub fn run(&mut self) {
@@ -215,8 +189,16 @@ impl App {
 
         while self.world.running {
             self.event();
+            self.world.execute_commands();
             self.update();
+            self.world.execute_commands();
             self.render();
+            self.world.execute_commands();
+
+            self.world
+                .get_resource_mut::<EventRegistry>()
+                .unwrap()
+                .clear();
         }
 
         _ = self.renderer.quit();

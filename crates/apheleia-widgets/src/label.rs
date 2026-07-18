@@ -30,7 +30,7 @@ impl Extension for LabelExtension {}
 
 #[derive(Debug)]
 pub struct LabelWidget {
-    ext: LabelExtension,
+    pub ext: LabelExtension,
 }
 impl LabelWidget {
     pub fn new(text: &str) -> Self {
@@ -56,19 +56,19 @@ impl LabelWidget {
 }
 impl NodeDefiner for LabelWidget {
     fn setup(self: Box<Self>, ctx: &mut apheleia_app::context::node::NodeContext) {
-        ctx.add_extension(self.ext);
+        ctx.add_extension(self.ext, None);
         ctx.add_system(apheleia_ecs::types::SystemRunStage::Render, STAGE, render_label);
     }
 }
 
-fn render_label(query: Query<(&LabelExtension, NodeBuffer), OnRender>) {
+pub fn render_label(query: Query<(&LabelExtension, NodeBuffer), OnRender>) {
     for (ext, buffer) in query.iter() {
         let mut position = Vec2::zero();
 
         position.x = match ext.horizontal_alignment {
             HorizontalAlignment::Left => 0,
-            HorizontalAlignment::Center => (buffer.size.x / 2) - (ext.text.len() / 2) as u16,
-            HorizontalAlignment::Right => buffer.size.x - ext.text.len() as u16,
+            HorizontalAlignment::Center => (buffer.size.x / 2) - (ext.text.len() / 2) as u32,
+            HorizontalAlignment::Right => buffer.size.x - ext.text.len() as u32,
         };
         position.y = match ext.vertical_alignment {
             VerticalAlignment::Top => 0,
