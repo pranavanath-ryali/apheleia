@@ -51,18 +51,27 @@ impl App {
         }
     }
 
+    pub(crate) fn get_world(&mut self) -> &mut World {
+        &mut self.world
+    }
+    pub(crate) fn push_command(&mut self, command: Box<dyn ContextCommand>) {
+        self.world.add_command(command);
+    }
+    pub(crate) fn add_definer(&mut self, id: NodeId, definer: Box<dyn NodeDefiner>) {
+        self.definers.push_back((id, definer));
+    }
+
     pub fn add_resource(mut self, resource: impl IntoResource) -> Self {
         resource.insert_into(&mut self.world);
         self
     }
 
-    pub fn build_node(mut self, f: impl FnOnce(NodeBuilder) -> NodeBuilder) -> Self {
+    pub fn create_node(mut self, f: impl FnOnce(NodeBuilder) -> NodeBuilder) -> Self {
         info!("[APP] building new node");
-        let builder = f(NodeBuilder::new(0, &mut self.world));
-        let (mut commands, definer) = builder.execute();
 
-        self.world.apppend_commands(&mut commands);
-        self.definers.push_back(definer);
+        let builder = f(NodeBuilder::new(0, &mut self));
+        builder.execute();
+
         self
     }
 

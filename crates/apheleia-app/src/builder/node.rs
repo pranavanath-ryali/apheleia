@@ -1,15 +1,25 @@
 use std::{any::TypeId, collections::VecDeque, default, mem::replace};
 
-use crate::node_definer::{EmptyNode, NodeDefiner};
+use crate::{
+    app::App,
+    node_definer::{EmptyNode, NodeDefiner},
+};
 use apheleia_ecs::{
     commands::{
         ContextCommand,
         node::{
-            ComputeBoundsForNode, ComputeGlobalBoundsForNode, RelateChildWithParent, SetDataForNode
-        }, tag::TagNode,
-    }, nodedata::data::NodeData, runtime_expressions::{ExprVec, Expression}, tags::TagTrait, types::NodeId, world::World
+            ComputeBoundsForNode, ComputeGlobalBoundsForNode, RelateChildWithParent, SetDataForNode,
+        },
+        tag::TagNode,
+    },
+    nodedata::data::NodeData,
+    runtime_expressions::{ExprVec, Expression},
+    tags::TagTrait,
+    types::NodeId,
+    world::World,
 };
 use indexmap::IndexSet;
+use log::info;
 
 /// [`NodeBuilder`] automates the creation process of a node during the setup process with any extensions and systems
 pub struct NodeBuilder<'w> {
@@ -18,25 +28,40 @@ pub struct NodeBuilder<'w> {
 
     tags: IndexSet<TypeId>,
     data: NodeData,
-    node: Box<dyn NodeDefiner>,
+    definer: Box<dyn NodeDefiner>,
 
-    world: &'w mut World,
-    commands: VecDeque<Box<dyn ContextCommand>>,
+    app: &'w mut App,
+    children: Vec<(VecDeque<Box<dyn ContextCommand>>, (NodeId, Box<dyn NodeDefiner>))>,
 }
 impl<'w> NodeBuilder<'w> {
-    pub fn new(parent_id: NodeId, world: &'w mut World) -> NodeBuilder {
-        let id = world.create_node();
+    pub fn new(parent_id: NodeId, app: &'w mut App) -> NodeBuilder {
+        let id = app.get_world().create_node();
         Self {
             id,
             parent_id,
 
             tags: Default::default(),
             data: NodeData::new(id),
-            node: Box::new(EmptyNode),
+            definer: Box::new(EmptyNode),
 
-            world,
-            commands: Default::default()
+            app,
+            children: Default::default()
         }
+    }
+
+    // pub fn create_node(mut self, f: impl FnOnce(NodeBuilder) -> NodeBuilder) -> Self {
+    //     info!("[APP] building new node");
+    //     let builder = f(NodeBuilder::new(0, &mut self.world));
+    //     let (mut commands, definer) = builder.execute();
+    //
+    //     self.world.apppend_commands(&mut commands);
+    //     self.definers.push_back(definer);
+    //     self
+    // }
+    pub fn create_child(mut self, f: impl FnOnce(NodeBuilder) -> NodeBuilder) -> Self {
+        let builder = f(NodeBuilder::new(self.id, self.app));
+        self.children.push(builder.build());
+        self
     }
 
     pub fn tag<T: TagTrait>(mut self, _tag: T) -> Self {
@@ -55,25 +80,31 @@ impl<'w> NodeBuilder<'w> {
     }
 
     pub fn node<N: NodeDefiner + 'static>(mut self, node: N) -> Self {
-        self.node = Box::new(node);
+        self.definer = Box::new(node);
         self
     }
-    pub(crate) fn execute(
-        mut self,
-    ) -> (
-        VecDeque<Box<dyn ContextCommand>>,
-        (NodeId, Box<dyn NodeDefiner>),
-    ) {
-        self.commands
-            .push_back(RelateChildWithParent::new(self.id, self.parent_id));
-        self.commands
-            .push_back(SetDataForNode::new(self.id, self.data));
-        self.commands.push_back(ComputeBoundsForNode::new(self.id));
-        self.commands.push_back(ComputeGlobalBoundsForNode::new(self.id));
-        for tag in self.tags {
-            self.commands.push_back(TagNode::new(self.id, tag));
-        }
 
-        (self.commands, (self.id, self.node))
+    pub(crate) fn build(self) -> (VecDeque<Box<dyn ContextCommand>>, (NodeId, Box<dyn NodeDefiner>)) {
+        let commands: VecDeque<Box<dyn ContextCommand>> = Default::default();
+        (commands, (self.id, self.definer))
+    }
+
+    pub(crate) fn execute(self) {
+        self.app
+            .push_command(RelateChildWithParent::new(self.id, self.parent_id));
+        self.app
+            .push_command(SetDataForNode::new(self.id, self.data));
+        self.app.push_command(ComputeBoundsForNode::new(self.id));
+        self.app
+            .push_command(ComputeGlobalBoundsForNode::new(self.id));
+
+        self.app.add_definer(self.id, self.definer);
+
+        for (commands, (id, definer)) in self.children {
+            for command in commands {
+                self.app.push_command(command);
+            }
+            self.app.add_definer(id, definer);
+        }
     }
 }

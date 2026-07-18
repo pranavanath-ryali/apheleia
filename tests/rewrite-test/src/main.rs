@@ -14,7 +14,7 @@ use log::info;
 fn main() {
     setup_logger();
     App::new()
-        .build_node(|builder| {
+        .create_node(|builder| {
             builder
                 .position(ExprVec {
                     x: Expression(Expr::Value(Box::new(
