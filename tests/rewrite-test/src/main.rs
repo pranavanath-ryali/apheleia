@@ -1,10 +1,13 @@
 use apheleia_app::{
-    app::App, events::app_events::params::OnKeys, params::local_events::EventEmitter,
-    resources::event_tracker::{EventMarker, RenderDirty}, setup_logger,
+    app::{App, Quit},
+    events::app_events::params::OnKeys,
+    params::{global_emitter::GlobalEmitter, local_events::EventEmitter},
+    resources::event_tracker::{EventMarker, RenderDirty},
+    setup_logger, systems::quit_on_ecs,
 };
 use apheleia_core::{rich_strings::RichString, types::Vec2};
 use apheleia_ecs::{
-    constants::STAGE,
+    constants::{LAST, STAGE},
     params::query::{
         Query,
         query_filter::{With, WithTag},
@@ -76,6 +79,7 @@ fn main() {
                                     x: Expression(Expr::Value(Box::new(ParentWidth))),
                                     y: Expression(Expr::Value(Box::new(Constant(1)))),
                                 })
+                                .tag(MyTag)
                                 .node(LabelWidget::new("Hello From Label"))
                         })
                 })
@@ -109,6 +113,7 @@ fn main() {
                 })
         })
         .add_system(SystemRunStage::Event, STAGE, change_label_on_key)
+        .add_system(SystemRunStage::Event, LAST, quit_on_ecs)
         .run();
 }
 

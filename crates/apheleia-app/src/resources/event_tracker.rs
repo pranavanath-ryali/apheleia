@@ -1,6 +1,6 @@
 use std::{any::TypeId, collections::HashSet, fmt::Debug};
 
-use apheleia_ecs::{resources::Resource, types::NodeId};
+use apheleia_ecs::{resources::Resource, tags::TagTrait, types::NodeId};
 use rustc_hash::FxHashMap;
 
 pub trait EventMarker: Debug + 'static {}
@@ -40,8 +40,32 @@ impl EventRegistry {
         false
     }
 
+    pub fn add_global_event<T: TagTrait, E: EventMarker>(&mut self) {
+        let event = TypeId::of::<E>();
+        let tag = TypeId::of::<T>();
+
+        self.globalevents_to_tags
+            .entry(event)
+            .and_modify(|set| {
+                set.insert(tag);
+            })
+            .or_insert_with(|| {
+                let mut set: HashSet<TypeId> = Default::default();
+                set.insert(tag);
+                set
+            });
+    }
+
+    pub fn is_global_event<T: TagTrait, E: EventMarker>(&self) -> bool {
+        if let Some(set) = self.globalevents_to_tags.get(&TypeId::of::<E>()) {
+            return set.contains(&TypeId::of::<T>());
+        }
+        false
+    }
+
     pub fn clear(&mut self) {
         self.localevents_to_ids.clear();
+        self.globalevents_to_tags.clear();
     }
 }
 impl Resource for EventRegistry {}

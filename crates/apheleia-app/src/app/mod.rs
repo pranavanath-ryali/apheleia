@@ -1,10 +1,11 @@
-use std::{collections::VecDeque, io, mem::take, time::Duration};
+use std::{collections::VecDeque, fmt::Debug, io, mem::take, time::Duration};
 
 use apheleia_core::{buffer::Buffer, renderer::Renderer, terminal, types::Vec2};
 use apheleia_ecs::{
     commands::ContextCommand,
     resources::buffer_store::BufferStore,
     systems::system::IntoSystem,
+    tags::TagTrait,
     types::{NodeId, SystemRunStage},
     world::World,
 };
@@ -19,10 +20,14 @@ use crate::{
     node_definer::NodeDefiner,
     resources::{
         app_events::AppEvents,
-        event_tracker::{EventRegistry, RenderDirty},
+        event_tracker::{EventMarker, EventRegistry, RenderDirty},
     },
     types::EventData,
 };
+
+#[derive(Debug)]
+pub struct Quit;
+impl EventMarker for Quit {}
 
 pub struct App {
     world: World,
@@ -31,6 +36,13 @@ pub struct App {
 
     definers: VecDeque<(NodeId, Box<dyn NodeDefiner>)>,
 }
+impl Debug for App {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("App")
+            .finish()
+    }
+}
+impl TagTrait for App {}
 impl App {
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
@@ -227,6 +239,10 @@ impl App {
             self.render();
             self.world.execute_commands();
 
+            let registry = self.world.get_resource_mut::<EventRegistry>().unwrap();
+            if registry.is_global_event::<App, Quit>() {
+                self.world.running = false;
+            }
             self.world
                 .get_resource_mut::<EventRegistry>()
                 .unwrap()

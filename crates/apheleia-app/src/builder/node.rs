@@ -83,6 +83,10 @@ impl<'w> NodeBuilder<'w> {
         commands.push_back(ComputeBoundsForNode::new(self.id));
         commands.push_back(ComputeGlobalBoundsForNode::new(self.id));
 
+        for tag in self.tags {
+            commands.push_back(TagNode::new(self.id, tag));
+        }
+
         for (child_commands, (id, definer)) in self.children {
             for c in child_commands {
                 commands.push_back(c);
