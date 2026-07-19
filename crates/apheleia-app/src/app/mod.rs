@@ -74,7 +74,12 @@ impl App {
         info!("[APP] building new node");
 
         let builder = f(NodeBuilder::new(0, &mut self));
-        builder.execute();
+
+        let (commmands, (id, definer)) = builder.build();
+        for command in commmands {
+            self.push_command(command);
+        }
+        self.add_definer(id, definer);
 
         self
     }

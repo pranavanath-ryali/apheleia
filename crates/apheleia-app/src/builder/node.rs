@@ -94,22 +94,28 @@ impl<'w> NodeBuilder<'w> {
         (commands, (self.id, self.definer))
     }
 
-    pub(crate) fn execute(self) {
-        self.app
-            .push_command(RelateChildWithParent::new(self.id, self.parent_id));
-        self.app
-            .push_command(SetDataForNode::new(self.id, self.data));
-        self.app.push_command(ComputeBoundsForNode::new(self.id));
-        self.app
-            .push_command(ComputeGlobalBoundsForNode::new(self.id));
-
-        self.app.add_definer(self.id, self.definer);
-
-        for (commands, (id, definer)) in self.children {
-            for command in commands {
-                self.app.push_command(command);
-            }
-            self.app.add_definer(id, definer);
-        }
-    }
+    // pub(crate) fn execute(&mut self) {
+    //     let (commands, (id, definer)) = self.build();
+    //     for command in commands {
+    //         self.app.push_command(command);
+    //     }
+    //     self.app.add_definer(id, definer);
+    //
+    //     // self.app
+    //     //     .push_command(RelateChildWithParent::new(self.id, self.parent_id));
+    //     // self.app
+    //     //     .push_command(SetDataForNode::new(self.id, self.data));
+    //     // self.app.push_command(ComputeBoundsForNode::new(self.id));
+    //     // self.app
+    //     //     .push_command(ComputeGlobalBoundsForNode::new(self.id));
+    //     //
+    //     // self.app.add_definer(self.id, self.definer);
+    //     //
+    //     // for (commands, (id, definer)) in self.children {
+    //     //     for command in commands {
+    //     //         self.app.push_command(command);
+    //     //     }
+    //     //     self.app.add_definer(id, definer);
+    //     // }
+    // }
 }

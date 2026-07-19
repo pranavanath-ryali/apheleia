@@ -34,7 +34,11 @@ impl<'w> NodeContext<'w> {
         info!("[APP] building new node");
 
         let builder = f(NodeBuilder::new(self.id, self.app));
-        builder.execute();
+        let (commmands, (id, definer)) = builder.build();
+        for command in commmands {
+            self.app.push_command(command);
+        }
+        self.app.add_definer(id, definer);
     }
 
     pub fn add_resource<R: Resource + 'static>(&mut self, res: R) {
