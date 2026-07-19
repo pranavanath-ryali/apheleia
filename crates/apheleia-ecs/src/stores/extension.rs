@@ -72,7 +72,7 @@ impl Default for ExtensionStore {
 }
 impl ExtensionStore {
     pub fn add_extension_to_node<T: Extension>(&mut self, node_id: NodeId, extension: T) {
-        let ext_id = self.id_generator.next();
+        let ext_id = self.id_generator.next_id();
         let type_id = TypeId::of::<T>();
 
         if let Some(container) = self.exttype_to_container.get_mut(&type_id) {

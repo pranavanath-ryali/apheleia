@@ -5,7 +5,7 @@ use crate::{nodedata::NodeData, types::NodeId, world::World};
 impl World {
     /// Generate a unique [`NodeId`], register it and return for future use
     pub fn create_node(&mut self) -> NodeId {
-        let id = self.nodeid_gen.next();
+        let id = self.nodeid_gen.next_id();
         self.registered_nodes.push_back(id);
         id
     }

@@ -2,11 +2,7 @@ use std::fmt::Debug;
 
 use apheleia_core::types::Vec2;
 
-use crate::{
-    runtime_expressions::{Constant, Expr, ExprVec, Expression},
-    types::NodeId,
-    world::World,
-};
+use crate::{runtime_expressions::ExprVec, types::NodeId, world::World};
 
 /// Core per-node layout data: a node's position and size, both relative to
 /// its parent (local) and absolute (global).

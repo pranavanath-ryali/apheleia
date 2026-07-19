@@ -13,9 +13,9 @@ use crate::{
 };
 
 pub mod function_system {
-    use std::{any::TypeId, marker::PhantomData};
     use crate::traits::system_param::SystemParam;
     use crate::world::World;
+    use std::{any::TypeId, marker::PhantomData};
 
     pub trait System: 'static {
         fn id(&self) -> TypeId;
@@ -32,42 +32,38 @@ pub mod function_system {
     }
 
     macro_rules! impl_into_system {
-    ($($param:ident),*) => {
-        impl<Func, $($param: SystemParam),*> IntoSystem<($($param,)*)> for Func
-        where
-            Func: FnMut($($param,)*) + 'static,
-        {
-            fn into_system(self) -> Box<dyn System> {
-                Box::new(FunctionSystem {
-                    func: self,
-                    _marker: std::marker::PhantomData::<fn() -> ($($param,)*)>,
-                })
-            }
-        }
-
-        #[allow(non_snake_case, unused_variables)]
-        impl<Func, $($param: SystemParam),*> System for FunctionSystem<Func, ($($param,)*)>
-        where
-            Func: FnMut($($param,)*) + 'static,
-        {
-            fn id(&self) -> TypeId {
-                TypeId::of::<Self>()
-            }
-
-            fn run(&mut self, world: *mut World) {
-                unsafe {
-                    if let ($(Some($param),)*) = ($($param::fetch(world),)*) {
-                        // 3. If they are all Some, execute the system function
-                        (self.func)($($param,)*);
-                    }
-
-                    // $(let $param = $param::fetch(world_ptr);)*
-                    // (self.func)($($param,)*);
+        ($($param:ident),*) => {
+            impl<Func, $($param: SystemParam),*> IntoSystem<($($param,)*)> for Func
+                where
+                    Func: FnMut($($param,)*) + 'static,
+            {
+                fn into_system(self) -> Box<dyn System> {
+                    Box::new(FunctionSystem {
+                        func: self,
+                        _marker: std::marker::PhantomData::<fn() -> ($($param,)*)>,
+                    })
                 }
             }
-        }
-    };
-}
+
+            #[allow(non_snake_case, unused_variables)]
+            impl<Func, $($param: SystemParam),*> System for FunctionSystem<Func, ($($param,)*)>
+                where
+                    Func: FnMut($($param,)*) + 'static,
+                {
+                    fn id(&self) -> TypeId {
+                        TypeId::of::<Self>()
+                    }
+
+                    fn run(&mut self, world: *mut World) {
+                        unsafe {
+                            if let ($(Some($param),)*) = ($($param::fetch(world),)*) {
+                                (self.func)($($param,)*);
+                            }
+                        }
+                    }
+                }
+        };
+    }
 
     impl_into_system!();
     impl_into_system!(P0);
@@ -106,7 +102,7 @@ impl SystemStore {
         priority: u16,
         system: impl IntoSystem<Params>,
     ) {
-        let id = self.id_generator.next();
+        let id = self.id_generator.next_id();
         let system = system.into_system();
         let system_typeid = system.id();
 
@@ -167,7 +163,7 @@ impl SystemStore {
         priority: u16,
         system: Box<dyn System>,
     ) {
-        let id = self.id_generator.next();
+        let id = self.id_generator.next_id();
         let system_typeid = system.id();
 
         if self.typesids.contains(&system_typeid) {

@@ -2,7 +2,7 @@ use apheleia_core::{node_buffer::NodeBuffer, types::Vec2};
 use log::info;
 use rustc_hash::FxHashMap;
 
-use crate::{traits::resource::Resource, types::NodeId};
+use crate::types::NodeId;
 
 /// A [`Resource`] storing a [`NodeBuffer`] for each node that has one.
 ///
