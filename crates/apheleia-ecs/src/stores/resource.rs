@@ -3,7 +3,7 @@ use std::any::{Any, TypeId};
 use log::info;
 use rustc_hash::FxHashMap;
 
-use crate::resources::Resource;
+use crate::traits::resource::Resource;
 
 #[derive(Default)]
 pub struct ResourceStore {

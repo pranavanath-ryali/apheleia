@@ -1,4 +1,4 @@
-use super::*;
+use crate::{traits::resource::Resource, world::World};
 
 impl World {
     /// Add and register given [`Resource`]

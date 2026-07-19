@@ -1,7 +1,7 @@
-use log::{info, warn};
+use log::info;
 use rustc_hash::FxHashMap;
 
-use crate::{nodedata::data::NodeData, types::NodeId};
+use crate::{nodedata::NodeData, types::NodeId};
 
 /// Stores NodeData for every NodeId.
 #[derive(Default)]
@@ -13,7 +13,7 @@ impl NodeDataStore {
         info!("[ECS] Set data to Node {} - {:#?}", id, data);
         self.id_to_data
             .entry(id)
-            .and_modify(|_| warn!("[ECS] Skipping NodeData since it already exists"))
+            .and_modify(|_| info!("[ECS] Skipping NodeData since it already exists"))
             .or_insert(data);
     }
 

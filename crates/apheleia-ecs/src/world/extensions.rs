@@ -1,4 +1,4 @@
-use super::*;
+use crate::{traits::extension::Extension, types::NodeId, world::World};
 
 impl World {
     /// Add an extension and bind it to the given [`NodeId`]

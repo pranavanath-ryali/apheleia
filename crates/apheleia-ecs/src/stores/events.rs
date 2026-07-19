@@ -1,9 +1,10 @@
 use std::{any::TypeId, collections::HashSet, fmt::Debug};
 
-use apheleia_ecs::{resources::Resource, tags::TagTrait, types::NodeId};
+use crate::{
+    traits::{event_marker::EventMarker, tag::TagTrait},
+    types::NodeId,
+};
 use rustc_hash::FxHashMap;
-
-pub trait EventMarker: Debug + 'static {}
 
 #[derive(Debug)]
 pub struct RenderDirty;
@@ -68,4 +69,3 @@ impl EventRegistry {
         self.globalevents_to_tags.clear();
     }
 }
-impl Resource for EventRegistry {}

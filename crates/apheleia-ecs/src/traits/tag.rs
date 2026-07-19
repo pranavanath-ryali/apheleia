@@ -1,7 +1,5 @@
 use std::fmt::Debug;
 
-pub(crate) mod registry;
-
 /// A marker and configuration trait for strictly typed tags.
 ///
 /// [`TagTrait`] ensures that any implementing type is safely printable for debugging 

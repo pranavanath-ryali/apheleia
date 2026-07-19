@@ -1,15 +1,56 @@
-use rustc_hash::FxHashMap;
 use std::any::{Any, TypeId};
 
 use crate::{
     constants::MAX_EXTENSIONS,
-    extensions::{
-        Extension,
-        container::{ExtensionContainer, ExtensionContainerSingle},
-    },
     id_generator::IdGenerator,
+    stores::extension::extension_container::{ExtensionContainer, ExtensionContainerSingle},
+    traits::extension::Extension,
     types::{ExtensionId, NodeId},
 };
+use rustc_hash::FxHashMap;
+
+mod extension_container {
+    use std::any::Any;
+
+    use log::info;
+    use sparseset::SparseSet;
+
+    use crate::{constants::MAX_NODES, traits::extension::Extension, types::ExtensionId};
+
+    pub trait ExtensionContainer<T: Extension>: Any {
+        fn insert(&mut self, id: ExtensionId, extension: T);
+        fn get(&self, id: ExtensionId) -> Option<&T>;
+        fn get_mut(&mut self, id: ExtensionId) -> Option<&mut T>;
+    }
+
+    pub struct ExtensionContainerSingle<T: Extension> {
+        extensions: SparseSet<T>,
+    }
+    impl<T: Extension> ExtensionContainerSingle<T> {
+        pub(super) fn new() -> Self {
+            Self {
+                extensions: SparseSet::with_capacity(MAX_NODES),
+            }
+        }
+    }
+    impl<T: Extension> ExtensionContainer<T> for ExtensionContainerSingle<T> {
+        fn insert(&mut self, id: usize, extension: T) {
+            info!("[ECS] Adding Extension {:#?}", extension);
+            assert!(
+                self.extensions.insert(id, extension),
+                "Extension already exists with ID: {}",
+                id
+            );
+        }
+
+        fn get(&self, id: ExtensionId) -> Option<&T> {
+            self.extensions.get(id)
+        }
+        fn get_mut(&mut self, id: ExtensionId) -> Option<&mut T> {
+            self.extensions.get_mut(id)
+        }
+    }
+}
 
 pub(crate) struct ExtensionStore {
     id_generator: IdGenerator<ExtensionId>,
@@ -104,24 +145,3 @@ impl ExtensionStore {
         ids
     }
 }
-
-// #[cfg(test)]
-// mod test_extensions {
-//     use super::*;
-
-//     #[derive(Debug)]
-//     struct TestExtension {
-//         value: u16,
-//     }
-//     impl Extension for TestExtension {}
-
-//     // #[test]
-//     fn test_extension_store() {
-//         let mut store = ExtensionStore::default();
-
-//         store.add_extension_to_node(10, TestExtension { value: 5 });
-//         store.
-
-//         assert_eq!(store.get_extension::<TestExtension>(10).unwrap().value, 5);
-//     }
-// }

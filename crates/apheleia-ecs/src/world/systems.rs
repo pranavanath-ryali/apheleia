@@ -1,4 +1,8 @@
-use super::*;
+use crate::{
+    stores::system::function_system::{IntoSystem, System},
+    types::SystemRunStage,
+    world::World,
+};
 
 impl World {
     /// Add given function and register as system to [`World`]

@@ -1,4 +1,6 @@
-use super::*;
+use std::collections::VecDeque;
+
+use crate::{nodedata::NodeData, types::NodeId, world::World};
 
 impl World {
     /// Generate a unique [`NodeId`], register it and return for future use

@@ -1,6 +1,4 @@
-pub(crate) mod store;
-pub mod buffer_store;
+pub mod node_buffer_store;
+pub mod event_registry;
+pub mod tag_registry;
 
-use std::{any::Any, fmt::Debug};
-
-pub trait Resource : Any + Debug {}

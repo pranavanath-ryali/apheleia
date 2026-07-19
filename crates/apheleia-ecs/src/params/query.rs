@@ -1,17 +1,9 @@
 use core::slice;
 use std::marker::PhantomData;
 
-use log::warn;
-
 use crate::{
-    params::query::{query_filter::QueryFilter, query_type::QueryType},
-    systems::system::SystemParam,
-    types::NodeId,
-    world::World,
+    traits::{query_filter::QueryFilter, query_type::QueryType, system_param::SystemParam}, types::NodeId, world::World
 };
-
-pub mod query_filter;
-pub mod query_type;
 
 /// System param for searching and filtering data stored in the [`World`].
 ///
