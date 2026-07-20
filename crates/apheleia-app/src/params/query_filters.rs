@@ -1,8 +1,6 @@
 use std::marker::PhantomData;
 
-use apheleia_ecs::{params::query::query_filter::QueryFilter, types::SystemRunStage};
-
-use crate::resources::event_tracker::{EventMarker, EventRegistry, RenderDirty};
+use apheleia_ecs::{stores::events::{EventRegistry, RenderDirty}, traits::{event_marker::EventMarker, query_filter::QueryFilter}, types::SystemRunStage};
 
 pub struct OnEvent<E: EventMarker> {
     _marker: PhantomData<E>

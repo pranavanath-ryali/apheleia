@@ -2,15 +2,9 @@ use std::collections::VecDeque;
 
 use apheleia_ecs::{
     commands::{
-        ContextCommand, extension::AddExtensionToNode, node::SetDataForNode, resource::AddResource,
+        extension::AddExtensionToNode, node::SetDataForNode, resource::AddResource,
         system::AddSystem,
-    },
-    extensions::Extension,
-    nodedata::data::NodeData,
-    resources::Resource,
-    systems::system::IntoSystem,
-    types::{NodeId, SystemRunStage},
-    world::World,
+    }, nodedata::NodeData, stores::system::function_system::IntoSystem, traits::{context_command::ContextCommand, extension::Extension, resource::Resource}, types::{NodeId, SystemRunStage}, world::World
 };
 use log::info;
 

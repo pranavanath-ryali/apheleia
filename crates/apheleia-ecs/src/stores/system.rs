@@ -74,7 +74,7 @@ pub mod function_system {
     impl_into_system!(P0, P1, P2, P3, P4, P5);
 }
 
-pub struct SystemStore {
+pub(crate) struct SystemStore {
     // TODO: Maybe make ID Generator obsolete and register by system's typeid
     id_generator: IdGenerator<SystemId>,
 

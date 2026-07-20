@@ -2,10 +2,8 @@ use std::{collections::VecDeque, fmt::Debug, io, mem::take, time::Duration};
 
 use apheleia_core::{buffer::Buffer, renderer::Renderer, terminal, types::Vec2};
 use apheleia_ecs::{
-    commands::ContextCommand,
-    resources::buffer_store::BufferStore,
-    systems::system::IntoSystem,
-    tags::TagTrait,
+    stores::{events::{EventRegistry, RenderDirty}, nodebuffer::NodeBufferStore, system::function_system::IntoSystem},
+    traits::{context_command::ContextCommand, event_marker::EventMarker, tag::TagTrait},
     types::{NodeId, SystemRunStage},
     world::World,
 };
@@ -20,7 +18,6 @@ use crate::{
     node_definer::NodeDefiner,
     resources::{
         app_events::AppEvents,
-        event_tracker::{EventMarker, EventRegistry, RenderDirty},
     },
     types::EventData,
 };
@@ -38,8 +35,7 @@ pub struct App {
 }
 impl Debug for App {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("App")
-            .finish()
+        f.debug_struct("App").finish()
     }
 }
 impl TagTrait for App {}
@@ -129,7 +125,7 @@ impl App {
         }
 
         info!("[APP] Setting up Default Resources");
-        self.world.add_resource(BufferStore::default());
+        self.world.add_resource(NodeBufferStore::default());
         self.world.add_resource(AppEvents::default());
         self.world.add_resource(EventRegistry::default());
     }
@@ -184,7 +180,7 @@ impl App {
 
         warn!("[APP] Rendering all node buffers into Main Buffer");
         let ids: Vec<NodeId> = self.world.get_registered_nodes().iter().copied().collect();
-        let buffers = self.world.get_resource_mut::<BufferStore>().unwrap();
+        let buffers = self.world.get_resource_mut::<NodeBufferStore>().unwrap();
         for id in ids {
             if let Some(buffer) = buffers.get_buffer(id) {
                 self.buffer.render_buffer(buffer);
@@ -209,7 +205,7 @@ impl App {
             .get_local_events(RenderDirty)
         {
             let set = set.iter().copied().collect::<Vec<NodeId>>();
-            let buffers = self.world.get_resource_mut::<BufferStore>().unwrap();
+            let buffers = self.world.get_resource_mut::<NodeBufferStore>().unwrap();
             for &id in set.iter() {
                 info!(
                     "[APP] NodeID: {} was marked RenderDirty. Rendering its NodeBuffer into main terminal buffer",

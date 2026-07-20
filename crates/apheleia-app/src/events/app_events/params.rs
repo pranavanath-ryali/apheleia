@@ -1,7 +1,7 @@
 use std::ops::Deref;
 
 use apheleia_core::{KeyEvent, MouseEvent, types::Vec2};
-use apheleia_ecs::{systems::system::SystemParam, types::SystemRunStage};
+use apheleia_ecs::{traits::system_param::SystemParam, types::SystemRunStage};
 
 use crate::{resources::app_events::AppEvents, types::EventData};
 

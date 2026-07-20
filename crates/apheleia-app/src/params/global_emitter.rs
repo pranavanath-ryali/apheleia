@@ -1,10 +1,8 @@
 use std::marker::PhantomData;
 
-use apheleia_ecs::{systems::system::SystemParam, tags::TagTrait, types::NodeId};
+use apheleia_ecs::{stores::events::EventRegistry, traits::{event_marker::EventMarker, system_param::SystemParam, tag::TagTrait}};
 
-use crate::resources::event_tracker::{EventMarker, EventRegistry};
-
-pub struct GlobalEmitter<'w, T: TagTrait, E: EventMarker> {
+pub struct GlobalEmitter<'w, T, E> where T: TagTrait, E: EventMarker {
     registry: &'w mut EventRegistry,
     _marker: PhantomData<(T, E)>,
 }
@@ -21,9 +19,11 @@ impl<'w, T: TagTrait, E: EventMarker> GlobalEmitter<'w, T, E> {
     }
 }
 
-impl<T: TagTrait, E: EventMarker> SystemParam for GlobalEmitter<'static, T, E> {
+impl<T, E> SystemParam for GlobalEmitter<'static, T, E> where T: TagTrait, E: EventMarker {
     unsafe fn fetch<'w>(world: *mut apheleia_ecs::world::World) -> Option<Self> {
         let world = unsafe { &mut *world };
-        Some(GlobalEmitter::new(world.get_resource_mut::<EventRegistry>().unwrap()))
+        Some(GlobalEmitter::new(
+            world.get_resource_mut::<EventRegistry>().unwrap(),
+        ))
     }
 }

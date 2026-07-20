@@ -1,21 +1,17 @@
 use std::{any::TypeId, collections::VecDeque, default, mem::replace};
 
 use crate::{
-    app::App, builder, node_definer::{EmptyNode, NodeDefiner}
+    app::App,
+    builder,
+    node_definer::{EmptyNode, NodeDefiner},
 };
 use apheleia_ecs::{
     commands::{
-        ContextCommand,
         node::{
             ComputeBoundsForNode, ComputeGlobalBoundsForNode, RelateChildWithParent, SetDataForNode,
         },
         tag::TagNode,
-    },
-    nodedata::data::NodeData,
-    runtime_expressions::{ExprVec, Expression},
-    tags::TagTrait,
-    types::NodeId,
-    world::World,
+    }, nodedata::NodeData, runtime_expressions::{ExprVec, Expression}, traits::{context_command::ContextCommand, tag::TagTrait}, types::NodeId, world::World
 };
 use indexmap::IndexSet;
 use log::info;
@@ -30,7 +26,10 @@ pub struct NodeBuilder<'w> {
     definer: Box<dyn NodeDefiner>,
 
     app: &'w mut App,
-    children: Vec<(VecDeque<Box<dyn ContextCommand>>, (NodeId, Box<dyn NodeDefiner>))>,
+    children: Vec<(
+        VecDeque<Box<dyn ContextCommand>>,
+        (NodeId, Box<dyn NodeDefiner>),
+    )>,
 }
 impl<'w> NodeBuilder<'w> {
     pub fn new(parent_id: NodeId, app: &'w mut App) -> NodeBuilder {
@@ -44,7 +43,7 @@ impl<'w> NodeBuilder<'w> {
             definer: Box::new(EmptyNode),
 
             app,
-            children: Default::default()
+            children: Default::default(),
         }
     }
 
@@ -75,9 +74,14 @@ impl<'w> NodeBuilder<'w> {
         self
     }
 
-    pub(crate) fn build(self) -> (VecDeque<Box<dyn ContextCommand>>, (NodeId, Box<dyn NodeDefiner>)) {
+    pub(crate) fn build(
+        self,
+    ) -> (
+        VecDeque<Box<dyn ContextCommand>>,
+        (NodeId, Box<dyn NodeDefiner>),
+    ) {
         let mut commands: VecDeque<Box<dyn ContextCommand>> = Default::default();
-        
+
         commands.push_back(RelateChildWithParent::new(self.id, self.parent_id));
         commands.push_back(SetDataForNode::new(self.id, self.data));
         commands.push_back(ComputeBoundsForNode::new(self.id));
@@ -97,29 +101,4 @@ impl<'w> NodeBuilder<'w> {
 
         (commands, (self.id, self.definer))
     }
-
-    // pub(crate) fn execute(&mut self) {
-    //     let (commands, (id, definer)) = self.build();
-    //     for command in commands {
-    //         self.app.push_command(command);
-    //     }
-    //     self.app.add_definer(id, definer);
-    //
-    //     // self.app
-    //     //     .push_command(RelateChildWithParent::new(self.id, self.parent_id));
-    //     // self.app
-    //     //     .push_command(SetDataForNode::new(self.id, self.data));
-    //     // self.app.push_command(ComputeBoundsForNode::new(self.id));
-    //     // self.app
-    //     //     .push_command(ComputeGlobalBoundsForNode::new(self.id));
-    //     //
-    //     // self.app.add_definer(self.id, self.definer);
-    //     //
-    //     // for (commands, (id, definer)) in self.children {
-    //     //     for command in commands {
-    //     //         self.app.push_command(command);
-    //     //     }
-    //     //     self.app.add_definer(id, definer);
-    //     // }
-    // }
 }

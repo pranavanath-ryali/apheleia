@@ -1,6 +1,6 @@
 use std::fmt::Debug;
 
-use apheleia_ecs::resources::Resource;
+use apheleia_ecs::traits::resource::Resource;
 
 use crate::types::EventData;
 

@@ -1,8 +1,7 @@
 use std::marker::PhantomData;
 
-use apheleia_ecs::{systems::system::SystemParam, types::NodeId};
 
-use crate::resources::event_tracker::{EventMarker, EventRegistry};
+use apheleia_ecs::{stores::events::EventRegistry, traits::{event_marker::EventMarker, system_param::SystemParam}, types::NodeId};
 
 pub struct EventEmitter<'w, E: EventMarker> {
     registry: &'w mut EventRegistry,
