@@ -10,6 +10,7 @@ use crossterm::{
         Clear, EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode,
     },
 };
+use log::warn;
 
 use crate::{
     buffer::Buffer,
@@ -131,6 +132,8 @@ fn queue_batch(
     if text.is_empty() {
         return Ok(());
     }
+
+    warn!("[CORE] Batched X: {}; Y: {}; TEXT: '{}'", x, y, text);
 
     queue!(stdout, SetAttribute(Attribute::Reset))?;
 

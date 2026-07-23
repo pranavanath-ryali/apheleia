@@ -2,10 +2,9 @@ use apheleia_app::{builder, node_definer::NodeDefiner, params::query_filters::On
 use apheleia_core::{node_buffer::NodeBuffer, style::Style, types::Vec2};
 use apheleia_ecs::{
     constants::STAGE,
-    extensions::Extension,
-    nodedata::data::NodeData,
     params::query::Query,
     runtime_expressions::{Constant, Expr, ExprVec, Expression, values::ParentWidth},
+    traits::extension::Extension,
     types::SystemRunStage,
 };
 

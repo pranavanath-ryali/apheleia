@@ -1,5 +1,6 @@
 use chrono::offset;
 use indexmap::IndexMap;
+use log::info;
 use rustc_hash::FxHashMap;
 
 use crate::{node_buffer::NodeBuffer, rich_strings::RichString, style::Style, types::Vec2};
@@ -41,9 +42,36 @@ impl Buffer {
         }
     }
 
-    // pub fn render_buffer(&mut self, offset_x: u16, offset_y: u16, buf: &mut Buffer) {
+    pub fn clear_rect(&mut self, position: Vec2, size: Vec2) {
+        for y in (position.y)..(position.y + size.y) {
+            for x in (position.x)..(position.x + size.x) {
+                info!("{x} {y}");
+                let Some(row) = self.cells.get_mut(y as usize) else {
+                    continue;
+                };
+                let Some(cell) = row.get_mut(x as usize) else {
+                    continue;
+                };
+
+                *cell = Cell::default();
+                cell.written = true;
+                self.diffed_cells
+                    .entry(y)
+                    .and_modify(|map| {
+                        map.insert(x, *cell);
+                    })
+                    .or_insert_with(|| {
+                        let mut map: IndexMap<u32, Cell> = IndexMap::default();
+                        map.insert(y, Cell::default());
+                        map
+                    });
+            }
+        }
+    }
+
     pub fn render_buffer(&mut self, buf: &mut NodeBuffer) {
         let offset = buf.global_position;
+        info!("Got NodeBuffer diffed_cells: {:#?}", buf.diffed_cells);
         for (y, map) in buf.diffed_cells.iter() {
             for (x, cell) in map.iter() {
                 let pos_x = offset.x + x;
@@ -60,7 +88,7 @@ impl Buffer {
                 self.diffed_cells
                     .entry(pos_y)
                     .and_modify(|map| {
-                        map.insert(pos_x, *cell);
+                        info!("[CORE] {} {} Modify RenderBuffer cell: {:?} with {:?}", pos_x, pos_y, map.insert(pos_x, *cell), *cell);
                     })
                     .or_insert_with(|| {
                         let mut map: IndexMap<u32, Cell> = IndexMap::default();
@@ -69,6 +97,8 @@ impl Buffer {
                     });
             }
         }
+
+        buf.diffed_cells.clear();
     }
 
     pub fn get_cell(&self, position: Vec2) -> &Cell {

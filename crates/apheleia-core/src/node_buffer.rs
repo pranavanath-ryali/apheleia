@@ -6,7 +6,7 @@ use crate::{buffer::Cell, rich_strings::RichString, style::Style, types::Vec2};
 
 #[derive(Debug)]
 pub struct NodeBuffer {
-    pub(crate) global_position: Vec2,
+    pub global_position: Vec2,
     pub size: Vec2,
     pub(crate) diffed_cells: FxHashMap<u32, IndexMap<u32, Cell>>,
 }

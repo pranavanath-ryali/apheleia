@@ -1,8 +1,19 @@
-use std::{collections::VecDeque, fmt::Debug, io, mem::take, time::Duration};
+use std::{
+    collections::{HashMap, VecDeque},
+    fmt::Debug,
+    io,
+    mem::take,
+    time::Duration,
+};
 
 use apheleia_core::{buffer::Buffer, renderer::Renderer, terminal, types::Vec2};
 use apheleia_ecs::{
-    stores::{events::{EventRegistry, RenderDirty}, nodebuffer::NodeBufferStore, system::function_system::IntoSystem},
+    stores::{
+        events::{EventRegistry, RenderDirty},
+        nodebuffer::NodeBufferStore,
+        system::function_system::IntoSystem,
+        tag::TagRegistry,
+    },
     traits::{context_command::ContextCommand, event_marker::EventMarker, tag::TagTrait},
     types::{NodeId, SystemRunStage},
     world::World,
@@ -12,14 +23,8 @@ use log::{info, warn};
 use tree_ds::prelude::{Node, Tree};
 
 use crate::{
-    builder::node::NodeBuilder,
-    context::node::NodeContext,
-    into_resource::IntoResource,
-    node_definer::NodeDefiner,
-    resources::{
-        app_events::AppEvents,
-    },
-    types::EventData,
+    builder::node::NodeBuilder, context::node::NodeContext, into_resource::IntoResource,
+    node_definer::NodeDefiner, resources::app_events::AppEvents, types::EventData,
 };
 
 #[derive(Debug)]
@@ -103,9 +108,14 @@ impl App {
     }
 
     pub fn setup(&mut self) {
+        info!("[APP] Setting up Default Resources");
+        self.world.add_resource(NodeBufferStore::default());
+        self.world.add_resource(AppEvents::default());
+        self.world.add_resource(EventRegistry::default());
+        self.world.add_resource(TagRegistry::default());
+
         self.world.execute_commands();
         info!("[APP] Executing NodeDefiners");
-
         loop {
             let definers = take(&mut self.definers);
 
@@ -123,17 +133,12 @@ impl App {
             self.world.apppend_commands(&mut commands);
             self.world.execute_commands();
         }
-
-        info!("[APP] Setting up Default Resources");
-        self.world.add_resource(NodeBufferStore::default());
-        self.world.add_resource(AppEvents::default());
-        self.world.add_resource(EventRegistry::default());
     }
 
     pub fn event(&mut self) -> io::Result<()> {
         info!("[APP] Event Poll");
         let app_events = self.world.get_resource_mut::<AppEvents>().unwrap();
-        if poll(Duration::from_nanos(1_000_000_000 / 10240))? {
+        if poll(Duration::from_nanos(1_000_000_000 / 15))? {
             match read()? {
                 Event::FocusGained => {
                     app_events.event_data = EventData::FocusGained;
@@ -173,7 +178,6 @@ impl App {
     }
     fn render_flip(&mut self) {
         info!("[APP] Render Flip");
-        _ = self.renderer.render_flip(&mut self.buffer);
 
         self.world.current_stage = SystemRunStage::RenderFlip;
         self.world.run_systems_on_stage(SystemRunStage::Render);
@@ -191,30 +195,47 @@ impl App {
         self.renderer.render_flip(&mut self.buffer);
     }
     fn render(&mut self) {
-        // TODO: Use event based dirty render
         info!("[APP] Render Stage");
         self.world.current_stage = SystemRunStage::Render;
         self.world.run_systems_on_stage(SystemRunStage::Render);
 
-        warn!("[APP] Rendering node buffers with RENDER_DIRTY event into Main Buffer");
-
-        if let Some(set) = self
+        let Some(set) = self
             .world
             .get_resource::<EventRegistry>()
             .unwrap()
             .get_local_events(RenderDirty)
-        {
-            let set = set.iter().copied().collect::<Vec<NodeId>>();
-            let buffers = self.world.get_resource_mut::<NodeBufferStore>().unwrap();
-            for &id in set.iter() {
-                info!(
-                    "[APP] NodeID: {} was marked RenderDirty. Rendering its NodeBuffer into main terminal buffer",
-                    id
-                );
+        else {
+            info!("[APP] Skipped rendering since no nodes are marked RenderDirty");
+            return;
+        };
 
-                if let Some(buffer) = buffers.get_buffer(id) {
-                    self.buffer.render_buffer(buffer);
-                }
+        warn!("[APP] Rendering node buffers with RENDER_DIRTY event into Main Buffer");
+
+        let mut set = set.iter().copied().collect::<Vec<NodeId>>();
+        let mut order_map = HashMap::new();
+        {
+            let traverse = self
+                .world
+                .get_relations()
+                .traverse(&0, tree_ds::prelude::TraversalStrategy::PreOrder)
+                .unwrap();
+            for (i, &id) in traverse.iter().enumerate() {
+                order_map.insert(i, id);
+            }
+        }
+        set.sort_by_key(|id| order_map.get(id).copied().unwrap_or(usize::MAX));
+
+        let buffers = self.world.get_resource_mut::<NodeBufferStore>().unwrap();
+        for id in set {
+            info!(
+                "[APP] NodeID: {} was marked RenderDirty. Rendering its NodeBuffer into main terminal buffer",
+                id
+            );
+
+            if let Some(buffer) = buffers.get_buffer(id) {
+                info!("Got buffer with {:?} {:?}", buffer.global_position, buffer.size);
+                self.buffer.clear_rect(buffer.global_position, buffer.size);
+                // self.buffer.render_buffer(buffer);
             }
         }
 

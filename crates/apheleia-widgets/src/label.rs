@@ -1,6 +1,6 @@
 use apheleia_app::{node_definer::NodeDefiner, params::query_filters::OnRender};
 use apheleia_core::{node_buffer::NodeBuffer, rich_strings::RichString, types::Vec2};
-use apheleia_ecs::{constants::STAGE, extensions::Extension, params::query::Query, types::NodeId};
+use apheleia_ecs::{constants::STAGE, params::query::Query, traits::extension::Extension};
 use log::info;
 
 #[derive(Default, Debug)]
