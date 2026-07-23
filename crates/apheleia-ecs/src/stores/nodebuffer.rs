@@ -15,6 +15,8 @@ pub struct NodeBufferStore {
     /// Maps each node's [`NodeId`] to its associated [`NodeBuffer`], if one
     /// has been created.
     id_to_buffer: FxHashMap<NodeId, NodeBuffer>,
+
+    first_access_per_tick: FxHashMap<NodeId, bool>,
 }
 
 impl NodeBufferStore {
@@ -53,13 +55,31 @@ impl NodeBufferStore {
             && let Some(global_position) = global_position
             && (size.x != 0 && size.y != 0)
         {
-            return Some(self.id_to_buffer.entry(id).or_insert_with(|| {
-                info!(
-                    "[ECS] Creating new NodeBuffer of size: {:?} for node: {}",
-                    size, id
-                );
-                NodeBuffer::new(global_position, size)
-            }));
+            return Some(
+                self.id_to_buffer
+                    .entry(id)
+                    .and_modify(|buf| {
+                        if *self
+                            .first_access_per_tick
+                            .entry(id)
+                            .and_modify(|b| {
+                                if *b {
+                                    *b = false;
+                                }
+                            })
+                            .or_insert(true)
+                        {
+                            buf.clear();
+                        }
+                    })
+                    .or_insert_with(|| {
+                        info!(
+                            "[ECS] Creating new NodeBuffer of size: {:?} for node: {}",
+                            size, id
+                        );
+                        NodeBuffer::new(global_position, size)
+                    }),
+            );
         }
         info!(
             "[ECS] Skipped creating NodeBuffer since one of the dimension for global_size is 0 for NodeID: {}",

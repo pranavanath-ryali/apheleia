@@ -80,6 +80,7 @@ impl BorderExtension {
 #[derive(Debug)]
 pub struct ContainerWidget {
     border_ext: Option<BorderExtension>,
+    border_style: Style,
 
     header_label_ext: Option<LabelWidget>,
     header_margin: u16,
@@ -88,6 +89,7 @@ impl ContainerWidget {
     pub fn new() -> Self {
         Self {
             border_ext: Some(BorderExtension::default()),
+            border_style: Style::default(),
 
             header_label_ext: None,
             header_margin: 1,
@@ -127,11 +129,17 @@ impl ContainerWidget {
         self.border_ext = Some(BorderExtension::double());
         self
     }
+
+    pub fn with_style(mut self, style: Style) -> Self {
+        self.border_style = style;
+        self
+    }
 }
 
 impl NodeDefiner for ContainerWidget {
     fn setup(self: Box<Self>, ctx: &mut apheleia_app::context::node::NodeContext) {
-        if let Some(border_ext) = self.border_ext {
+        if let Some(mut border_ext) = self.border_ext {
+            border_ext.style = self.border_style;
             ctx.add_extension(border_ext, None);
             ctx.add_system(SystemRunStage::Render, STAGE, render_border);
         }

@@ -23,6 +23,10 @@ impl NodeBuffer {
         self.size
     }
 
+    pub fn clear(&mut self) {
+        self.diffed_cells.clear();
+    }
+
     pub fn write_rich_string(&mut self, position: Vec2, text: &RichString) {
         let mut offset = Vec2::zero();
         for (c, style) in text.iter() {

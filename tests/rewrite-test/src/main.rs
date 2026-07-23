@@ -2,14 +2,20 @@ use apheleia_app::{
     app::{App, Quit},
     events::app_events::params::OnKeys,
     params::{global_emitter::GlobalEmitter, local_events::EventEmitter},
-    setup_logger, systems::quit_on_ecs,
+    setup_logger,
+    systems::quit_on_ecs,
 };
-use apheleia_core::{rich_strings::RichString, types::Vec2};
+use apheleia_core::{rich_strings::RichString, style::Style, types::Vec2};
 use apheleia_ecs::{
-    constants::{LAST, STAGE}, params::query::Query, runtime_expressions::{
+    constants::{LAST, STAGE},
+    params::query::Query,
+    runtime_expressions::{
         Constant, Expr, ExprVec, Expression,
         values::{ParentHeight, ParentWidth, TerminalHeight, TerminalWidth},
-    }, stores::events::RenderDirty, traits::tag::TagTrait, types::{NodeId, SystemRunStage}
+    },
+    stores::events::RenderDirty,
+    traits::tag::TagTrait,
+    types::{NodeId, SystemRunStage},
 };
 use apheleia_widgets::{
     container::ContainerWidget,
@@ -33,76 +39,73 @@ fn main() {
                 })
                 .node(
                     ContainerWidget::new()
-                        .rounded()
-                        .header(LabelWidget::new("This is a header")),
+                        .none()
+                        .header(LabelWidget::new("</fg:blue/>This is a header")),
                 )
-                // .create_child(|builder| {
-                //     builder
-                //         .position(ExprVec {
-                //             x: Expression(Expr::Value(Box::new(Constant(1)))),
-                //             y: Expression(Expr::Value(Box::new(Constant(1)))),
-                //         })
-                //         .size(ExprVec {
-                //             x: Expression(Expr::Sub(
-                //                 Box::new(Expr::Divide(
-                //                     Box::new(Expr::Value(Box::new(ParentWidth))),
-                //                     Box::new(Expr::Value(Box::new(Constant(2)))),
-                //                 )),
-                //                 Box::new(Expr::Value(Box::new(Constant(1)))),
-                //             )),
-                //             y: Expression(Expr::Sub(
-                //                 Box::new(Expr::Value(Box::new(ParentHeight))),
-                //                 Box::new(Expr::Value(Box::new(Constant(2)))),
-                //             )),
-                //         })
-                //         .node(
-                //             ContainerWidget::new()
-                //                 .boxed()
-                //                 .header(LabelWidget::new("This is Container 1!!!!!!")),
-                //         )
-                //         .create_child(|builder| {
-                //             builder
-                //                 .tag(MyTag)
-                //                 .position(ExprVec {
-                //                     x: Expression(Expr::Value(Box::new(Constant(1)))),
-                //                     y: Expression(Expr::Value(Box::new(Constant(1)))),
-                //                 })
-                //                 .size(ExprVec {
-                //                     x: Expression(Expr::Value(Box::new(ParentWidth))),
-                //                     y: Expression(Expr::Value(Box::new(Constant(1)))),
-                //                 })
-                //                 .tag(MyTag)
-                //                 .node(LabelWidget::new("Hello From Label"))
-                //         })
-                // })
-                // .create_child(|builder| {
-                //     builder
-                //         .position(ExprVec {
-                //             x: Expression(Expr::Divide(
-                //                 Box::new(Expr::Value(Box::new(ParentWidth))),
-                //                 Box::new(Expr::Value(Box::new(Constant(2)))),
-                //             )),
-                //             y: Expression(Expr::Value(Box::new(Constant(1)))),
-                //         })
-                //         .size(ExprVec {
-                //             x: Expression(Expr::Sub(
-                //                 Box::new(Expr::Divide(
-                //                     Box::new(Expr::Value(Box::new(ParentWidth))),
-                //                     Box::new(Expr::Value(Box::new(Constant(2)))),
-                //                 )),
-                //                 Box::new(Expr::Value(Box::new(Constant(1)))),
-                //             )),
-                //             y: Expression(Expr::Sub(
-                //                 Box::new(Expr::Value(Box::new(ParentHeight))),
-                //                 Box::new(Expr::Value(Box::new(Constant(2)))),
-                //             )),
-                //         })
-                //         .node(
-                //             ContainerWidget::new()
-                //                 .boxed()
-                //                 .header(LabelWidget::new("This is Container 2!!!!!!!")),
-                //         )
-                // })
+                .create_child(|builder| {
+                    builder
+                        .position(ExprVec {
+                            x: Expression(Expr::Value(Box::new(Constant(1)))),
+                            y: Expression(Expr::Value(Box::new(Constant(1)))),
+                        })
+                        .size(ExprVec {
+                            x: Expression(Expr::Sub(
+                                Box::new(Expr::Divide(
+                                    Box::new(Expr::Value(Box::new(ParentWidth))),
+                                    Box::new(Expr::Value(Box::new(Constant(2)))),
+                                )),
+                                Box::new(Expr::Value(Box::new(Constant(1)))),
+                            )),
+                            y: Expression(Expr::Sub(
+                                Box::new(Expr::Value(Box::new(ParentHeight))),
+                                Box::new(Expr::Value(Box::new(Constant(2)))),
+                            )),
+                        })
+                        .node(
+                            ContainerWidget::new()
+                                .boxed()
+                                .header(LabelWidget::new("This is Container 1!!!!!!")),
+                        )
+                        .create_child(|builder| {
+                            builder
+                                .tag(MyTag)
+                                .position(ExprVec {
+                                    x: Expression(Expr::Value(Box::new(Constant(1)))),
+                                    y: Expression(Expr::Value(Box::new(Constant(1)))),
+                                })
+                                .size(ExprVec {
+                                    x: Expression(Expr::Value(Box::new(ParentWidth))),
+                                    y: Expression(Expr::Value(Box::new(Constant(1)))),
+                                })
+                                .tag(MyTag)
+                                .node(LabelWidget::new("Hello From Label"))
+                        })
+                })
+                .create_child(|builder| {
+                    builder
+                        .position(ExprVec {
+                            x: Expression(Expr::Divide(
+                                Box::new(Expr::Value(Box::new(ParentWidth))),
+                                Box::new(Expr::Value(Box::new(Constant(2)))),
+                            )),
+                            y: Expression(Expr::Value(Box::new(Constant(1)))),
+                        })
+                        .size(ExprVec {
+                            x: Expression(Expr::Divide(
+                                Box::new(Expr::Value(Box::new(ParentWidth))),
+                                Box::new(Expr::Value(Box::new(Constant(2)))),
+                            )),
+                            y: Expression(Expr::Sub(
+                                Box::new(Expr::Value(Box::new(ParentHeight))),
+                                Box::new(Expr::Value(Box::new(Constant(2)))),
+                            )),
+                        })
+                        .node(
+                            ContainerWidget::new()
+                                .boxed()
+                                .header(LabelWidget::new("This is Container 2!!!!!!!")),
+                        )
+                })
         })
         .add_system(SystemRunStage::Event, STAGE, change_label_on_key)
         .add_system(SystemRunStage::Event, LAST, quit_on_ecs)
@@ -115,7 +118,7 @@ fn change_label_on_key(
     mut emitter: EventEmitter<RenderDirty>,
 ) {
     for (id, ext) in query.iter() {
-        ext.text = RichString::new("CHANGED!");
-        emitter.mark_parent(id);
+        ext.text = RichString::new("</fg:red/>CHANGED!");
+        emitter.mark(id);
     }
 }

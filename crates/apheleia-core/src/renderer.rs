@@ -1,4 +1,3 @@
-use std::io::{self, Error, Stdout, Write, stdout};
 use crossterm::{
     cursor::{self, MoveTo},
     execute, queue,
@@ -10,11 +9,17 @@ use crossterm::{
         Clear, EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode,
     },
 };
-use log::warn;
+use log::{info, warn};
+use std::{
+    cell::Cell,
+    io::{self, Error, Stdout, Write, stdout},
+    mem::take,
+};
 
 use crate::{
     buffer::Buffer,
-    style::{Style, StyleFlags}, types::Vec2,
+    style::{Style, StyleFlags},
+    types::Vec2,
 };
 
 pub struct Renderer {
@@ -38,29 +43,52 @@ impl Renderer {
         execute!(self.stdout, Clear(crossterm::terminal::ClearType::All))?;
         execute!(self.stdout, cursor::Hide)?;
 
+        let mut batch_text: String = Default::default();
+        let mut style;
+        let mut start_x;
+        let mut batching = false;
+
+        let mut calls: usize = 0;
+
         for y in 0..buf.size.y {
-            let mut batch_text = String::new();
-            let mut style = Style::default();
-            let mut start_x = 0u32;
+            batch_text.clear();
+            style = Style::default();
+            start_x = 0u32;
+            batching = false;
 
             for x in 0..buf.size.x {
                 let cell = buf.get_cell(Vec2 { x, y });
 
-                if cell.style == style {
+                if cell.written && cell.style == style {
                     batch_text.push(cell.c);
+                    if !batching {
+                        start_x = x;
+                        batching = true;
+                    }
+
                     continue;
                 }
 
-                queue_batch(&mut self.stdout, start_x, y, &batch_text, style)?;
+                queue_batch(&mut self.stdout, start_x, y, &batch_text, style, &mut calls)?;
 
                 batch_text.clear();
-                batch_text.push(cell.c);
                 style = cell.style;
                 start_x = x;
+                batching = false;
+                if cell.written {
+                    batch_text.push(cell.c);
+                    start_x = x;
+                    batching = true;
+                }
+                // if batching {
+                //     batch_text.push(cell.c);
+                // }
             }
 
-            queue_batch(&mut self.stdout, start_x, y, &batch_text, style)?;
+            queue_batch(&mut self.stdout, start_x, y, &batch_text, style, &mut calls)?;
         }
+
+        info!("[CORE] Queued {} calls from render_flip", calls);
 
         self.stdout.flush()?;
         buf.clear_diff();
@@ -69,17 +97,27 @@ impl Renderer {
     }
 
     pub fn render(&mut self, buf: &mut Buffer) -> io::Result<()> {
-        for (y, map) in buf.get_diffed_cells().iter() {
-            let mut batch_text = String::new();
-            let mut style = Style::default();
-            let mut start_x = 0u32;
-            let mut offset = 0u32;
+        let mut batch_text: String = Default::default();
+        let mut style: Style;
+        let mut start_x: u32;
+        let mut offset: u32;
 
-            for (x, cell) in map.iter() {
-                if *x != start_x + offset + 1 {
-                    queue_batch(&mut self.stdout, start_x, *y, &batch_text, style)?;
+        let mut calls: usize = 0;
 
-                    start_x = *x;
+        let diffed_cells = take(buf.get_diffed_cells());
+        for (&y, cells) in diffed_cells.iter() {
+            batch_text.clear();
+            style = Style::default();
+            start_x = 0;
+            offset = 0;
+
+            for &x in cells {
+                let cell = buf.get_cell(Vec2 { x, y });
+
+                if x != start_x + offset + 1 {
+                    queue_batch(&mut self.stdout, start_x, y, &batch_text, style, &mut calls)?;
+
+                    start_x = x;
                     offset = 0;
                     style = cell.style;
                     batch_text.clear();
@@ -89,9 +127,9 @@ impl Renderer {
                 }
 
                 if cell.style != style {
-                    queue_batch(&mut self.stdout, start_x, *y, &batch_text, style)?;
+                    queue_batch(&mut self.stdout, start_x, y, &batch_text, style, &mut calls)?;
 
-                    start_x = *x;
+                    start_x = x;
                     offset = 0;
                     style = cell.style;
                     batch_text.clear();
@@ -104,12 +142,13 @@ impl Renderer {
                 batch_text.push(cell.c);
             }
 
-            queue_batch(&mut self.stdout, start_x, *y, &batch_text, style)?;
+            queue_batch(&mut self.stdout, start_x, y, &batch_text, style, &mut calls)?;
         }
 
         self.stdout.flush()?;
         buf.clear_diff();
 
+        info!("[CORE] Queued {} calls from render", calls);
         Ok(())
     }
 
@@ -128,12 +167,16 @@ fn queue_batch(
     y: u32,
     text: &String,
     style: Style,
+    count: &mut usize,
 ) -> Result<(), Error> {
     if text.is_empty() {
         return Ok(());
     }
 
-    warn!("[CORE] Batched X: {}; Y: {}; TEXT: '{}'", x, y, text);
+    warn!(
+        "[DEBUG] [CORE] Batched X: {}; Y: {}; TEXT: '{}'",
+        x, y, text
+    );
 
     queue!(stdout, SetAttribute(Attribute::Reset))?;
 
@@ -143,6 +186,7 @@ fn queue_batch(
     queue_flags(stdout, style.flags)?;
     queue!(stdout, Print(text.to_string()))?;
 
+    *count += 1;
     Ok(())
 }
 

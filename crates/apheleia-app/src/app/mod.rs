@@ -225,17 +225,34 @@ impl App {
         }
         set.sort_by_key(|id| order_map.get(id).copied().unwrap_or(usize::MAX));
 
-        let buffers = self.world.get_resource_mut::<NodeBufferStore>().unwrap();
-        for id in set {
-            info!(
-                "[APP] NodeID: {} was marked RenderDirty. Rendering its NodeBuffer into main terminal buffer",
-                id
-            );
+        {
+            let buffers = self.world.get_resource_mut::<NodeBufferStore>().unwrap();
+            for &id in set.iter() {
+                if let Some(buffer) = buffers.get_buffer(id) {
+                    self.buffer.clear_rect(buffer.global_position, buffer.size);
+                }
+            }
+        }
 
-            if let Some(buffer) = buffers.get_buffer(id) {
-                info!("Got buffer with {:?} {:?}", buffer.global_position, buffer.size);
-                self.buffer.clear_rect(buffer.global_position, buffer.size);
-                // self.buffer.render_buffer(buffer);
+        let mut render_set: Vec<usize> = vec![];
+        for id in set.iter() {
+            let parent = self.world.get_relations().get_ancestor_ids(id).unwrap()[0];
+            render_set.push(parent);
+            render_set.push(*id);
+        }
+        render_set.dedup();
+
+        {
+            let buffers = self.world.get_resource_mut::<NodeBufferStore>().unwrap();
+            for id in render_set {
+                info!(
+                    "[APP] NodeID: {} was marked RenderDirty. Rendering its NodeBuffer into main terminal buffer",
+                    id
+                );
+
+                if let Some(buffer) = buffers.get_buffer(id) {
+                    self.buffer.render_buffer(buffer);
+                }
             }
         }
 

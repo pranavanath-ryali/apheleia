@@ -1,5 +1,5 @@
 use chrono::offset;
-use indexmap::IndexMap;
+use indexmap::{IndexMap, IndexSet};
 use log::info;
 use rustc_hash::FxHashMap;
 
@@ -25,7 +25,7 @@ impl Default for Cell {
 pub struct Buffer {
     pub size: Vec2,
     cells: Vec<Vec<Cell>>,
-    diffed_cells: FxHashMap<u32, IndexMap<u32, Cell>>,
+    diffed_cells: FxHashMap<u32, Vec<u32>>,
 }
 impl Buffer {
     pub fn new(size: Vec2) -> Self {
@@ -45,7 +45,6 @@ impl Buffer {
     pub fn clear_rect(&mut self, position: Vec2, size: Vec2) {
         for y in (position.y)..(position.y + size.y) {
             for x in (position.x)..(position.x + size.x) {
-                info!("{x} {y}");
                 let Some(row) = self.cells.get_mut(y as usize) else {
                     continue;
                 };
@@ -53,29 +52,25 @@ impl Buffer {
                     continue;
                 };
 
-                *cell = Cell::default();
-                cell.written = true;
+                *cell = Cell {
+                    ..Default::default()
+                };
                 self.diffed_cells
                     .entry(y)
-                    .and_modify(|map| {
-                        map.insert(x, *cell);
-                    })
-                    .or_insert_with(|| {
-                        let mut map: IndexMap<u32, Cell> = IndexMap::default();
-                        map.insert(y, Cell::default());
-                        map
-                    });
+                    .and_modify(|v| v.push(x))
+                    .or_insert(vec![x]);
             }
         }
     }
 
     pub fn render_buffer(&mut self, buf: &mut NodeBuffer) {
         let offset = buf.global_position;
-        info!("Got NodeBuffer diffed_cells: {:#?}", buf.diffed_cells);
         for (y, map) in buf.diffed_cells.iter() {
             for (x, cell) in map.iter() {
+                info!("[BUFFER] written {} {}", x, y);
                 let pos_x = offset.x + x;
                 let pos_y = offset.y + y;
+
                 if pos_x >= self.size.x || pos_y >= self.size.y {
                     continue;
                 }
@@ -87,26 +82,25 @@ impl Buffer {
                 self.cells[pos_y as usize][pos_x as usize] = *cell;
                 self.diffed_cells
                     .entry(pos_y)
-                    .and_modify(|map| {
-                        info!("[CORE] {} {} Modify RenderBuffer cell: {:?} with {:?}", pos_x, pos_y, map.insert(pos_x, *cell), *cell);
+                    .and_modify(|v| {
+                        v.push(pos_x);
                     })
-                    .or_insert_with(|| {
-                        let mut map: IndexMap<u32, Cell> = IndexMap::default();
-                        map.insert(pos_x, *cell);
-                        map
-                    });
+                    .or_insert(vec![pos_x]);
             }
         }
-
-        buf.diffed_cells.clear();
     }
 
     pub fn get_cell(&self, position: Vec2) -> &Cell {
         &self.cells[position.y as usize][position.x as usize]
     }
 
-    pub fn get_diffed_cells(&self) -> &FxHashMap<u32, IndexMap<u32, Cell>> {
-        &self.diffed_cells
+    pub fn get_diffed_cells(&mut self) -> &mut FxHashMap<u32, Vec<u32>> {
+        for y in self.diffed_cells.values_mut() {
+            y.sort_unstable();
+            y.dedup();
+        }
+
+        &mut self.diffed_cells
     }
 
     pub fn clear_diff(&mut self) {
