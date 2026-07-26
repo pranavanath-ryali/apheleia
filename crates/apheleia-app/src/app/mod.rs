@@ -281,6 +281,10 @@ impl App {
                 .get_resource_mut::<EventRegistry>()
                 .unwrap()
                 .clear();
+            self.world
+                .get_resource_mut::<NodeBufferStore>()
+                .unwrap()
+                .clear_first_access();
         }
 
         _ = self.renderer.quit();

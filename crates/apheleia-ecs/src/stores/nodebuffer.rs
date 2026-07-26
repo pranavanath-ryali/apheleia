@@ -20,6 +20,10 @@ pub struct NodeBufferStore {
 }
 
 impl NodeBufferStore {
+    pub fn clear_first_access(&mut self) {
+        self.first_access_per_tick.clear();
+    }
+
     /// Returns a mutable reference to the [`NodeBuffer`] associated with the
     /// given node, if one exists.
     ///

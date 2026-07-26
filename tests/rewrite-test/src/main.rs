@@ -18,8 +18,8 @@ use apheleia_ecs::{
     types::{NodeId, SystemRunStage},
 };
 use apheleia_widgets::{
-    container::ContainerWidget,
-    label::{HorizontalAlignment, LabelExtension, LabelWidget, VerticalAlignment},
+    extensions::label::LabelExtension,
+    widgets::{container::ContainerWidget, label::LabelWidget},
 };
 use crossterm::event::KeyCode;
 use log::info;
@@ -39,7 +39,7 @@ fn main() {
                 })
                 .node(
                     ContainerWidget::new()
-                        .none()
+                        .double()
                         .header(LabelWidget::new("</fg:blue/>This is a header")),
                 )
                 .create_child(|builder| {
@@ -102,6 +102,7 @@ fn main() {
                         })
                         .node(
                             ContainerWidget::new()
+                                .background(apheleia_core::Color::Red)
                                 .boxed()
                                 .header(LabelWidget::new("This is Container 2!!!!!!!")),
                         )

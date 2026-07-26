@@ -1,84 +1,21 @@
 use apheleia_app::{builder, node_definer::NodeDefiner, params::query_filters::OnRender};
-use apheleia_core::{node_buffer::NodeBuffer, style::Style, types::Vec2};
+use apheleia_core::{Color, node_buffer::NodeBuffer, style::Style, types::Vec2};
 use apheleia_ecs::{
-    constants::STAGE,
+    constants::{FIRST, STAGE},
     params::query::Query,
     runtime_expressions::{Constant, Expr, ExprVec, Expression, values::ParentWidth},
-    traits::extension::Extension,
     types::SystemRunStage,
 };
 
-use crate::label::{LabelExtension, LabelWidget, render_label};
-
-#[derive(Debug)]
-pub struct BorderExtension {
-    pub horizontal: char,
-    pub vertical: char,
-    pub top_left: char,
-    pub top_right: char,
-    pub bottom_left: char,
-    pub bottom_right: char,
-
-    pub style: Style,
-}
-impl Extension for BorderExtension {}
-impl Default for BorderExtension {
-    fn default() -> Self {
-        BorderExtension::boxed()
-    }
-}
-impl BorderExtension {
-    pub fn boxed() -> Self {
-        Self {
-            horizontal: '─',
-            vertical: '│',
-            top_left: '┌',
-            top_right: '┐',
-            bottom_left: '└',
-            bottom_right: '┘',
-            style: Style::default(),
-        }
-    }
-
-    pub fn rounded() -> Self {
-        Self {
-            horizontal: '─',
-            vertical: '│',
-            top_left: '╭',
-            top_right: '╮',
-            bottom_left: '╰',
-            bottom_right: '╯',
-            style: Style::default(),
-        }
-    }
-
-    pub fn heavy() -> Self {
-        Self {
-            horizontal: '━',
-            vertical: '┃',
-            top_left: '┏',
-            top_right: '┓',
-            bottom_left: '┗',
-            bottom_right: '┛',
-            style: Style::default(),
-        }
-    }
-
-    pub fn double() -> Self {
-        Self {
-            horizontal: '═',
-            vertical: '║',
-            top_left: '╔',
-            top_right: '╗',
-            bottom_left: '╚',
-            bottom_right: '╝',
-            style: Style::default(),
-        }
-    }
-}
+use crate::{
+    extensions::{background::BackgroundExtension, container::BorderExtension},
+    widgets::label::LabelWidget,
+};
 
 #[derive(Debug)]
 pub struct ContainerWidget {
+    bg_color: Option<Color>,
+
     border_ext: Option<BorderExtension>,
     border_style: Style,
 
@@ -88,12 +25,19 @@ pub struct ContainerWidget {
 impl ContainerWidget {
     pub fn new() -> Self {
         Self {
+            bg_color: None,
+
             border_ext: Some(BorderExtension::default()),
             border_style: Style::default(),
 
             header_label_ext: None,
             header_margin: 1,
         }
+    }
+
+    pub fn background(mut self, color: Color) -> Self {
+        self.bg_color = Some(color);
+        self
     }
 
     pub fn header(mut self, label: LabelWidget) -> Self {
@@ -138,6 +82,11 @@ impl ContainerWidget {
 
 impl NodeDefiner for ContainerWidget {
     fn setup(self: Box<Self>, ctx: &mut apheleia_app::context::node::NodeContext) {
+        if let Some(color) = self.bg_color {
+            ctx.add_extension(BackgroundExtension { color }, None);
+            ctx.add_system(SystemRunStage::Render, FIRST, render_background);
+        }
+
         if let Some(mut border_ext) = self.border_ext {
             border_ext.style = self.border_style;
             ctx.add_extension(border_ext, None);
@@ -165,6 +114,22 @@ impl NodeDefiner for ContainerWidget {
                     })
                     .node(header_label)
             });
+        }
+    }
+}
+
+pub fn render_background(query: Query<(&BackgroundExtension, NodeBuffer), OnRender>) {
+    for (bg_ext, buffer) in query.iter() {
+        let color = bg_ext.color;
+        for y in 0..buffer.size.y {
+            buffer.write_string(
+                Vec2 { x: 0, y },
+                &(" ".repeat(buffer.size.y as usize)),
+                Some(Style {
+                    bg: color,
+                    ..Default::default()
+                }),
+            );
         }
     }
 }

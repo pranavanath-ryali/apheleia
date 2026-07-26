@@ -1,32 +1,9 @@
+
 use apheleia_app::{node_definer::NodeDefiner, params::query_filters::OnRender};
 use apheleia_core::{node_buffer::NodeBuffer, rich_strings::RichString, types::Vec2};
-use apheleia_ecs::{constants::STAGE, params::query::Query, traits::extension::Extension};
-use log::info;
+use apheleia_ecs::{constants::STAGE, params::query::Query};
 
-#[derive(Default, Debug)]
-pub enum HorizontalAlignment {
-    #[default]
-    Left,
-    Center,
-    Right,
-}
-
-#[derive(Default, Debug)]
-pub enum VerticalAlignment {
-    #[default]
-    Top,
-    Center,
-    Bottom,
-}
-
-#[derive(Debug)]
-pub struct LabelExtension {
-    pub text: RichString,
-
-    pub horizontal_alignment: HorizontalAlignment,
-    pub vertical_alignment: VerticalAlignment,
-}
-impl Extension for LabelExtension {}
+use crate::extensions::label::{HorizontalAlignment, LabelExtension, VerticalAlignment};
 
 #[derive(Debug)]
 pub struct LabelWidget {
@@ -37,9 +14,7 @@ impl LabelWidget {
         Self {
             ext: LabelExtension {
                 text: RichString::new(text),
-
-                horizontal_alignment: HorizontalAlignment::Left,
-                vertical_alignment: VerticalAlignment::Top,
+                ..Default::default()
             },
         }
     }
@@ -57,7 +32,11 @@ impl LabelWidget {
 impl NodeDefiner for LabelWidget {
     fn setup(self: Box<Self>, ctx: &mut apheleia_app::context::node::NodeContext) {
         ctx.add_extension(self.ext, None);
-        ctx.add_system(apheleia_ecs::types::SystemRunStage::Render, STAGE, render_label);
+        ctx.add_system(
+            apheleia_ecs::types::SystemRunStage::Render,
+            STAGE,
+            render_label,
+        );
     }
 }
 
