@@ -32,22 +32,19 @@ use crate::{types::NodeId, world::World};
 pub fn calculate_global_position(world: &World, id: NodeId) -> Vec2 {
     let mut position = world.get_nodedata(id).unwrap().get_position().unwrap();
 
-    world
-        .get_relations()
-        .get_ancestor_ids(&id)
-        .unwrap()
-        .iter()
-        .filter(|id| **id != 0_usize)
-        .for_each(|node_id| {
-            let pos = world.get_nodedata(*node_id).unwrap().get_position().unwrap();
-            warn!("for node: {}, Traversing: {:?}", id, pos);
-            position.x += pos.x;
-            position.y += pos.y;
-        });
+    let parent_id = world.get_relations().get_ancestor_ids(&id).unwrap()[0];
+    
+    if parent_id == 0 {
+        return position;
+    }
+
+    let parent_pos = world.get_nodedata(parent_id).unwrap().get_global_position().unwrap();
+    position.x += parent_pos.x;
+    position.y += parent_pos.y;
 
     info!(
         "[ECS] Calculated global position of NodeId: {} {:?}",
-        id, position
+        parent_id, position
     );
     position
 }
