@@ -67,7 +67,6 @@ impl Buffer {
         let offset = buf.global_position;
         for (y, map) in buf.diffed_cells.iter() {
             for (x, cell) in map.iter() {
-                info!("[BUFFER] written {} {}", x, y);
                 let pos_x = offset.x + x;
                 let pos_y = offset.y + y;
 

@@ -42,71 +42,71 @@ fn main() {
                         .double()
                         .header(LabelWidget::new("</fg:blue/>This is a header")),
                 )
-                .create_child(|builder| {
-                    builder
-                        .position(ExprVec {
-                            x: Expression(Expr::Value(Box::new(Constant(1)))),
-                            y: Expression(Expr::Value(Box::new(Constant(1)))),
-                        })
-                        .size(ExprVec {
-                            x: Expression(Expr::Sub(
-                                Box::new(Expr::Divide(
-                                    Box::new(Expr::Value(Box::new(ParentWidth))),
-                                    Box::new(Expr::Value(Box::new(Constant(2)))),
-                                )),
-                                Box::new(Expr::Value(Box::new(Constant(1)))),
-                            )),
-                            y: Expression(Expr::Sub(
-                                Box::new(Expr::Value(Box::new(ParentHeight))),
-                                Box::new(Expr::Value(Box::new(Constant(2)))),
-                            )),
-                        })
-                        .node(
-                            ContainerWidget::new()
-                                .boxed()
-                                .header(LabelWidget::new("This is Container 1!!!!!!")),
-                        )
-                        .create_child(|builder| {
-                            builder
-                                .tag(MyTag)
-                                .position(ExprVec {
-                                    x: Expression(Expr::Value(Box::new(Constant(1)))),
-                                    y: Expression(Expr::Value(Box::new(Constant(1)))),
-                                })
-                                .size(ExprVec {
-                                    x: Expression(Expr::Value(Box::new(ParentWidth))),
-                                    y: Expression(Expr::Value(Box::new(Constant(1)))),
-                                })
-                                .tag(MyTag)
-                                .node(LabelWidget::new("Hello From Label"))
-                        })
-                })
-                .create_child(|builder| {
-                    builder
-                        .position(ExprVec {
-                            x: Expression(Expr::Divide(
-                                Box::new(Expr::Value(Box::new(ParentWidth))),
-                                Box::new(Expr::Value(Box::new(Constant(2)))),
-                            )),
-                            y: Expression(Expr::Value(Box::new(Constant(1)))),
-                        })
-                        .size(ExprVec {
-                            x: Expression(Expr::Divide(
-                                Box::new(Expr::Value(Box::new(ParentWidth))),
-                                Box::new(Expr::Value(Box::new(Constant(2)))),
-                            )),
-                            y: Expression(Expr::Sub(
-                                Box::new(Expr::Value(Box::new(ParentHeight))),
-                                Box::new(Expr::Value(Box::new(Constant(2)))),
-                            )),
-                        })
-                        .node(
-                            ContainerWidget::new()
-                                .background(apheleia_core::Color::Red)
-                                .boxed()
-                                .header(LabelWidget::new("This is Container 2!!!!!!!")),
-                        )
-                })
+                // .create_child(|builder| {
+                //     builder
+                //         .position(ExprVec {
+                //             x: Expression(Expr::Value(Box::new(Constant(1)))),
+                //             y: Expression(Expr::Value(Box::new(Constant(1)))),
+                //         })
+                //         .size(ExprVec {
+                //             x: Expression(Expr::Sub(
+                //                 Box::new(Expr::Divide(
+                //                     Box::new(Expr::Value(Box::new(ParentWidth))),
+                //                     Box::new(Expr::Value(Box::new(Constant(2)))),
+                //                 )),
+                //                 Box::new(Expr::Value(Box::new(Constant(1)))),
+                //             )),
+                //             y: Expression(Expr::Sub(
+                //                 Box::new(Expr::Value(Box::new(ParentHeight))),
+                //                 Box::new(Expr::Value(Box::new(Constant(2)))),
+                //             )),
+                //         })
+                //         .node(
+                //             ContainerWidget::new()
+                //                 .boxed()
+                //                 .header(LabelWidget::new("This is Container 1!!!!!!")),
+                //         )
+                //         .create_child(|builder| {
+                //             builder
+                //                 .tag(MyTag)
+                //                 .position(ExprVec {
+                //                     x: Expression(Expr::Value(Box::new(Constant(1)))),
+                //                     y: Expression(Expr::Value(Box::new(Constant(1)))),
+                //                 })
+                //                 .size(ExprVec {
+                //                     x: Expression(Expr::Value(Box::new(ParentWidth))),
+                //                     y: Expression(Expr::Value(Box::new(Constant(1)))),
+                //                 })
+                //                 .tag(MyTag)
+                //                 .node(LabelWidget::new("Hello From Label"))
+                //         })
+                // })
+                // .create_child(|builder| {
+                //     builder
+                //         .position(ExprVec {
+                //             x: Expression(Expr::Divide(
+                //                 Box::new(Expr::Value(Box::new(ParentWidth))),
+                //                 Box::new(Expr::Value(Box::new(Constant(2)))),
+                //             )),
+                //             y: Expression(Expr::Value(Box::new(Constant(1)))),
+                //         })
+                //         .size(ExprVec {
+                //             x: Expression(Expr::Divide(
+                //                 Box::new(Expr::Value(Box::new(ParentWidth))),
+                //                 Box::new(Expr::Value(Box::new(Constant(2)))),
+                //             )),
+                //             y: Expression(Expr::Sub(
+                //                 Box::new(Expr::Value(Box::new(ParentHeight))),
+                //                 Box::new(Expr::Value(Box::new(Constant(2)))),
+                //             )),
+                //         })
+                //         .node(
+                //             ContainerWidget::new()
+                //                 .background(apheleia_core::Color::Red)
+                //                 .boxed()
+                //                 .header(LabelWidget::new("This is Container 2!!!!!!!").horizontal_alignment(apheleia_widgets::extensions::label::HorizontalAlignment::Center)),
+                //         )
+                // })
         })
         .add_system(SystemRunStage::Event, STAGE, change_label_on_key)
         .add_system(SystemRunStage::Event, LAST, quit_on_ecs)

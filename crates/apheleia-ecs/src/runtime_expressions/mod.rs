@@ -59,7 +59,6 @@ pub struct ExprVec {
 }
 impl ExprVec {
     pub fn compute_result(&self, id: NodeId, world: &World) -> Vec2 {
-        warn!("Computing Result for ID: {}", id);
         Vec2 {
             x: self.x.compute_result(id, world),
             y: self.y.compute_result(id, world),

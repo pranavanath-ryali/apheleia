@@ -91,4 +91,9 @@ impl NodeBufferStore {
         );
         None
     }
+
+    pub fn clear_all_buffers(&mut self) {
+        self.id_to_buffer.clear();
+        self.first_access_per_tick.clear();
+    }
 }

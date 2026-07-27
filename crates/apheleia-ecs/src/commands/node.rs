@@ -1,5 +1,10 @@
+use std::os::fd::OwnedFd;
+
 use crate::{
-    nodedata::NodeData, traits::context_command::ContextCommand, types::NodeId, utils::{calculate_global_position, calculate_global_size}
+    nodedata::NodeData,
+    traits::context_command::ContextCommand,
+    types::NodeId,
+    utils::{calculate_global_position, calculate_global_size},
 };
 
 /// A [`ContextCommand`] that sets the [`NodeData`] for a specific node.
@@ -109,7 +114,6 @@ impl ContextCommand for ComputeBoundsForNode {
 /// when executed.
 #[derive(Debug)]
 pub struct ComputeGlobalBoundsForNode(pub NodeId);
-
 impl ComputeGlobalBoundsForNode {
     /// Creates a new boxed [`ComputeGlobalBoundsForNode`] command for the given node.
     ///
@@ -135,5 +139,63 @@ impl ContextCommand for ComputeGlobalBoundsForNode {
         let data = world.get_nodedata_mut(self.0).unwrap();
         data.set_global_position(position);
         data.set_global_size(size);
+    }
+}
+
+#[derive(Debug)]
+pub struct ComputeAllBounds;
+impl ComputeAllBounds {
+    pub fn new() -> Box<Self> {
+        Box::new(Self)
+    }
+}
+
+impl ContextCommand for ComputeAllBounds {
+    fn execute(self: Box<Self>, world: &mut crate::world::World) {
+        world
+            .get_relations()
+            .traverse(&0, tree_ds::prelude::TraversalStrategy::PreOrder)
+            .unwrap()
+            .iter()
+            .filter(|&&id| id != 0)
+            .for_each(|&id| {
+                let position = {
+                    let data = world.get_nodedata(id).unwrap();
+                    data.compute_position(world)
+                };
+                let size = {
+                    let data = world.get_nodedata(id).unwrap();
+                    data.compute_size(world)
+                };
+
+                let data = world.get_nodedata_mut(id).unwrap();
+                data.set_position(position);
+                data.set_size(size);
+            });
+    }
+}
+
+#[derive(Debug)]
+pub struct ComputeAllGlobalBounds;
+impl ComputeAllGlobalBounds {
+    pub fn new() -> Box<Self> {
+        Box::new(Self)
+    }
+}
+impl ContextCommand for ComputeAllGlobalBounds {
+    fn execute(self: Box<Self>, world: &mut crate::world::World) {
+        world
+            .get_relations()
+            .traverse(&0, tree_ds::prelude::TraversalStrategy::PreOrder)
+            .unwrap()
+            .iter()
+            .filter(|&&id| id != 0)
+            .for_each(|&id| {
+                let position = calculate_global_position(world, id);
+                let size = calculate_global_size(world, id);
+                let data = world.get_nodedata_mut(id).unwrap();
+                data.set_global_position(position);
+                data.set_global_size(size);
+            });
     }
 }

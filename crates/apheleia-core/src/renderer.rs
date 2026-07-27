@@ -173,10 +173,7 @@ fn queue_batch(
         return Ok(());
     }
 
-    warn!(
-        "[DEBUG] [CORE] Batched X: {}; Y: {}; TEXT: '{}'",
-        x, y, text
-    );
+    // warn!("[RENDERER] Queued X: {}; Y: {}; TEXT: {}", x, y, text);
 
     queue!(stdout, SetAttribute(Attribute::Reset))?;
 

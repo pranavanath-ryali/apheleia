@@ -8,6 +8,7 @@ use std::{
 
 use apheleia_core::{buffer::Buffer, renderer::Renderer, terminal, types::Vec2};
 use apheleia_ecs::{
+    commands::node::{ComputeAllBounds, ComputeAllGlobalBounds},
     stores::{
         events::{EventRegistry, RenderDirty},
         nodebuffer::NodeBufferStore,
@@ -30,6 +31,10 @@ use crate::{
 #[derive(Debug)]
 pub struct Quit;
 impl EventMarker for Quit {}
+
+#[derive(Debug)]
+pub struct RenderFlip;
+impl EventMarker for RenderFlip {}
 
 pub struct App {
     world: World,
@@ -160,6 +165,16 @@ impl App {
                         x: x as u32,
                         y: y as u32,
                     });
+
+                    // TODO
+                    warn!("[APP] Terminal Resized. Added command to compute all bounds and global bounds {} {}", x, y);
+                    self.world.terminal_size = Vec2 { x: x as u32, y: y as u32 };
+                    self.world.add_command(ComputeAllBounds::new());
+                    self.world.add_command(ComputeAllGlobalBounds::new());
+                    self.world
+                        .get_resource_mut::<EventRegistry>()
+                        .unwrap()
+                        .add_global_event::<App, RenderFlip>();
                 }
             };
 
@@ -178,6 +193,10 @@ impl App {
     }
     fn render_flip(&mut self) {
         info!("[APP] Render Flip");
+
+        // TODO: Maybe create a resize and clear function in buffer
+        self.buffer = Buffer::new(self.world.terminal_size);
+        let mut buffers = self.world.get_resource_mut::<NodeBufferStore>().unwrap().clear_all_buffers();
 
         self.world.current_stage = SystemRunStage::RenderFlip;
         self.world.run_systems_on_stage(SystemRunStage::Render);
@@ -270,7 +289,17 @@ impl App {
             self.world.execute_commands();
             self.update();
             self.world.execute_commands();
-            self.render();
+
+            if self
+                .world
+                .get_resource_mut::<EventRegistry>()
+                .unwrap()
+                .is_global_event::<App, RenderFlip>()
+            {
+                self.render_flip();
+            } else {
+                self.render();
+            }
             self.world.execute_commands();
 
             let registry = self.world.get_resource_mut::<EventRegistry>().unwrap();
