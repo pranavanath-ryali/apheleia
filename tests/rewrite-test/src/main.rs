@@ -5,7 +5,7 @@ use apheleia_app::{
     setup_logger,
     systems::quit_on_ecs,
 };
-use apheleia_core::{rich_strings::RichString, style::Style, types::Vec2};
+use apheleia_core::{Color, rich_strings::RichString, style::Style, types::Vec2};
 use apheleia_ecs::{
     constants::{LAST, STAGE},
     params::query::Query,
@@ -40,73 +40,74 @@ fn main() {
                 .node(
                     ContainerWidget::new()
                         .double()
-                        .header(LabelWidget::new("</fg:blue/>This is a header")),
+                        .background(apheleia_core::Color::Rgb { r: 30, g: 30, b: 30 })
+                        .header(LabelWidget::new("</fg:blue;bg:green;/>This is a header")),
                 )
-                // .create_child(|builder| {
-                //     builder
-                //         .position(ExprVec {
-                //             x: Expression(Expr::Value(Box::new(Constant(1)))),
-                //             y: Expression(Expr::Value(Box::new(Constant(1)))),
-                //         })
-                //         .size(ExprVec {
-                //             x: Expression(Expr::Sub(
-                //                 Box::new(Expr::Divide(
-                //                     Box::new(Expr::Value(Box::new(ParentWidth))),
-                //                     Box::new(Expr::Value(Box::new(Constant(2)))),
-                //                 )),
-                //                 Box::new(Expr::Value(Box::new(Constant(1)))),
-                //             )),
-                //             y: Expression(Expr::Sub(
-                //                 Box::new(Expr::Value(Box::new(ParentHeight))),
-                //                 Box::new(Expr::Value(Box::new(Constant(2)))),
-                //             )),
-                //         })
-                //         .node(
-                //             ContainerWidget::new()
-                //                 .boxed()
-                //                 .header(LabelWidget::new("This is Container 1!!!!!!")),
-                //         )
-                //         .create_child(|builder| {
-                //             builder
-                //                 .tag(MyTag)
-                //                 .position(ExprVec {
-                //                     x: Expression(Expr::Value(Box::new(Constant(1)))),
-                //                     y: Expression(Expr::Value(Box::new(Constant(1)))),
-                //                 })
-                //                 .size(ExprVec {
-                //                     x: Expression(Expr::Value(Box::new(ParentWidth))),
-                //                     y: Expression(Expr::Value(Box::new(Constant(1)))),
-                //                 })
-                //                 .tag(MyTag)
-                //                 .node(LabelWidget::new("Hello From Label"))
-                //         })
-                // })
-                // .create_child(|builder| {
-                //     builder
-                //         .position(ExprVec {
-                //             x: Expression(Expr::Divide(
-                //                 Box::new(Expr::Value(Box::new(ParentWidth))),
-                //                 Box::new(Expr::Value(Box::new(Constant(2)))),
-                //             )),
-                //             y: Expression(Expr::Value(Box::new(Constant(1)))),
-                //         })
-                //         .size(ExprVec {
-                //             x: Expression(Expr::Divide(
-                //                 Box::new(Expr::Value(Box::new(ParentWidth))),
-                //                 Box::new(Expr::Value(Box::new(Constant(2)))),
-                //             )),
-                //             y: Expression(Expr::Sub(
-                //                 Box::new(Expr::Value(Box::new(ParentHeight))),
-                //                 Box::new(Expr::Value(Box::new(Constant(2)))),
-                //             )),
-                //         })
-                //         .node(
-                //             ContainerWidget::new()
-                //                 .background(apheleia_core::Color::Red)
-                //                 .boxed()
-                //                 .header(LabelWidget::new("This is Container 2!!!!!!!").horizontal_alignment(apheleia_widgets::extensions::label::HorizontalAlignment::Center)),
-                //         )
-                // })
+                .create_child(|builder| {
+                    builder
+                        .position(ExprVec {
+                            x: Expression(Expr::Value(Box::new(Constant(1)))),
+                            y: Expression(Expr::Value(Box::new(Constant(1)))),
+                        })
+                        .size(ExprVec {
+                            x: Expression(Expr::Sub(
+                                Box::new(Expr::Divide(
+                                    Box::new(Expr::Value(Box::new(ParentWidth))),
+                                    Box::new(Expr::Value(Box::new(Constant(2)))),
+                                )),
+                                Box::new(Expr::Value(Box::new(Constant(1)))),
+                            )),
+                            y: Expression(Expr::Sub(
+                                Box::new(Expr::Value(Box::new(ParentHeight))),
+                                Box::new(Expr::Value(Box::new(Constant(2)))),
+                            )),
+                        })
+                        .node(
+                            ContainerWidget::new()
+                                .boxed()
+                                .header(LabelWidget::new("This is Container 1!!!!!!")),
+                        )
+                        .create_child(|builder| {
+                            builder
+                                .tag(MyTag)
+                                .position(ExprVec {
+                                    x: Expression(Expr::Value(Box::new(Constant(1)))),
+                                    y: Expression(Expr::Value(Box::new(Constant(1)))),
+                                })
+                                .size(ExprVec {
+                                    x: Expression(Expr::Value(Box::new(ParentWidth))),
+                                    y: Expression(Expr::Value(Box::new(Constant(1)))),
+                                })
+                                .tag(MyTag)
+                                .node(LabelWidget::new("Hello From Label"))
+                        })
+                })
+                .create_child(|builder| {
+                    builder
+                        .position(ExprVec {
+                            x: Expression(Expr::Divide(
+                                Box::new(Expr::Value(Box::new(ParentWidth))),
+                                Box::new(Expr::Value(Box::new(Constant(2)))),
+                            )),
+                            y: Expression(Expr::Value(Box::new(Constant(1)))),
+                        })
+                        .size(ExprVec {
+                            x: Expression(Expr::Divide(
+                                Box::new(Expr::Value(Box::new(ParentWidth))),
+                                Box::new(Expr::Value(Box::new(Constant(2)))),
+                            )),
+                            y: Expression(Expr::Sub(
+                                Box::new(Expr::Value(Box::new(ParentHeight))),
+                                Box::new(Expr::Value(Box::new(Constant(2)))),
+                            )),
+                        })
+                        .node(
+                            ContainerWidget::new()
+                                .background(apheleia_core::Color::Blue)
+                                .boxed()
+                                .header(LabelWidget::new("</fg:black;bold/>This is Container 2!!!!!!!").horizontal_alignment(apheleia_widgets::extensions::label::HorizontalAlignment::Center)),
+                        )
+                })
         })
         .add_system(SystemRunStage::Event, STAGE, change_label_on_key)
         .add_system(SystemRunStage::Event, LAST, quit_on_ecs)
@@ -119,7 +120,7 @@ fn change_label_on_key(
     mut emitter: EventEmitter<RenderDirty>,
 ) {
     for (id, ext) in query.iter() {
-        ext.text = RichString::new("</fg:red/>CHANGED!");
+        ext.text = RichString::new("</reverse/>CHANGED");
         emitter.mark(id);
     }
 }

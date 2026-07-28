@@ -21,6 +21,14 @@ impl Default for Cell {
     }
 }
 
+impl Cell {
+    pub fn update(&mut self, cell: &Cell) {
+        self.style.update(&cell.style);
+        self.c = cell.c;
+        self.written = cell.written;
+    }
+}
+
 #[derive(Debug)]
 pub struct Buffer {
     pub size: Vec2,
@@ -78,7 +86,8 @@ impl Buffer {
                     continue;
                 }
 
-                self.cells[pos_y as usize][pos_x as usize] = *cell;
+                self.cells[pos_y as usize][pos_x as usize].update(cell);
+                // self.cells[pos_y as usize][pos_x as usize] = *cell;
                 self.diffed_cells
                     .entry(pos_y)
                     .and_modify(|v| {

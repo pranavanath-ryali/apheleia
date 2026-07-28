@@ -41,19 +41,37 @@ impl NodeBuffer {
             }
 
             // TODO: Work on multi-width characters
-            let cell = Cell {
-                c,
-                style,
-                written: true,
-            };
+            // let cell = Cell {
+            //     c,
+            //     style,
+            //     written: true,
+            // };
             self.diffed_cells
                 .entry(position.y + offset.y)
                 .and_modify(|map| {
-                    map.insert(position.x + offset.x, cell);
+                    map
+                        .entry(position.x + offset.x)
+                        .and_modify(|cell| {
+                            cell.c = c;
+                            cell.style.update(&style);
+                            cell.written = true;
+                        })
+                        .or_insert(Cell {
+                            c,
+                            style,
+                            written: true,
+                        });
                 })
                 .or_insert_with(|| {
                     let mut map: IndexMap<u32, Cell> = IndexMap::default();
-                    map.insert(position.x + offset.x, cell);
+                    map.insert(
+                        position.x + offset.x,
+                        Cell {
+                            c,
+                            style,
+                            written: true,
+                        },
+                    );
                     map
                 });
             offset.x += 1;
@@ -74,19 +92,33 @@ impl NodeBuffer {
             }
 
             // TODO: Work on multi-width characters
-            let cell = Cell {
-                c,
-                style: style.unwrap_or_default(),
-                written: true,
-            };
+            let style = style.unwrap_or_default();
             self.diffed_cells
                 .entry(position.y + offset.y)
                 .and_modify(|map| {
-                    map.insert(position.x + offset.x, cell);
+                    map
+                        .entry(position.x + offset.x)
+                        .and_modify(|cell| {
+                            cell.c = c;
+                            cell.style.update(&style);
+                            cell.written = true;
+                        })
+                        .or_insert(Cell {
+                            c,
+                            style,
+                            written: true,
+                        });
                 })
                 .or_insert_with(|| {
                     let mut map: IndexMap<u32, Cell> = IndexMap::default();
-                    map.insert(position.x + offset.x, cell);
+                    map.insert(
+                        position.x + offset.x,
+                        Cell {
+                            c,
+                            style,
+                            written: true,
+                        },
+                    );
                     map
                 });
             offset.x += 1;

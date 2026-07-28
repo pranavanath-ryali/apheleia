@@ -173,7 +173,7 @@ fn queue_batch(
         return Ok(());
     }
 
-    // warn!("[RENDERER] Queued X: {}; Y: {}; TEXT: {}", x, y, text);
+    // warn!("[RENDERER] Queued X: {}; Y: {}; STYLE: {:?}; TEXT: {}", x, y, style, text);
 
     queue!(stdout, SetAttribute(Attribute::Reset))?;
 

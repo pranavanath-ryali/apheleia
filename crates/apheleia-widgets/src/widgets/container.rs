@@ -1,14 +1,14 @@
 use apheleia_app::{builder, node_definer::NodeDefiner, params::query_filters::OnRender};
 use apheleia_core::{Color, node_buffer::NodeBuffer, style::Style, types::Vec2};
 use apheleia_ecs::{
-    constants::{FIRST, STAGE},
+    constants::{FIRST, LAST, STAGE},
     params::query::Query,
     runtime_expressions::{Constant, Expr, ExprVec, Expression, values::ParentWidth},
     types::SystemRunStage,
 };
 
 use crate::{
-    extensions::{background::BackgroundExtension, container::BorderExtension},
+    extensions::{background::{BackgroundExtension, render_background}, container::BorderExtension},
     widgets::label::LabelWidget,
 };
 
@@ -27,7 +27,7 @@ impl ContainerWidget {
         Self {
             bg_color: None,
 
-            border_ext: Some(BorderExtension::default()),
+            border_ext: None,
             border_style: Style::default(),
 
             header_label_ext: None,
@@ -114,22 +114,6 @@ impl NodeDefiner for ContainerWidget {
                     })
                     .node(header_label)
             });
-        }
-    }
-}
-
-pub fn render_background(query: Query<(&BackgroundExtension, NodeBuffer), OnRender>) {
-    for (bg_ext, buffer) in query.iter() {
-        let color = bg_ext.color;
-        for y in 0..buffer.size.y {
-            buffer.write_string(
-                Vec2 { x: 0, y },
-                &(" ".repeat(buffer.size.y as usize)),
-                Some(Style {
-                    bg: color,
-                    ..Default::default()
-                }),
-            );
         }
     }
 }

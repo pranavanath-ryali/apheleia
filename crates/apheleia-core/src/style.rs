@@ -1,5 +1,6 @@
 use bitflags::bitflags;
 use crossterm::style::Color;
+use log::info;
 
 bitflags! {
     #[derive(Copy, Clone, Debug, PartialEq)]
@@ -34,14 +35,20 @@ impl Default for Style {
     }
 }
 impl Style {
-    pub fn update(&mut self, style: Style) {
+    pub fn update(&mut self, style: &Style) {
         self.flags |= style.flags;
-        if style.fg != Color::Reset {
-            self.fg = style.fg;
-        }
+        self.fg = style.fg;
         if style.bg != Color::Reset {
             self.bg = style.bg;
         }
+        // self.fg = style.fg;
+        // self.bg = style.bg;
+        // if style.fg != Color::Reset {
+        //     self.fg = style.fg;
+        // }
+        // if style.bg != Color::Reset {
+        //     self.bg = style.bg;
+        // }
     }
 
     pub fn from_markup(markup: &str) -> Self {

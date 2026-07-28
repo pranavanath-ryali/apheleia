@@ -1,19 +1,44 @@
-use apheleia_core::{buffer::Buffer, node_buffer::NodeBuffer, renderer::Renderer, types::Vec2};
+use apheleia_core::{
+    buffer::Buffer,
+    node_buffer::NodeBuffer,
+    renderer::Renderer,
+    style::Style,
+    terminal::{self, size},
+    types::Vec2,
+};
 
 fn main() {
     let mut renderer = Renderer::default();
-    let mut buffer = Buffer::new(Vec2 { x: 50, y: 50 });
+    let size = terminal::size().unwrap();
+    let mut buffer = Buffer::new(Vec2 {
+        x: size.0 as u32,
+        y: size.1 as u32,
+    });
 
-    let mut node_buffer = NodeBuffer::new(Vec2 { x: 10, y: 10 });
+    let mut node_buffer = NodeBuffer::new(Vec2 { x: 0, y: 0 }, Vec2 { x: 20, y: 10 });
+    node_buffer.write_string(
+        Vec2 { x: 0, y: 0 },
+        &" ".repeat(20),
+        Some(Style {
+            bg: apheleia_core::Color::Green,
+            ..Default::default()
+        }),
+    );
 
-    node_buffer.write_rich_string(Vec2 { x: 0, y: 0 }, "</reverse;bold/>Hello");
+    node_buffer.write_string(
+        Vec2 { x: 3, y: 0 },
+        "         ",
+        Some(Style {
+            bg: apheleia_core::Color::Red,
+            ..Default::default()
+        }),
+    );
 
-    renderer.init();
-    buffer.render_buffer(Vec2 { x: 0, y: 0 }, &mut node_buffer);
-    _ = renderer.render_flip(&mut buffer);
+    let mut other_buffer = NodeBuffer::new(Vec2 { x: 5, y: 0 }, Vec2 { x: 20, y: 10 });
+    other_buffer.write_string(Vec2 { x: 0, y: 0 }, "BRUH WHY DOES IT", None);
 
-    loop {
-        renderer.render(&mut buffer);
-    }
-    renderer.quit();
+    buffer.render_buffer(&mut node_buffer);
+    buffer.render_buffer(&mut other_buffer);
+
+    renderer.render_flip(&mut buffer);
 }

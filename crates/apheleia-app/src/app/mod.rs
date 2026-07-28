@@ -167,8 +167,14 @@ impl App {
                     });
 
                     // TODO
-                    warn!("[APP] Terminal Resized. Added command to compute all bounds and global bounds {} {}", x, y);
-                    self.world.terminal_size = Vec2 { x: x as u32, y: y as u32 };
+                    warn!(
+                        "[APP] Terminal Resized. Added command to compute all bounds and global bounds {} {}",
+                        x, y
+                    );
+                    self.world.terminal_size = Vec2 {
+                        x: x as u32,
+                        y: y as u32,
+                    };
                     self.world.add_command(ComputeAllBounds::new());
                     self.world.add_command(ComputeAllGlobalBounds::new());
                     self.world
@@ -196,7 +202,11 @@ impl App {
 
         // TODO: Maybe create a resize and clear function in buffer
         self.buffer = Buffer::new(self.world.terminal_size);
-        let mut buffers = self.world.get_resource_mut::<NodeBufferStore>().unwrap().clear_all_buffers();
+        let mut buffers = self
+            .world
+            .get_resource_mut::<NodeBufferStore>()
+            .unwrap()
+            .clear_all_buffers();
 
         self.world.current_stage = SystemRunStage::RenderFlip;
         self.world.run_systems_on_stage(SystemRunStage::Render);
@@ -214,6 +224,7 @@ impl App {
         self.renderer.render_flip(&mut self.buffer);
     }
     fn render(&mut self) {
+        // TODO: Refactor all this fucking SHIT
         info!("[APP] Render Stage");
         self.world.current_stage = SystemRunStage::Render;
         self.world.run_systems_on_stage(SystemRunStage::Render);
@@ -256,11 +267,14 @@ impl App {
         let mut render_set: Vec<usize> = vec![];
         for id in set.iter() {
             let parent = self.world.get_relations().get_ancestor_ids(id).unwrap()[0];
-            render_set.push(parent);
-            render_set.push(*id);
+            if !render_set.contains(&parent) {
+                render_set.push(parent);
+            }
+            if !render_set.contains(id) {
+                render_set.push(*id);
+            }
         }
-        render_set.dedup();
-
+        render_set.sort_by_key(|id| order_map.get(id).copied().unwrap_or(usize::MAX));
         {
             let buffers = self.world.get_resource_mut::<NodeBufferStore>().unwrap();
             for id in render_set {

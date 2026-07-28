@@ -100,9 +100,9 @@ impl<'a> Iterator for RichStringIter<'a> {
                     if let Some(end) = span.end
                         && end < self.cursor
                     {
-                        style.update(span.style);
+                        style.update(&span.style);
                     } else {
-                        style.update(span.style);
+                        style.update(&span.style);
                     }
                 }
             }

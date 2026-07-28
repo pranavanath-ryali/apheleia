@@ -81,6 +81,14 @@ impl NodeBufferStore {
                             "[ECS] Creating new NodeBuffer of size: {:?} for node: {}",
                             size, id
                         );
+                        self.first_access_per_tick
+                            .entry(id)
+                            .and_modify(|b| {
+                                if *b {
+                                    *b = false;
+                                }
+                            })
+                            .or_insert(true);
                         NodeBuffer::new(global_position, size)
                     }),
             );

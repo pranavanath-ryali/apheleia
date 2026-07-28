@@ -105,6 +105,7 @@ impl SystemStore {
         let id = self.id_generator.next_id();
         let system = system.into_system();
         let system_typeid = system.id();
+        let mut priority = priority;
 
         if self.typesids.contains(&system_typeid) {
             warn!("[ECS] System already added. Skipped adding!");
@@ -141,6 +142,8 @@ impl SystemStore {
                         "[ECS] Priority changed for system {:?} to: {} from: {}",
                         system_typeid, new_priority, priority
                     );
+
+                    priority = new_priority;
                     map.entry(new_priority).or_insert(id);
                 }
             })
@@ -150,8 +153,8 @@ impl SystemStore {
                 map
             });
         info!(
-            "[ECS] Added system TypeId: {:?}, SystemId: {}",
-            system_typeid, id
+            "[ECS] Added system TypeId: {:?}, SystemId: {}; priority: {}",
+            system_typeid, id, priority
         );
         self.id_to_systems.insert(id, system);
         self.typesids.push(system_typeid);
@@ -165,6 +168,7 @@ impl SystemStore {
     ) {
         let id = self.id_generator.next_id();
         let system_typeid = system.id();
+        let mut priority = priority;
 
         if self.typesids.contains(&system_typeid) {
             warn!("[ECS] System already added. Skipped adding!");
@@ -182,6 +186,8 @@ impl SystemStore {
                         !map.contains_key(i)
                     }).or_else(|| panic!("Max priority change reached. Please manually change the priority for the given system")).unwrap();
 
+                    priority = new_priority;
+
                     warn!("[ECS] Priority changed for system {:?} to: {} from: {}", system_typeid, new_priority, priority);
 
                     map.entry(new_priority).or_insert(id);
@@ -193,8 +199,8 @@ impl SystemStore {
                 map
             });
         info!(
-            "[ECS] Added system TypeId: {:?}, SystemId: {}",
-            system_typeid, id
+            "[ECS] Added system TypeId: {:?}, SystemId: {}; priority: {}",
+            system_typeid, id, priority
         );
         self.id_to_systems.insert(id, system);
         self.typesids.push(system_typeid);
