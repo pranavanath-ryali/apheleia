@@ -41,3 +41,27 @@ impl ExprValue for ParentHeight {
             .y
     }
 }
+
+pub struct ThisWidth;
+impl ExprValue for ThisWidth {
+    fn result(&self, id: NodeId, world: &crate::world::World) -> u32 {
+        world
+            .get_nodedata(id)
+            .unwrap()
+            .get_size()
+            .expect("This Size not computed")
+            .x
+    }
+}
+
+pub struct ThisHeight;
+impl ExprValue for ThisHeight {
+    fn result(&self, id: NodeId, world: &crate::world::World) -> u32 {
+        world
+            .get_nodedata(id)
+            .unwrap()
+            .get_size()
+            .expect("This Size not computed")
+            .y
+    }
+}

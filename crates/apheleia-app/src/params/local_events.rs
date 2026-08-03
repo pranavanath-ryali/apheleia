@@ -1,8 +1,8 @@
 use std::marker::PhantomData;
 
 use apheleia_ecs::{
-    stores::events::EventRegistry,
-    traits::{event_marker::EventMarker, system_param::SystemParam},
+    stores::{events::EventRegistry, tag::TagRegistry},
+    traits::{event_marker::EventMarker, system_param::SystemParam, tag::TagTrait},
     types::NodeId,
     world::World,
 };
@@ -20,7 +20,27 @@ impl<'w, E: EventMarker> EventEmitter<'w, E> {
         }
     }
 
+    pub fn mark_tags<T: TagTrait>(&mut self, _tag: T) {
+        let Some(nodes) = self
+            .world
+            .get_resource_mut::<TagRegistry>()
+            .unwrap()
+            .get_nodes_with_tag::<T>() else {
+                return;
+            };
+        let nodes = nodes.clone();
+
+        nodes.iter().for_each(|&id| self.mark(id));
+    }
+
     pub fn mark(&mut self, id: NodeId) {
+        self.world
+            .get_resource_mut::<EventRegistry>()
+            .unwrap()
+            .add_local_event::<E>(id);
+    }
+
+    pub fn mark_subtree(&mut self, id: NodeId) {
         let relations = self.world.get_relations();
         let Some(subtree) = relations.get_subtree(&id, None).ok() else {
             return;
@@ -44,7 +64,7 @@ impl<'w, E: EventMarker> EventEmitter<'w, E> {
         let Some(parents) = relations.get_ancestor_ids(&id).ok() else {
             return;
         };
-        self.mark(parents[0]);
+        self.mark_subtree(parents[0]);
     }
 }
 

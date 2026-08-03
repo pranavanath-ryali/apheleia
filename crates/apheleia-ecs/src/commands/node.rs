@@ -92,17 +92,22 @@ impl ContextCommand for ComputeBoundsForNode {
     ///
     /// Panics if the node identified by `self.0` does not exist in the `World`.
     fn execute(self: Box<Self>, world: &mut crate::world::World) {
+        // TODO: Make this better. This was a fuck it, it works solution
+        {
+            let size = {
+                let data = world.get_nodedata(self.0).unwrap();
+                data.compute_size(world)
+            };
+            let data = world.get_nodedata_mut(self.0).unwrap();
+            data.set_size(size);
+        }
+
         let position = {
             let data = world.get_nodedata(self.0).unwrap();
             data.compute_position(world)
         };
-        let size = {
-            let data = world.get_nodedata(self.0).unwrap();
-            data.compute_size(world)
-        };
         let data = world.get_nodedata_mut(self.0).unwrap();
         data.set_position(position);
-        data.set_size(size);
     }
 }
 
