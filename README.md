@@ -12,6 +12,15 @@ A counter program to test the underlying ECS, resource mutations, dynamic math e
 cargo run --bin counter
 ```
 
+# Highlights
+
+* **Isolated Per-Node Buffers: **
+
 # Roadmap
+- [ ] Refactor the entire APP crate
+- [ ] Provide access to creation and deletion dynamically during runtime
+- [ ] Find an alternative method to achieve runtime_expressions
+- [ ] MORE Widgets
+- [ ] Layout Crate
 - [ ] Full Unicode Support
 - [ ] Make shit finally good
