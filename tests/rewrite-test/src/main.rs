@@ -1,126 +1,47 @@
-use apheleia_app::{
-    app::{App, Quit},
-    events::app_events::params::OnKeys,
-    params::{global_emitter::GlobalEmitter, local_events::EventEmitter},
-    setup_logger,
-    systems::quit_on_ecs,
-};
-use apheleia_core::{Color, rich_strings::RichString, style::Style, types::Vec2};
+use apheleia_app::{app::App, setup_logger, systems::quit_on_ecs};
 use apheleia_ecs::{
-    constants::{LAST, STAGE},
-    params::query::Query,
+    constants::LAST,
     runtime_expressions::{
         Constant, Expr, ExprVec, Expression,
-        values::{ParentHeight, ParentWidth, TerminalHeight, TerminalWidth},
+        values::{TerminalHeight, TerminalWidth},
     },
-    stores::events::RenderDirty,
-    traits::tag::TagTrait,
-    types::{NodeId, SystemRunStage},
+    types::SystemRunStage,
 };
-use apheleia_widgets::{
-    extensions::label::LabelExtension,
-    widgets::{container::ContainerWidget, label::LabelWidget},
-};
-use crossterm::event::KeyCode;
-use log::info;
-
-#[derive(Debug)]
-pub struct MyTag;
-impl TagTrait for MyTag {}
+use apheleia_widgets::widgets::label::LabelWidget;
 
 fn main() {
     setup_logger();
+
+    // The text we want to center
+    let text = "Hello World";
+    let text_len = text.len();
+
     App::new()
         .create_node(|builder| {
             builder
+                .position(ExprVec {
+                    x: Expression(Expr::Divide(
+                        Box::new(Expr::Sub(
+                            Box::new(Expr::Value(Box::new(TerminalWidth))),
+                            Box::new(Expr::Value(Box::new(Constant(
+                                text_len.try_into().unwrap(),
+                            )))),
+                        )),
+                        Box::new(Expr::Value(Box::new(Constant(2)))),
+                    )),
+                    y: Expression(Expr::Divide(
+                        Box::new(Expr::Value(Box::new(TerminalHeight))),
+                        Box::new(Expr::Value(Box::new(Constant(2)))),
+                    )),
+                })
                 .size(ExprVec {
-                    x: Expression(Expr::Value(Box::new(TerminalWidth))),
-                    y: Expression(Expr::Value(Box::new(TerminalHeight))),
+                    x: Expression(Expr::Value(Box::new(Constant(
+                        text_len.try_into().unwrap(),
+                    )))),
+                    y: Expression(Expr::Value(Box::new(Constant(1)))),
                 })
-                .node(
-                    ContainerWidget::new()
-                        .double()
-                        .background(apheleia_core::Color::Rgb { r: 30, g: 30, b: 30 })
-                        .header(LabelWidget::new("</fg:blue;bg:green;/>This is a header")),
-                )
-                .create_child(|builder| {
-                    builder
-                        .position(ExprVec {
-                            x: Expression(Expr::Value(Box::new(Constant(1)))),
-                            y: Expression(Expr::Value(Box::new(Constant(1)))),
-                        })
-                        .size(ExprVec {
-                            x: Expression(Expr::Sub(
-                                Box::new(Expr::Divide(
-                                    Box::new(Expr::Value(Box::new(ParentWidth))),
-                                    Box::new(Expr::Value(Box::new(Constant(2)))),
-                                )),
-                                Box::new(Expr::Value(Box::new(Constant(1)))),
-                            )),
-                            y: Expression(Expr::Sub(
-                                Box::new(Expr::Value(Box::new(ParentHeight))),
-                                Box::new(Expr::Value(Box::new(Constant(2)))),
-                            )),
-                        })
-                        .node(
-                            ContainerWidget::new()
-                                .boxed()
-                                .header(LabelWidget::new("This is Container 1!!!!!!")),
-                        )
-                        .create_child(|builder| {
-                            builder
-                                .tag(MyTag)
-                                .position(ExprVec {
-                                    x: Expression(Expr::Value(Box::new(Constant(1)))),
-                                    y: Expression(Expr::Value(Box::new(Constant(1)))),
-                                })
-                                .size(ExprVec {
-                                    x: Expression(Expr::Value(Box::new(ParentWidth))),
-                                    y: Expression(Expr::Value(Box::new(Constant(1)))),
-                                })
-                                .tag(MyTag)
-                                .node(LabelWidget::new("Hello From Label"))
-                        })
-                })
-                .create_child(|builder| {
-                    builder
-                        .position(ExprVec {
-                            x: Expression(Expr::Divide(
-                                Box::new(Expr::Value(Box::new(ParentWidth))),
-                                Box::new(Expr::Value(Box::new(Constant(2)))),
-                            )),
-                            y: Expression(Expr::Value(Box::new(Constant(1)))),
-                        })
-                        .size(ExprVec {
-                            x: Expression(Expr::Divide(
-                                Box::new(Expr::Value(Box::new(ParentWidth))),
-                                Box::new(Expr::Value(Box::new(Constant(2)))),
-                            )),
-                            y: Expression(Expr::Sub(
-                                Box::new(Expr::Value(Box::new(ParentHeight))),
-                                Box::new(Expr::Value(Box::new(Constant(2)))),
-                            )),
-                        })
-                        .node(
-                            ContainerWidget::new()
-                                .background(apheleia_core::Color::Blue)
-                                .boxed()
-                                .header(LabelWidget::new("</fg:black;bold/>This is Container 2!!!!!!!").horizontal_alignment(apheleia_widgets::extensions::label::HorizontalAlignment::Center)),
-                        )
-                })
+                .node(LabelWidget::new(text))
         })
-        .add_system(SystemRunStage::Event, STAGE, change_label_on_key)
         .add_system(SystemRunStage::Event, LAST, quit_on_ecs)
         .run();
-}
-
-fn change_label_on_key(
-    _: OnKeys,
-    query: Query<(NodeId, &mut LabelExtension)>,
-    mut emitter: EventEmitter<RenderDirty>,
-) {
-    for (id, ext) in query.iter() {
-        ext.text = RichString::new("</reverse/>CHANGED");
-        emitter.mark(id);
-    }
 }

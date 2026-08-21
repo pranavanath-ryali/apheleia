@@ -122,6 +122,7 @@ pub fn increment_count(
         for (id, label) in query.iter() {
             label.text = RichString::new(&format!("</bold;italic;fg:blue/>COUNTER: {}", counter.0));
             emitter.mark_parent(id);
+            // emitter.mark(id);
         }
     }
 }
