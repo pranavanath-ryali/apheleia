@@ -49,7 +49,6 @@ impl<'w> NodeBuilder<'w> {
 
     pub fn create_child(mut self, f: impl FnOnce(NodeBuilder) -> NodeBuilder) -> Self {
         let builder = f(NodeBuilder::new(self.id, self.app));
-        // println!("Hmm {:#?}", builder.build());
         self.children.push(builder.build());
         self
     }

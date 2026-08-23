@@ -8,7 +8,6 @@ pub mod app;
 pub mod builder;
 pub mod context;
 pub mod events;
-pub mod into_resource;
 pub mod node_definer;
 pub mod resources;
 pub mod params;
