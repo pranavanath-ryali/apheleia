@@ -39,6 +39,20 @@ dependencies = [
  "indexmap",
  "log",
  "rustc-hash",
+ "smallvec",
+]
+
+[[package]]
+name = "apheleia-core-depricated"
+version = "0.1.0"
+dependencies = [
+ "bitflags",
+ "chrono",
+ "crossterm",
+ "fern",
+ "indexmap",
+ "log",
+ "rustc-hash",
 ]
 
 [[package]]
@@ -386,6 +400,14 @@ dependencies = [
  "log",
  "wasi",
  "windows-sys",
+]
+
+[[package]]
+name = "new-core"
+version = "0.1.0"
+dependencies = [
+ "apheleia-core",
+ "crossterm",
 ]
 
 [[package]]

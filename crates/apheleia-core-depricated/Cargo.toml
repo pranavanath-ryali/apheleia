@@ -1,12 +1,11 @@
 [package]
-name = "apheleia-core"
+name = "apheleia-core-depricated"
 version.workspace = true
 edition.workspace = true
 
 [dependencies]
 bitflags = "2.10.0"
 
-smallvec.workspace = true
 rustc-hash.workspace = true
 crossterm.workspace = true
 indexmap.workspace = true

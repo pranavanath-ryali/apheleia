@@ -1,0 +1,9 @@
+[package]
+name = "new-core"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+apheleia-core.workspace = true
+
+crossterm.workspace = true

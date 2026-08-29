@@ -1,0 +1,176 @@
+use std::{
+    env,
+    io::{self, Stdout, Write, stdout},
+};
+
+use crossterm::{cursor::{self, MoveTo}, execute, queue, style::{self, Attributes, Print, SetAttributes}, terminal::Clear};
+
+use crate::{
+    buffer::{Buffer, MultiLayerCellTrait},
+    cell::{Modifiers, Style},
+};
+
+#[derive(Debug)]
+pub enum ColorSpace {
+    Monochrome,
+    Ansi,      // 4 bit
+    HighColor, // 8 bit
+    TrueColor, // 24 bit
+}
+
+#[derive(Debug)]
+pub struct TerminalCapabilities {
+    pub color_space: ColorSpace,
+}
+
+pub struct Terminal {
+    stdout: Stdout, // TODO: Temporary, eventually abstract this into the backend
+
+    pub capabilities: TerminalCapabilities,
+}
+impl Terminal {
+    pub fn new() -> Self {
+        Self {
+            stdout: stdout(),
+            capabilities: get_capabilites(),
+        }
+    }
+
+    pub fn init(&mut self) {
+        execute!(self.stdout, cursor::Hide);
+        // TODO: Use alternate screen
+    }
+
+    pub fn render_clear(&mut self, buffer: &mut Buffer) -> io::Result<()> {
+        execute!(self.stdout, Clear(crossterm::terminal::ClearType::All))?;
+
+        let mut batch_text = String::new();
+        let mut current_style = Style::default();
+        let mut current_pos = (0u16, 0u16);
+        for y in 0..buffer.size.1 {
+            for x in 0..buffer.size.0 {
+                let (cell, z_cells) = buffer.get_cell_mut((x, y));
+                *cell = z_cells.result();
+
+                match cell {
+                    crate::cell::Cell::Transparent => {
+                        queue_batch(&mut self.stdout, &batch_text, current_pos, current_style)?;
+
+                        batch_text.clear();
+                        current_pos = (x.saturating_add(1), y);
+                        current_style = Style::default();
+                        continue;
+                    }
+                    crate::cell::Cell::Opaque { grapheme, style } => {
+                        if *style != current_style {
+                            queue_batch(&mut self.stdout, &batch_text, current_pos, current_style)?;
+
+                            batch_text.clear();
+                            current_style = *style;
+                            current_pos = (x, y);
+                        }
+
+                        match grapheme {
+                            crate::cell::Grapheme::Ascii(_) => todo!(),
+                            crate::cell::Grapheme::Char(c) => {
+                                batch_text.push(*c);
+                            }
+                            crate::cell::Grapheme::Width(_) => todo!(),
+                            crate::cell::Grapheme::Extended => todo!(),
+                        }
+                    }
+                    crate::cell::Cell::Translucent {
+                        grapheme: _,
+                        style: _,
+                        alpha: _,
+                    } => {
+                        panic!("Final result of cell is not supposed to be Translucent");
+                    }
+                }
+            }
+
+            queue_batch(&mut self.stdout, &batch_text, current_pos, current_style)?;
+
+            batch_text.clear();
+            current_pos = (0, y);
+            current_style = Style::default();
+        }
+
+        self.stdout.flush()?;
+
+        buffer.clear_changed();
+        Ok(())
+    }
+}
+
+fn queue_batch(
+    stdout: &mut Stdout,
+    text: &str,
+    position: (u16, u16),
+    style: Style,
+) -> io::Result<()> {
+    if text.len() == 0 {
+        return Ok(());
+    }
+
+    let mut attr: crossterm::style::Attributes = crossterm::style::Attributes::none();
+
+    if !style.modifiers.eq(&Modifiers::NONE) {
+        if style.modifiers.contains(Modifiers::BOLD) {
+            attr.set(style::Attribute::Bold);
+        }
+        if style.modifiers.contains(Modifiers::ITALIC) {
+            attr.set(style::Attribute::Italic);
+        }
+        if style.modifiers.contains(Modifiers::DOUBLE_UNDERLINE) {
+            attr.set(style::Attribute::DoubleUnderlined);
+        }
+        if style.modifiers.contains(Modifiers::UNDERLINE) {
+            attr.set(style::Attribute::Underlined);
+        }
+        if style.modifiers.contains(Modifiers::REVERSE) {
+            attr.set(style::Attribute::Reverse);
+        }
+        if style.modifiers.contains(Modifiers::BLINK) {
+            attr.set(style::Attribute::SlowBlink);
+        }
+        if style.modifiers.contains(Modifiers::CONCEAL) {
+            attr.set(style::Attribute::Hidden);
+        }
+        if style.modifiers.contains(Modifiers::STRIKETHROUGH) {
+            attr.set(style::Attribute::CrossedOut);
+        }
+    }
+
+    queue!(stdout, SetAttributes(attr))?;
+    queue!(stdout, MoveTo(position.0, position.1))?;
+    queue!(stdout, Print(text))?;
+
+    Ok(())
+}
+
+fn get_capabilites() -> TerminalCapabilities {
+    let mut color_space: ColorSpace = ColorSpace::Monochrome;
+    match env::var("TERM") {
+        Ok(value) => {
+            if value.eq("vt100") || value.eq("dumb") {
+                color_space = ColorSpace::Monochrome;
+            } else if value.eq("xterm") {
+                color_space = ColorSpace::Ansi;
+            } else if value.eq("xterm-256color") || value.eq("screen-256color") {
+                color_space = ColorSpace::HighColor;
+            }
+        }
+        Err(_) => (),
+    };
+    match env::var("COLORTERM") {
+        Ok(value) => {
+            if value.eq("truecolor") {
+                color_space = ColorSpace::TrueColor;
+            }
+        }
+        Err(_) => (),
+    }
+
+    TerminalCapabilities { color_space }
+}

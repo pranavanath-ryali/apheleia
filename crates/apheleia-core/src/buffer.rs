@@ -1,252 +1,106 @@
-use chrono::offset;
-use indexmap::{IndexMap, IndexSet};
-use log::info;
-use rustc_hash::FxHashMap;
+use smallvec::{self, SmallVec};
 
-use crate::{node_buffer::NodeBuffer, rich_strings::RichString, style::Style, types::Vec2};
+use crate::cell::{
+    Modifiers, Cell,
+    Grapheme::{self, Char},
+    Style, update_cell,
+};
 
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub struct Cell {
-    pub c: char,
-    pub style: Style,
-    pub written: bool,
+pub trait MultiLayerCellTrait {
+    fn result(&mut self) -> Cell;
 }
-impl Default for Cell {
-    fn default() -> Self {
-        Self {
-            c: ' ',
-            style: Style::default(),
-            written: false,
+impl MultiLayerCellTrait for SmallVec<[(u8, Cell); 2]> {
+    fn result(&mut self) -> Cell {
+        self.sort_by_key(|(z, _)| *z);
+
+        let mut result_cell = Cell::Transparent;
+        for (_, cell) in self.iter() {
+            result_cell = update_cell(&result_cell, cell)
         }
+
+        result_cell
     }
 }
 
-impl Cell {
-    pub fn update(&mut self, cell: &Cell) {
-        self.style.update(&cell.style);
-        self.c = cell.c;
-        self.written = cell.written;
-    }
-}
-
-#[derive(Debug)]
 pub struct Buffer {
-    pub size: Vec2,
-    cells: Vec<Vec<Cell>>,
-    diffed_cells: FxHashMap<u32, Vec<u32>>,
+    pub size: (u16, u16),
+
+    pub cells: Vec<(Cell, SmallVec<[(u8, Cell); 2]>)>, // Current view of cell
+    pub changed_cells: Vec<(u16, u16)>,
 }
 impl Buffer {
-    pub fn new(size: Vec2) -> Self {
-        let mut cells: Vec<Vec<Cell>> = vec![];
-        for _ in 0..size.y {
-            let rows: Vec<Cell> = [Cell::default()].repeat(size.x as usize);
-            cells.push(rows);
+    pub fn new(size: (u16, u16)) -> Self {
+        // index = y * width + x
+        let mut cells: Vec<(Cell, SmallVec<[(u8, Cell); 2]>)> = vec![];
+        for _ in 0..size.1 {
+            for _ in 0..size.0 {
+                cells.push((Cell::Transparent, SmallVec::new()));
+            }
         }
 
         Self {
             size,
             cells,
-            diffed_cells: Default::default(),
+            changed_cells: vec![],
         }
     }
 
-    pub fn clear_rect(&mut self, position: Vec2, size: Vec2) {
-        for y in (position.y)..(position.y + size.y) {
-            for x in (position.x)..(position.x + size.x) {
-                let Some(row) = self.cells.get_mut(y as usize) else {
-                    continue;
-                };
-                let Some(cell) = row.get_mut(x as usize) else {
-                    continue;
-                };
+    pub fn get_cell_mut(&mut self, position: (u16, u16)) -> &mut (Cell, SmallVec<[(u8, Cell); 2]>) {
+        &mut self.cells[(position.1 * self.size.0 + position.0) as usize]
+    }
 
-                *cell = Cell {
-                    ..Default::default()
-                };
-                self.diffed_cells
-                    .entry(y)
-                    .and_modify(|v| v.push(x))
-                    .or_insert(vec![x]);
+    pub fn set_cell(&mut self, position: (u16, u16), cell: Cell) {
+        self.cells[(position.1 * self.size.0 + position.0) as usize].0 = cell;
+    }
+
+    pub fn get_result_cell(&mut self, position: (u16, u16)) -> Cell {
+        self.cells[(position.1 * self.size.0 + position.0) as usize]
+            .1
+            .result()
+    }
+
+    pub fn write(&mut self, text: &str, position: (u16, u16), z: u8, style: Style) {
+        let mut offset_x: u16 = 0;
+        for c in text.chars() {
+            let i = position.1 * self.size.0 + position.0 + offset_x;
+            if position.1 >= self.size.1 {
+                return;
             }
-        }
-    }
 
-    pub fn render_buffer(&mut self, buf: &mut NodeBuffer) {
-        let offset = buf.global_position;
-        for (y, map) in buf.diffed_cells.iter() {
-            for (x, cell) in map.iter() {
-                let pos_x = offset.x + x;
-                let pos_y = offset.y + y;
-
-                if pos_x >= self.size.x || pos_y >= self.size.y {
-                    continue;
-                }
-
-                if *cell == self.cells[(offset.y + y) as usize][(x + offset.x) as usize] {
-                    continue;
-                }
-
-                self.cells[pos_y as usize][pos_x as usize].update(cell);
-                // self.cells[pos_y as usize][pos_x as usize] = *cell;
-                self.diffed_cells
-                    .entry(pos_y)
-                    .and_modify(|v| {
-                        v.push(pos_x);
-                    })
-                    .or_insert(vec![pos_x]);
+            if position.0 + offset_x >= self.size.0 {
+                return;
             }
+
+            let (_, z_cells) = &mut self.cells[i as usize];
+            let mut found: bool = false;
+            for (cell_z, cell) in z_cells.iter_mut() {
+                if *cell_z == z {
+                    *cell = Cell::Opaque {
+                        grapheme: Grapheme::Char(c),
+                        style,
+                    };
+                    found = true;
+                    break;
+                }
+            }
+
+            if !found {
+                z_cells.push((
+                    z,
+                    Cell::Opaque {
+                        grapheme: Grapheme::Char(c),
+                        style,
+                    },
+                ));
+            }
+
+            self.changed_cells.push((i, position.1));
+            offset_x += 1;
         }
     }
 
-    pub fn get_cell(&self, position: Vec2) -> &Cell {
-        &self.cells[position.y as usize][position.x as usize]
-    }
-
-    pub fn get_diffed_cells(&mut self) -> &mut FxHashMap<u32, Vec<u32>> {
-        for y in self.diffed_cells.values_mut() {
-            y.sort_unstable();
-            y.dedup();
-        }
-
-        &mut self.diffed_cells
-    }
-
-    pub fn clear_diff(&mut self) {
-        self.diffed_cells.clear();
+    #[inline]
+    pub fn clear_changed(&mut self) {
+        self.changed_cells.clear();
     }
 }
-//
-// #[cfg(test)]
-// mod test_buffer {
-//     use crate::style::StyleFlags;
-//
-//     use super::*;
-//
-//     #[test]
-//     fn test_write() {
-//         let mut buffer = Buffer::new(Vec2 { x: 10, y: 1 });
-//         buffer.write_rich_string(Vec2 { x: 5, y: 0 }, RichString::new("He</bold/>llo"));
-//
-//         assert_eq!(
-//             buffer.cells[0],
-//             vec![
-//                 Cell::default(),
-//                 Cell::default(),
-//                 Cell::default(),
-//                 Cell::default(),
-//                 Cell::default(),
-//                 Cell {
-//                     c: 'H',
-//                     style: Style {
-//                         ..Default::default()
-//                     },
-//                     written: true
-//                 },
-//                 Cell {
-//                     c: 'e',
-//                     style: Style {
-//                         ..Default::default()
-//                     },
-//                     written: true
-//                 },
-//                 Cell {
-//                     c: 'l',
-//                     style: Style {
-//                         flags: StyleFlags::BOLD,
-//                         ..Default::default()
-//                     },
-//                     written: true
-//                 },
-//                 Cell {
-//                     c: 'l',
-//                     style: Style {
-//                         flags: StyleFlags::BOLD,
-//                         ..Default::default()
-//                     },
-//                     written: true
-//                 },
-//                 Cell {
-//                     c: 'o',
-//                     style: Style {
-//                         flags: StyleFlags::BOLD,
-//                         ..Default::default()
-//                     },
-//                     written: true
-//                 },
-//             ]
-//         );
-//     }
-//
-//     #[test]
-//     fn test_resize() {
-//         let mut buffer = Buffer::new(Vec2 { x: 10, y: 1 });
-//         buffer.write_string(Vec2::zero(), "HelloWorld".to_string(), None);
-//
-//         buffer.resize(Vec2 { x: 20, y: 1 });
-//         assert_eq!(
-//             buffer.cells[0],
-//             [
-//                 Cell {
-//                     c: 'H',
-//                     style: Default::default(),
-//                     written: true
-//                 },
-//                 Cell {
-//                     c: 'e',
-//                     style: Default::default(),
-//                     written: true
-//                 },
-//                 Cell {
-//                     c: 'l',
-//                     style: Default::default(),
-//                     written: true
-//                 },
-//                 Cell {
-//                     c: 'l',
-//                     style: Default::default(),
-//                     written: true
-//                 },
-//                 Cell {
-//                     c: 'o',
-//                     style: Default::default(),
-//                     written: true
-//                 },
-//                 Cell {
-//                     c: 'W',
-//                     style: Default::default(),
-//                     written: true
-//                 },
-//                 Cell {
-//                     c: 'o',
-//                     style: Default::default(),
-//                     written: true
-//                 },
-//                 Cell {
-//                     c: 'r',
-//                     style: Default::default(),
-//                     written: true
-//                 },
-//                 Cell {
-//                     c: 'l',
-//                     style: Default::default(),
-//                     written: true
-//                 },
-//                 Cell {
-//                     c: 'd',
-//                     style: Default::default(),
-//                     written: true
-//                 },
-//                 Cell::default(),
-//                 Cell::default(),
-//                 Cell::default(),
-//                 Cell::default(),
-//                 Cell::default(),
-//                 Cell::default(),
-//                 Cell::default(),
-//                 Cell::default(),
-//                 Cell::default(),
-//                 Cell::default(),
-//             ]
-//         );
-//     }
-// }
