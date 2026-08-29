@@ -15,12 +15,48 @@ bitflags! {
 use bitflags::bitflags;
 
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
+pub enum Color {
+    Reset,
+
+    Black,
+    DarkGrey,
+
+    DarkRed,
+    Red,
+
+    DarkGreen,
+    Green,
+
+    DarkYellow,
+    Yellow,
+
+    DarkBlue,
+    Blue,
+
+    DarkMagenta,
+    Magenta,
+
+    DarkCyan,
+    Cyan,
+
+    Grey,
+    White,
+
+    Ansi(u8),
+    Rgb { r: u8, g: u8, b: u8 }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
 pub struct Style {
+    pub fg: Color,
+    pub bg: Color,
     pub modifiers: Modifiers,
 }
 impl Default for Style {
     fn default() -> Self {
         Self {
+            fg: Color::Reset,
+            bg: Color::Reset,
             modifiers: Modifiers::NONE
         }
     }

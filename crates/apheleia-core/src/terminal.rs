@@ -3,7 +3,12 @@ use std::{
     io::{self, Stdout, Write, stdout},
 };
 
-use crossterm::{cursor::{self, MoveTo}, execute, queue, style::{self, Attributes, Print, SetAttributes}, terminal::Clear};
+use crossterm::{
+    cursor::{self, MoveTo},
+    execute, queue,
+    style::{self, Attributes, Color, Print, SetAttribute, SetAttributes, SetBackgroundColor, SetForegroundColor},
+    terminal::Clear,
+};
 
 use crate::{
     buffer::{Buffer, MultiLayerCellTrait},
@@ -36,9 +41,11 @@ impl Terminal {
         }
     }
 
-    pub fn init(&mut self) {
-        execute!(self.stdout, cursor::Hide);
+    pub fn init(&mut self) -> io::Result<()> {
+        execute!(self.stdout, cursor::Hide)?;
         // TODO: Use alternate screen
+
+        Ok(())
     }
 
     pub fn render_clear(&mut self, buffer: &mut Buffer) -> io::Result<()> {
@@ -142,8 +149,57 @@ fn queue_batch(
         }
     }
 
+    let fg: crossterm::style::Color = match style.fg {
+        crate::cell::Color::Reset => Color::Reset,
+
+        crate::cell::Color::Black => Color::Black,
+        crate::cell::Color::DarkGrey => Color::DarkGrey,
+        crate::cell::Color::DarkRed => Color::DarkRed,
+        crate::cell::Color::Red => Color::Red,
+        crate::cell::Color::DarkGreen => Color::DarkGreen,
+        crate::cell::Color::Green => Color::Green,
+        crate::cell::Color::DarkYellow => Color::DarkYellow,
+        crate::cell::Color::Yellow => Color::Yellow,
+        crate::cell::Color::DarkBlue => Color::DarkBlue,
+        crate::cell::Color::Blue => Color::Blue,
+        crate::cell::Color::DarkMagenta => Color::DarkMagenta,
+        crate::cell::Color::Magenta => Color::Magenta,
+        crate::cell::Color::DarkCyan => Color::DarkCyan,
+        crate::cell::Color::Cyan => Color::Cyan,
+        crate::cell::Color::Grey => Color::Grey,
+        crate::cell::Color::White => Color::White,
+        crate::cell::Color::Ansi(v) => Color::AnsiValue(v),
+        crate::cell::Color::Rgb { r, g, b } => Color::Rgb { r, g, b },
+    };
+
+    let bg: crossterm::style::Color = match style.bg {
+        crate::cell::Color::Reset => Color::Reset,
+
+        crate::cell::Color::Black => Color::Black,
+        crate::cell::Color::DarkGrey => Color::DarkGrey,
+        crate::cell::Color::DarkRed => Color::DarkRed,
+        crate::cell::Color::Red => Color::Red,
+        crate::cell::Color::DarkGreen => Color::DarkGreen,
+        crate::cell::Color::Green => Color::Green,
+        crate::cell::Color::DarkYellow => Color::DarkYellow,
+        crate::cell::Color::Yellow => Color::Yellow,
+        crate::cell::Color::DarkBlue => Color::DarkBlue,
+        crate::cell::Color::Blue => Color::Blue,
+        crate::cell::Color::DarkMagenta => Color::DarkMagenta,
+        crate::cell::Color::Magenta => Color::Magenta,
+        crate::cell::Color::DarkCyan => Color::DarkCyan,
+        crate::cell::Color::Cyan => Color::Cyan,
+        crate::cell::Color::Grey => Color::Grey,
+        crate::cell::Color::White => Color::White,
+        crate::cell::Color::Ansi(v) => Color::AnsiValue(v),
+        crate::cell::Color::Rgb { r, g, b } => Color::Rgb { r, g, b },
+    };
+
+    queue!(stdout, SetAttribute(style::Attribute::Reset))?;
     queue!(stdout, SetAttributes(attr))?;
     queue!(stdout, MoveTo(position.0, position.1))?;
+    queue!(stdout, SetForegroundColor(fg))?;
+    queue!(stdout, SetBackgroundColor(bg))?;
     queue!(stdout, Print(text))?;
 
     Ok(())
