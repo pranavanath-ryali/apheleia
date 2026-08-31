@@ -18,7 +18,14 @@ impl MultiLayerCellTrait for SmallVec<[(u8, Cell); 2]> {
             result_cell = update_cell(&result_cell, cell)
         }
 
-        result_cell
+        match result_cell {
+            Cell::Translucent {
+                grapheme,
+                style,
+                alpha: _,
+            } => Cell::Opaque { grapheme, style },
+            _ => result_cell,
+        }
     }
 }
 
@@ -51,12 +58,6 @@ impl Buffer {
 
     pub fn set_cell(&mut self, position: (u16, u16), cell: Cell) {
         self.cells[(position.1 * self.size.0 + position.0) as usize].0 = cell;
-    }
-
-    pub fn get_result_cell(&mut self, position: (u16, u16)) -> Cell {
-        self.cells[(position.1 * self.size.0 + position.0) as usize]
-            .1
-            .result()
     }
 
     pub fn write(
