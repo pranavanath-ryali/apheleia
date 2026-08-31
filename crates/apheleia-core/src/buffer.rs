@@ -1,9 +1,9 @@
 use smallvec::{self, SmallVec};
 
 use crate::cell::{
-    Modifiers, Cell,
+    Cell,
     Grapheme::{self, Char},
-    Style, update_cell,
+    Modifiers, Style, update_cell,
 };
 
 pub trait MultiLayerCellTrait {
@@ -59,7 +59,14 @@ impl Buffer {
             .result()
     }
 
-    pub fn write(&mut self, text: &str, position: (u16, u16), z: u8, style: Style) {
+    pub fn write(
+        &mut self,
+        text: &str,
+        position: (u16, u16),
+        z: u8,
+        style: Style,
+        alpha: Option<u8>,
+    ) {
         let mut offset_x: u16 = 0;
         for c in text.chars() {
             let i = position.1 * self.size.0 + position.0 + offset_x;
@@ -75,9 +82,17 @@ impl Buffer {
             let mut found: bool = false;
             for (cell_z, cell) in z_cells.iter_mut() {
                 if *cell_z == z {
-                    *cell = Cell::Opaque {
-                        grapheme: Grapheme::Char(c),
-                        style,
+                    *cell = if alpha.unwrap_or(255) == 255 {
+                        Cell::Opaque {
+                            grapheme: Grapheme::Char(c),
+                            style,
+                        }
+                    } else {
+                        Cell::Translucent {
+                            grapheme: Grapheme::Char(c),
+                            style,
+                            alpha: alpha.unwrap(),
+                        }
                     };
                     found = true;
                     break;
@@ -87,10 +102,18 @@ impl Buffer {
             if !found {
                 z_cells.push((
                     z,
-                    Cell::Opaque {
-                        grapheme: Grapheme::Char(c),
-                        style,
-                    },
+                    (if alpha.unwrap_or(255) == 255 {
+                        Cell::Opaque {
+                            grapheme: Grapheme::Char(c),
+                            style,
+                        }
+                    } else {
+                        Cell::Translucent {
+                            grapheme: Grapheme::Char(c),
+                            style,
+                            alpha: alpha.unwrap(),
+                        }
+                    }),
                 ));
             }
 

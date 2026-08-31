@@ -43,7 +43,7 @@ pub enum Color {
     White,
 
     Ansi(u8),
-    Rgb { r: u8, g: u8, b: u8 }
+    Rgb { r: u8, g: u8, b: u8 },
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
@@ -57,7 +57,7 @@ impl Default for Style {
         Self {
             fg: Color::Reset,
             bg: Color::Reset,
-            modifiers: Modifiers::NONE
+            modifiers: Modifiers::NONE,
         }
     }
 }
@@ -85,15 +85,39 @@ pub enum Cell {
 }
 
 pub fn update_cell(lower_cell: &Cell, upper_cell: &Cell) -> Cell {
-    let mut cell: Cell = Cell::Transparent;
-    match lower_cell {
-        Cell::Transparent => cell = *upper_cell,
-        Cell::Opaque { grapheme, style } => {}
+    let mut cell: Cell = match lower_cell {
+        Cell::Transparent => *upper_cell,
+        Cell::Opaque {
+            grapheme: _l_grapheme,
+            style: l_style,
+        } => match upper_cell {
+            Cell::Transparent => *lower_cell,
+            Cell::Opaque {
+                grapheme: u_grapheme,
+                style: u_style,
+            } => Cell::Opaque {
+                grapheme: *u_grapheme,
+                style: Style {
+                    fg: u_style.fg,
+                    bg: if u_style.bg == Color::Reset {
+                        l_style.bg
+                    } else {
+                        u_style.bg
+                    },
+                    modifiers: u_style.modifiers,
+                },
+            },
+            Cell::Translucent {
+                grapheme,
+                style,
+                alpha,
+            } => todo!(),
+        },
         Cell::Translucent {
             grapheme,
             style,
             alpha,
-        } => {}
+        } => todo!(),
     };
 
     cell

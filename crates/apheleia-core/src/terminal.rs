@@ -121,7 +121,6 @@ fn queue_batch(
     }
 
     let mut attr: crossterm::style::Attributes = crossterm::style::Attributes::none();
-
     if !style.modifiers.eq(&Modifiers::NONE) {
         if style.modifiers.contains(Modifiers::BOLD) {
             attr.set(style::Attribute::Bold);
