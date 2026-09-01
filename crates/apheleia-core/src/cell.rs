@@ -85,11 +85,11 @@ fn standard_blend(
         r: ((upper_color.0 as f32 * upper_alpha)
             + (lower_color.0 as f32 * lower_alpha * (1f32 - upper_alpha)) / alpha)
             .round() as u8,
-        g: ((upper_color.0 as f32 * upper_alpha)
-            + (lower_color.0 as f32 * lower_alpha * (1f32 - upper_alpha)) / alpha)
+        g: ((upper_color.1 as f32 * upper_alpha)
+            + (lower_color.1 as f32 * lower_alpha * (1f32 - upper_alpha)) / alpha)
             .round() as u8,
-        b: ((upper_color.0 as f32 * upper_alpha)
-            + (lower_color.0 as f32 * lower_alpha * (1f32 - upper_alpha)) / alpha)
+        b: ((upper_color.2 as f32 * upper_alpha)
+            + (lower_color.2 as f32 * lower_alpha * (1f32 - upper_alpha)) / alpha)
             .round() as u8,
     };
 
@@ -112,7 +112,7 @@ impl Default for Style {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Grapheme {
     // Ascii(u8),
     Char(char),
@@ -120,7 +120,7 @@ pub enum Grapheme {
     // Extended, // TODO: todo
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Cell {
     Transparent,
     Opaque {

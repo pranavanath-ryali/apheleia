@@ -1,12 +1,17 @@
 use std::{
     env,
     io::{self, Stdout, Write, stdout},
+    mem::take,
+    ops::ControlFlow::Continue,
 };
 
 use crossterm::{
     cursor::{self, MoveTo},
     execute, queue,
-    style::{self, Attributes, Color, Print, SetAttribute, SetAttributes, SetBackgroundColor, SetForegroundColor},
+    style::{
+        self, Attributes, Color, Print, SetAttribute, SetAttributes, SetBackgroundColor,
+        SetForegroundColor,
+    },
     terminal::Clear,
 };
 
@@ -44,6 +49,95 @@ impl Terminal {
     pub fn init(&mut self) -> io::Result<()> {
         execute!(self.stdout, cursor::Hide)?;
         // TODO: Use alternate screen
+
+        Ok(())
+    }
+
+    pub fn render_update(&mut self, buffer: &mut Buffer) -> io::Result<()> {
+        buffer.changed_cells.sort_unstable_by_key(|v| (v.1, v.0));
+        buffer.changed_cells.dedup();
+
+        let mut batch_text = String::new();
+        let mut current_style = Style::default();
+        let mut current_pos = (0u16, 0u16);
+        let mut offset_x = 0u16;
+
+        let changed_cells = take(&mut buffer.changed_cells);
+        for (x, y) in changed_cells {
+            if current_pos.1 != y || current_pos.0 + offset_x != x {
+                queue_batch(&mut self.stdout, &batch_text, current_pos, current_style)?;
+
+                batch_text.clear();
+                current_pos = (x, y);
+                current_style = Style::default();
+                offset_x = 0;
+            }
+
+            // println!("{:?}; Cell: {:?}", (current_pos.0 + offset_x, current_pos.1), result_cell);
+            let (cell, z_cells) = buffer.get_cell_mut((current_pos.0 + offset_x, current_pos.1));
+            let result_cell = z_cells.result();
+
+            match result_cell {
+                crate::cell::Cell::Transparent => {
+                    // TODO: Look into when the buffer may have cleared this cell
+                    todo!()
+                }
+                crate::cell::Cell::Opaque { grapheme, style } => {
+                    if result_cell == *cell {
+                        queue_batch(&mut self.stdout, &batch_text, current_pos, current_style)?;
+
+                        batch_text.clear();
+                        current_pos = (x, y);
+                        current_style = style;
+                        offset_x = 0;
+
+                        match grapheme {
+                            crate::cell::Grapheme::Char(ch) => batch_text.push(ch),
+                            crate::cell::Grapheme::Width(_) => todo!(),
+                        }
+                        continue;
+                    }
+
+                    if style != current_style {
+                        queue_batch(&mut self.stdout, &batch_text, current_pos, current_style)?;
+
+                        batch_text.clear();
+                        current_pos = (x, y);
+                        current_style = style;
+                        offset_x = 1;
+                        *cell = result_cell;
+
+                        match grapheme {
+                            crate::cell::Grapheme::Char(ch) => batch_text.push(ch),
+                            crate::cell::Grapheme::Width(_) => todo!(),
+                        }
+                        
+                        continue;
+                    }
+
+                    match grapheme {
+                        crate::cell::Grapheme::Char(ch) => batch_text.push(ch),
+                        crate::cell::Grapheme::Width(_) => todo!(),
+                    }
+                }
+                crate::cell::Cell::Translucent {
+                    grapheme,
+                    style,
+                    alpha,
+                } => panic!("Result cell cannot be a Translucent"),
+            }
+
+            *cell = result_cell;
+            offset_x += 1;
+        }
+
+        queue_batch(&mut self.stdout, &batch_text, current_pos, current_style)?;
+
+        queue!(&mut self.stdout, SetForegroundColor(Color::Reset))?;
+        queue!(&mut self.stdout, SetBackgroundColor(Color::Reset))?;
+
+
+        self.stdout.flush()?;
 
         Ok(())
     }
@@ -116,9 +210,11 @@ fn queue_batch(
     position: (u16, u16),
     style: Style,
 ) -> io::Result<()> {
-    if text.len() == 0 {
+    if text.is_empty() {
         return Ok(());
     }
+
+    // println!("BATCHED: {}; POS: {:?}, STYLE: {:?}", text, position, style);
 
     let mut attr: crossterm::style::Attributes = crossterm::style::Attributes::none();
     if !style.modifiers.eq(&Modifiers::NONE) {

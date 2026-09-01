@@ -60,7 +60,21 @@ impl Buffer {
         self.cells[(position.1 * self.size.0 + position.0) as usize].0 = cell;
     }
 
-    pub fn write(
+    pub fn clear_cell(&mut self, position: (u16, u16)) {
+        self.cells[(position.1 * self.size.0 + position.0) as usize].1.clear();
+        self.changed_cells.push(position);
+    }
+
+    pub fn clear_rect(&mut self, position: (u16, u16), size: (u16, u16)) {
+        for y in (position.1)..(position.1 + size.1) {
+            for x in (position.0)..(position.0 + size.0) {
+                self.cells[(y * self.size.0 + x) as usize].1.clear();
+                self.changed_cells.push((x, y));
+            }
+        }
+    }
+
+    pub fn write_text(
         &mut self,
         text: &str,
         position: (u16, u16),
@@ -118,7 +132,7 @@ impl Buffer {
                 ));
             }
 
-            self.changed_cells.push((i, position.1));
+            self.changed_cells.push((position.0 + offset_x, position.1));
             offset_x += 1;
         }
     }
