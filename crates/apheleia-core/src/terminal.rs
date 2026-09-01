@@ -78,12 +78,12 @@ impl Terminal {
                         }
 
                         match grapheme {
-                            crate::cell::Grapheme::Ascii(_) => todo!(),
+                            // crate::cell::Grapheme::Ascii(_) => todo!(),
                             crate::cell::Grapheme::Char(c) => {
                                 batch_text.push(*c);
                             }
                             crate::cell::Grapheme::Width(_) => todo!(),
-                            crate::cell::Grapheme::Extended => todo!(),
+                            // crate::cell::Grapheme::Extended => todo!(),
                         }
                     }
                     crate::cell::Cell::Translucent {

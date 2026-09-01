@@ -6,4 +6,5 @@ edition.workspace = true
 [dependencies]
 apheleia-core.workspace = true
 
+smallvec.workspace = true
 crossterm.workspace = true

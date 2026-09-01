@@ -114,10 +114,10 @@ impl Default for Style {
 
 #[derive(Debug, Clone, Copy)]
 pub enum Grapheme {
-    Ascii(u8),
+    // Ascii(u8),
     Char(char),
     Width(char),
-    Extended, // TODO: todo
+    // Extended, // TODO: todo
 }
 
 #[derive(Debug, Clone, Copy)]
