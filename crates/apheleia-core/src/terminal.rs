@@ -79,8 +79,17 @@ impl Terminal {
 
             match result_cell {
                 crate::cell::Cell::Transparent => {
-                    // TODO: Look into when the buffer may have cleared this cell
-                    todo!()
+                    queue_batch(&mut self.stdout, &batch_text, current_pos, current_style)?;
+
+                    batch_text.clear();
+                    current_pos = (x, y);
+                    offset_x = 0;
+                    current_style = Style::default();
+
+                    batch_text.push(' ');
+                    offset_x += 1;
+
+                    continue;
                 }
                 crate::cell::Cell::Opaque { grapheme, style } => {
                     if result_cell == *cell {
@@ -111,7 +120,7 @@ impl Terminal {
                             crate::cell::Grapheme::Char(ch) => batch_text.push(ch),
                             crate::cell::Grapheme::Width(_) => todo!(),
                         }
-                        
+
                         continue;
                     }
 
@@ -135,7 +144,6 @@ impl Terminal {
 
         queue!(&mut self.stdout, SetForegroundColor(Color::Reset))?;
         queue!(&mut self.stdout, SetBackgroundColor(Color::Reset))?;
-
 
         self.stdout.flush()?;
 

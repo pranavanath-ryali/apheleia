@@ -48,7 +48,7 @@ pub enum Color {
 impl Color {
     pub fn to_rgb(&self) -> (u8, u8, u8) {
         match self {
-            Color::Reset => todo!(),
+            Color::Reset => panic!("to_rgb used on Color::Reset"),
 
             Color::Black => (0, 0, 0),
             Color::DarkGrey => (100, 100, 100),
@@ -192,14 +192,18 @@ pub fn update_cell(lower_cell: &Cell, upper_cell: &Cell) -> Cell {
                 style: Style {
                     fg: upper_style.fg,
                     bg: {
-                        let (color, _) = standard_blend(
-                            lower_style.bg.to_rgb(),
-                            None,
-                            upper_style.bg.to_rgb(),
-                            *alpha,
-                        );
+                        if Color::Reset == upper_style.bg {
+                            lower_style.bg
+                        } else {
+                            let (color, _) = standard_blend(
+                                lower_style.bg.to_rgb(),
+                                None,
+                                upper_style.bg.to_rgb(),
+                                *alpha,
+                            );
 
-                        color
+                            color
+                        }
                     },
                     modifiers: upper_style.modifiers,
                 },

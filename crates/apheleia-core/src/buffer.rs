@@ -1,7 +1,7 @@
 use smallvec::{self, SmallVec};
 
 use crate::cell::{
-    Cell,
+    Cell, Color,
     Grapheme::{self, Char},
     Modifiers, Style, update_cell,
 };
@@ -60,8 +60,24 @@ impl Buffer {
         self.cells[(position.1 * self.size.0 + position.0) as usize].0 = cell;
     }
 
+    pub fn clear_cell_z(&mut self, position: (u16, u16), z: u8) {
+        let cell = &mut self.cells[(position.1 * self.size.0 + position.0) as usize].1;
+        let mut index: usize = 0;
+        
+        for (i, c) in cell.iter().enumerate() {
+            if c.0 == z {
+                index = i;
+            }
+        }
+
+        cell.remove(index);
+        self.changed_cells.push(position);
+    }
+
     pub fn clear_cell(&mut self, position: (u16, u16)) {
-        self.cells[(position.1 * self.size.0 + position.0) as usize].1.clear();
+        self.cells[(position.1 * self.size.0 + position.0) as usize]
+            .1
+            .clear();
         self.changed_cells.push(position);
     }
 
@@ -70,6 +86,40 @@ impl Buffer {
             for x in (position.0)..(position.0 + size.0) {
                 self.cells[(y * self.size.0 + x) as usize].1.clear();
                 self.changed_cells.push((x, y));
+            }
+        }
+    }
+
+    pub fn fill_rect(
+        &mut self,
+        position: (u16, u16),
+        size: (u16, u16),
+        z: u8,
+        bg: Color,
+        alpha: Option<u8>,
+    ) {
+        for y in (position.1)..(position.1 + size.1) {
+            for x in (position.0)..(position.0 + size.0) {
+                self.cells[(y * self.size.0 + x) as usize].1.push((z, {
+                    if alpha.unwrap_or(255) == 255 {
+                        Cell::Opaque {
+                            grapheme: Grapheme::Char(' '),
+                            style: Style {
+                                bg,
+                                ..Default::default()
+                            },
+                        }
+                    } else {
+                        Cell::Translucent {
+                            grapheme: Grapheme::Char(' '),
+                            style: Style {
+                                bg,
+                                ..Default::default()
+                            },
+                            alpha: alpha.unwrap_or(255),
+                        }
+                    }
+                }));
             }
         }
     }
