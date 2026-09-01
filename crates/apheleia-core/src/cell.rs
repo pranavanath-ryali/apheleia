@@ -49,23 +49,59 @@ impl Color {
     pub fn to_rgb(&self) -> (u8, u8, u8) {
         match self {
             Color::Reset => todo!(),
-            Color::Black => todo!(),
-            Color::DarkGrey => todo!(),
-            Color::DarkRed => todo!(),
-            Color::Red => todo!(),
-            Color::DarkGreen => todo!(),
-            Color::Green => todo!(),
-            Color::DarkYellow => todo!(),
-            Color::Yellow => todo!(),
-            Color::DarkBlue => todo!(),
-            Color::Blue => todo!(),
-            Color::DarkMagenta => todo!(),
-            Color::Magenta => todo!(),
-            Color::DarkCyan => todo!(),
-            Color::Cyan => todo!(),
-            Color::Grey => todo!(),
-            Color::White => todo!(),
-            Color::Ansi(v) => todo!(),
+
+            Color::Black => (0, 0, 0),
+            Color::DarkGrey => (100, 100, 100),
+            Color::DarkRed => (128, 0, 0),
+            Color::Red => (255, 0, 0),
+            Color::DarkGreen => (0, 128, 0),
+            Color::Green => (0, 255, 0),
+            Color::DarkYellow => (128, 128, 0),
+            Color::Yellow => (255, 255, 0),
+            Color::DarkBlue => (0, 0, 128),
+            Color::Blue => (0, 0, 255),
+            Color::DarkMagenta => (128, 0, 128),
+            Color::Magenta => (255, 0, 255),
+            Color::DarkCyan => (0, 128, 128),
+            Color::Cyan => (0, 255, 255),
+            Color::Grey => (192, 192, 192),
+            Color::White => (255, 255, 255),
+
+            Color::Ansi(v) => {
+                match v {
+                    // Standard 16 colors
+                    0 => (0, 0, 0),
+                    1 => (128, 0, 0),
+                    2 => (0, 128, 0),
+                    3 => (128, 128, 0),
+                    4 => (0, 0, 128),
+                    5 => (128, 0, 128),
+                    6 => (0, 128, 128),
+                    7 => (192, 192, 192),
+                    8 => (100, 100, 100),
+                    9 => (255, 0, 0),
+                    10 => (0, 255, 0),
+                    11 => (255, 255, 0),
+                    12 => (0, 0, 255),
+                    13 => (255, 0, 255),
+                    14 => (0, 255, 255),
+                    15 => (255, 255, 255),
+                    // 216 Color Cube (16..=231)
+                    16..=231 => {
+                        let i = v - 16;
+                        let r = i / 36;
+                        let g = (i % 36) / 6;
+                        let b = i % 6;
+                        let steps = [0, 95, 135, 175, 215, 255];
+                        (steps[r as usize], steps[g as usize], steps[b as usize])
+                    }
+                    // Grayscale ramp (232..=255)
+                    232..=255 => {
+                        let gray = 8 + (v - 232) * 10;
+                        (gray, gray, gray)
+                    }
+                }
+            }
             Color::Rgb { r, g, b } => (*r, *g, *b),
         }
     }

@@ -33,17 +33,16 @@ fn main() -> io::Result<()> {
 
     let mut x = 0u16;
     loop {
-        thread::sleep(Duration::from_millis(250));
+        thread::sleep(Duration::from_millis(60));
 
         if x != 0 {
-            buffer.clear_cell((x - 1, x - 1));
+            // buffer.clear_cell((x - 1, x - 1));
         }
         buffer.write_text(
             "0",
             (x, x),
             0,
             Style {
-                fg: Color::Rgb { r: 255, g: 0, b: 0 },
                 ..Default::default()
             },
             None,
