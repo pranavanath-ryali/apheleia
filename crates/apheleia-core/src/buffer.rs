@@ -9,7 +9,7 @@ use crate::cell::{
 pub trait MultiLayerCellTrait {
     fn result(&mut self) -> Cell;
 }
-impl MultiLayerCellTrait for SmallVec<[(u8, Cell); 2]> {
+impl MultiLayerCellTrait for SmallVec<[(i8, Cell); 2]> {
     fn result(&mut self) -> Cell {
         self.sort_by_key(|(z, _)| *z);
 
@@ -32,13 +32,13 @@ impl MultiLayerCellTrait for SmallVec<[(u8, Cell); 2]> {
 pub struct Buffer {
     pub size: (u16, u16),
 
-    pub cells: Vec<(Cell, SmallVec<[(u8, Cell); 2]>)>, // Current view of cell
+    pub cells: Vec<(Cell, SmallVec<[(i8, Cell); 2]>)>, // Current view of cell
     pub changed_cells: Vec<(u16, u16)>,
 }
 impl Buffer {
     pub fn new(size: (u16, u16)) -> Self {
         // index = y * width + x
-        let mut cells: Vec<(Cell, SmallVec<[(u8, Cell); 2]>)> = vec![];
+        let mut cells: Vec<(Cell, SmallVec<[(i8, Cell); 2]>)> = vec![];
         for _ in 0..size.1 {
             for _ in 0..size.0 {
                 cells.push((Cell::Transparent, SmallVec::new()));
@@ -52,7 +52,7 @@ impl Buffer {
         }
     }
 
-    pub fn get_cell_mut(&mut self, position: (u16, u16)) -> &mut (Cell, SmallVec<[(u8, Cell); 2]>) {
+    pub fn get_cell_mut(&mut self, position: (u16, u16)) -> &mut (Cell, SmallVec<[(i8, Cell); 2]>) {
         &mut self.cells[(position.1 * self.size.0 + position.0) as usize]
     }
 
@@ -60,7 +60,7 @@ impl Buffer {
         self.cells[(position.1 * self.size.0 + position.0) as usize].0 = cell;
     }
 
-    pub fn clear_cell_z(&mut self, position: (u16, u16), z: u8) {
+    pub fn clear_cell_z(&mut self, position: (u16, u16), z: i8) {
         let cell = &mut self.cells[(position.1 * self.size.0 + position.0) as usize].1;
         let mut index: usize = 0;
         
@@ -94,7 +94,7 @@ impl Buffer {
         &mut self,
         position: (u16, u16),
         size: (u16, u16),
-        z: u8,
+        z: i8,
         bg: Color,
         alpha: Option<u8>,
     ) {
@@ -128,7 +128,7 @@ impl Buffer {
         &mut self,
         text: &str,
         position: (u16, u16),
-        z: u8,
+        z: i8,
         style: Style,
         alpha: Option<u8>,
     ) {

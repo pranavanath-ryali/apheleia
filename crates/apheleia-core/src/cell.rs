@@ -233,6 +233,7 @@ pub fn update_cell(lower_cell: &Cell, upper_cell: &Cell) -> Cell {
                 style: upper_style,
                 alpha: upper_alpha,
             } => {
+                // TODO: Fix case when lower/upper.bg might be Reset. Treat Reset as transparent
                 let (color, alpha) = standard_blend(
                     lower_style.bg.to_rgb(),
                     Some(lower_alpha),

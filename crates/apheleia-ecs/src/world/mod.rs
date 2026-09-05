@@ -1,6 +1,5 @@
 use std::collections::VecDeque;
 
-use apheleia_core::types::Vec2;
 use log::warn;
 use tree_ds::prelude::{Node, Tree};
 
@@ -20,7 +19,7 @@ pub mod resources;
 pub mod systems;
 
 pub struct World {
-    pub terminal_size: Vec2,
+    pub terminal_size: (u16, u16),
     pub running: bool,
     pub current_stage: SystemRunStage,
 
@@ -36,7 +35,7 @@ pub struct World {
     commands: VecDeque<Box<dyn ContextCommand>>,
 }
 impl World {
-    pub fn new(terminal_size: Vec2) -> Self {
+    pub fn new(terminal_size: (u16, u16)) -> Self {
         let mut relations: Tree<NodeId, NodeId> = Tree::new(None);
         _ = relations.add_node(Node::new(0, None), None);
 
