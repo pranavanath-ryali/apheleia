@@ -1,44 +1,17 @@
-use smallvec::{self, SmallVec};
+use smallvec::SmallVec;
 
-use crate::cell::{
-    Cell, Color,
-    Grapheme::{self, Char},
-    Modifiers, Style, update_cell,
-};
-
-pub trait MultiLayerCellTrait {
-    fn result(&mut self) -> Cell;
-}
-impl MultiLayerCellTrait for SmallVec<[(i8, Cell); 2]> {
-    fn result(&mut self) -> Cell {
-        self.sort_by_key(|(z, _)| *z);
-
-        let mut result_cell = Cell::Transparent;
-        for (_, cell) in self.iter() {
-            result_cell = update_cell(&result_cell, cell)
-        }
-
-        match result_cell {
-            Cell::Translucent {
-                grapheme,
-                style,
-                alpha: _,
-            } => Cell::Opaque { grapheme, style },
-            _ => result_cell,
-        }
-    }
-}
+use crate::{cell::{Cell, layered::MultiLayerCell}, grapheme::Grapheme, style::{Style, color::Color}};
 
 pub struct Buffer {
     pub size: (u16, u16),
 
-    pub cells: Vec<(Cell, SmallVec<[(i8, Cell); 2]>)>, // Current view of cell
+    pub cells: Vec<(Cell, MultiLayerCell)>, // Current view of cell
     pub changed_cells: Vec<(u16, u16)>,
 }
 impl Buffer {
     pub fn new(size: (u16, u16)) -> Self {
         // index = y * width + x
-        let mut cells: Vec<(Cell, SmallVec<[(i8, Cell); 2]>)> = vec![];
+        let mut cells: Vec<(Cell, MultiLayerCell)> = vec![];
         for _ in 0..size.1 {
             for _ in 0..size.0 {
                 cells.push((Cell::Transparent, SmallVec::new()));
@@ -52,7 +25,7 @@ impl Buffer {
         }
     }
 
-    pub fn get_cell_mut(&mut self, position: (u16, u16)) -> &mut (Cell, SmallVec<[(i8, Cell); 2]>) {
+    pub fn get_cell_mut(&mut self, position: (u16, u16)) -> &mut (Cell, MultiLayerCell) {
         &mut self.cells[(position.1 * self.size.0 + position.0) as usize]
     }
 
