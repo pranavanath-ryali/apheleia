@@ -15,10 +15,7 @@ use crossterm::{
     terminal::Clear,
 };
 
-use crate::{
-    buffer::{Buffer, MultiLayerCellTrait},
-    cell::{Modifiers, Style},
-};
+use crate::{buffer::Buffer, style::Style};
 
 #[derive(Debug)]
 pub enum ColorSpace {
