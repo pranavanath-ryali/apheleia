@@ -28,6 +28,11 @@ impl Buffer {
     }
 
     #[inline]
+    pub fn get_cell_mut(&mut self, position: (u16, u16)) -> &mut (Cell, MultiLayerCell) {
+        &mut self.cells[(position.1 * self.size.0 + position.0) as usize]
+    }
+
+    #[inline]
     pub fn clear_changed(&mut self) {
         self.changed_cells.clear();
     }

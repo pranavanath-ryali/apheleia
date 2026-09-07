@@ -2,7 +2,6 @@ use std::{
     env,
     io::{self, Stdout, Write, stdout},
     mem::take,
-    ops::ControlFlow::Continue,
 };
 
 use crossterm::{
@@ -15,7 +14,11 @@ use crossterm::{
     terminal::Clear,
 };
 
-use crate::{buffer::Buffer, style::Style};
+use crate::{
+    buffer::Buffer,
+    cell::layered::MultiLayerCellTrait,
+    style::{Style, modifiers::Modifiers},
+};
 
 #[derive(Debug)]
 pub enum ColorSpace {
@@ -98,8 +101,8 @@ impl Terminal {
                         offset_x = 0;
 
                         match grapheme {
-                            crate::cell::Grapheme::Char(ch) => batch_text.push(ch),
-                            crate::cell::Grapheme::Width(_) => todo!(),
+                            crate::grapheme::Grapheme::Char(ch) => batch_text.push(ch),
+                            crate::grapheme::Grapheme::Width(_) => todo!(),
                         }
                         continue;
                     }
@@ -114,16 +117,16 @@ impl Terminal {
                         *cell = result_cell;
 
                         match grapheme {
-                            crate::cell::Grapheme::Char(ch) => batch_text.push(ch),
-                            crate::cell::Grapheme::Width(_) => todo!(),
+                            crate::grapheme::Grapheme::Char(ch) => batch_text.push(ch),
+                            crate::grapheme::Grapheme::Width(_) => todo!(),
                         }
 
                         continue;
                     }
 
                     match grapheme {
-                        crate::cell::Grapheme::Char(ch) => batch_text.push(ch),
-                        crate::cell::Grapheme::Width(_) => todo!(),
+                        crate::grapheme::Grapheme::Char(ch) => batch_text.push(ch),
+                        crate::grapheme::Grapheme::Width(_) => todo!(),
                     }
                 }
                 crate::cell::Cell::Translucent {
@@ -177,12 +180,8 @@ impl Terminal {
                         }
 
                         match grapheme {
-                            // crate::cell::Grapheme::Ascii(_) => todo!(),
-                            crate::cell::Grapheme::Char(c) => {
-                                batch_text.push(*c);
-                            }
-                            crate::cell::Grapheme::Width(_) => todo!(),
-                            // crate::cell::Grapheme::Extended => todo!(),
+                            crate::grapheme::Grapheme::Char(c) => batch_text.push(*c),
+                            crate::grapheme::Grapheme::Width(_) => todo!(),
                         }
                     }
                     crate::cell::Cell::Translucent {
@@ -250,49 +249,49 @@ fn queue_batch(
     }
 
     let fg: crossterm::style::Color = match style.fg {
-        crate::cell::Color::Reset => Color::Reset,
+        crate::style::color::Color::Reset => Color::Reset,
 
-        crate::cell::Color::Black => Color::Black,
-        crate::cell::Color::DarkGrey => Color::DarkGrey,
-        crate::cell::Color::DarkRed => Color::DarkRed,
-        crate::cell::Color::Red => Color::Red,
-        crate::cell::Color::DarkGreen => Color::DarkGreen,
-        crate::cell::Color::Green => Color::Green,
-        crate::cell::Color::DarkYellow => Color::DarkYellow,
-        crate::cell::Color::Yellow => Color::Yellow,
-        crate::cell::Color::DarkBlue => Color::DarkBlue,
-        crate::cell::Color::Blue => Color::Blue,
-        crate::cell::Color::DarkMagenta => Color::DarkMagenta,
-        crate::cell::Color::Magenta => Color::Magenta,
-        crate::cell::Color::DarkCyan => Color::DarkCyan,
-        crate::cell::Color::Cyan => Color::Cyan,
-        crate::cell::Color::Grey => Color::Grey,
-        crate::cell::Color::White => Color::White,
-        crate::cell::Color::Ansi(v) => Color::AnsiValue(v),
-        crate::cell::Color::Rgb { r, g, b } => Color::Rgb { r, g, b },
+        crate::style::color::Color::Black => Color::Black,
+        crate::style::color::Color::DarkGrey => Color::DarkGrey,
+        crate::style::color::Color::DarkRed => Color::DarkRed,
+        crate::style::color::Color::Red => Color::Red,
+        crate::style::color::Color::DarkGreen => Color::DarkGreen,
+        crate::style::color::Color::Green => Color::Green,
+        crate::style::color::Color::DarkYellow => Color::DarkYellow,
+        crate::style::color::Color::Yellow => Color::Yellow,
+        crate::style::color::Color::DarkBlue => Color::DarkBlue,
+        crate::style::color::Color::Blue => Color::Blue,
+        crate::style::color::Color::DarkMagenta => Color::DarkMagenta,
+        crate::style::color::Color::Magenta => Color::Magenta,
+        crate::style::color::Color::DarkCyan => Color::DarkCyan,
+        crate::style::color::Color::Cyan => Color::Cyan,
+        crate::style::color::Color::Grey => Color::Grey,
+        crate::style::color::Color::White => Color::White,
+        crate::style::color::Color::Ansi(v) => Color::AnsiValue(v),
+        crate::style::color::Color::Rgb { r, g, b } => Color::Rgb { r, g, b },
     };
 
     let bg: crossterm::style::Color = match style.bg {
-        crate::cell::Color::Reset => Color::Reset,
+        crate::style::color::Color::Reset => Color::Reset,
 
-        crate::cell::Color::Black => Color::Black,
-        crate::cell::Color::DarkGrey => Color::DarkGrey,
-        crate::cell::Color::DarkRed => Color::DarkRed,
-        crate::cell::Color::Red => Color::Red,
-        crate::cell::Color::DarkGreen => Color::DarkGreen,
-        crate::cell::Color::Green => Color::Green,
-        crate::cell::Color::DarkYellow => Color::DarkYellow,
-        crate::cell::Color::Yellow => Color::Yellow,
-        crate::cell::Color::DarkBlue => Color::DarkBlue,
-        crate::cell::Color::Blue => Color::Blue,
-        crate::cell::Color::DarkMagenta => Color::DarkMagenta,
-        crate::cell::Color::Magenta => Color::Magenta,
-        crate::cell::Color::DarkCyan => Color::DarkCyan,
-        crate::cell::Color::Cyan => Color::Cyan,
-        crate::cell::Color::Grey => Color::Grey,
-        crate::cell::Color::White => Color::White,
-        crate::cell::Color::Ansi(v) => Color::AnsiValue(v),
-        crate::cell::Color::Rgb { r, g, b } => Color::Rgb { r, g, b },
+        crate::style::color::Color::Black => Color::Black,
+        crate::style::color::Color::DarkGrey => Color::DarkGrey,
+        crate::style::color::Color::DarkRed => Color::DarkRed,
+        crate::style::color::Color::Red => Color::Red,
+        crate::style::color::Color::DarkGreen => Color::DarkGreen,
+        crate::style::color::Color::Green => Color::Green,
+        crate::style::color::Color::DarkYellow => Color::DarkYellow,
+        crate::style::color::Color::Yellow => Color::Yellow,
+        crate::style::color::Color::DarkBlue => Color::DarkBlue,
+        crate::style::color::Color::Blue => Color::Blue,
+        crate::style::color::Color::DarkMagenta => Color::DarkMagenta,
+        crate::style::color::Color::Magenta => Color::Magenta,
+        crate::style::color::Color::DarkCyan => Color::DarkCyan,
+        crate::style::color::Color::Cyan => Color::Cyan,
+        crate::style::color::Color::Grey => Color::Grey,
+        crate::style::color::Color::White => Color::White,
+        crate::style::color::Color::Ansi(v) => Color::AnsiValue(v),
+        crate::style::color::Color::Rgb { r, g, b } => Color::Rgb { r, g, b },
     };
 
     queue!(stdout, SetAttribute(style::Attribute::Reset))?;
@@ -307,25 +306,20 @@ fn queue_batch(
 
 fn get_capabilites() -> TerminalCapabilities {
     let mut color_space: ColorSpace = ColorSpace::Monochrome;
-    match env::var("TERM") {
-        Ok(value) => {
-            if value.eq("vt100") || value.eq("dumb") {
-                color_space = ColorSpace::Monochrome;
-            } else if value.eq("xterm") {
-                color_space = ColorSpace::Ansi;
-            } else if value.eq("xterm-256color") || value.eq("screen-256color") {
-                color_space = ColorSpace::HighColor;
-            }
+    if let Ok(value) = env::var("TERM") {
+        if value.eq("vt100") || value.eq("dumb") {
+            color_space = ColorSpace::Monochrome;
+        } else if value.eq("xterm") {
+            color_space = ColorSpace::Ansi;
+        } else if value.eq("xterm-256color") || value.eq("screen-256color") {
+            color_space = ColorSpace::HighColor;
         }
-        Err(_) => (),
     };
-    match env::var("COLORTERM") {
-        Ok(value) => {
-            if value.eq("truecolor") {
-                color_space = ColorSpace::TrueColor;
-            }
-        }
-        Err(_) => (),
+
+    if let Ok(value) = env::var("COLORTERM")
+        && value.eq("truecolor")
+    {
+        color_space = ColorSpace::TrueColor;
     }
 
     TerminalCapabilities { color_space }
