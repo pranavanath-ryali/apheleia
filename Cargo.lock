@@ -43,19 +43,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "apheleia-core-depricated"
-version = "0.1.0"
-dependencies = [
- "bitflags",
- "chrono",
- "crossterm",
- "fern",
- "indexmap",
- "log",
- "rustc-hash",
-]
-
-[[package]]
 name = "apheleia-ecs"
 version = "0.1.0"
 dependencies = [
