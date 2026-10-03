@@ -308,6 +308,7 @@ fn queue_batch(
     queue!(stdout, SetBackgroundColor(bg))?;
     queue!(stdout, Print(text))?;
 
+    info!(target: "TERMINAL", "Queued FG: {:?}; BG: {:?}; POSITION: {:?}; ATTRS: {:?}; \nTEXT: {}", fg, bg, position, attr, text);
     unsafe {
         QUEUE_COUNT += 1;
     }
