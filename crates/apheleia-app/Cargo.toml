@@ -14,7 +14,5 @@ indexmap.workspace = true
 rustc-hash.workspace = true
 smallvec.workspace = true
 tree-ds.workspace = true
-log.workspace = true
-fern.workspace = true
 chrono.workspace = true
 bitvec.workspace = true

@@ -1,12 +1,12 @@
 use std::io;
 
 use apheleia_core::{
-    buffer::Buffer,
-    style::{Style, modifiers::Modifiers},
-    terminal::Terminal,
+    buffer::Buffer, setup_logger, style::{Style, modifiers::Modifiers}, terminal::Terminal
 };
 
 fn main() -> io::Result<()> {
+    let _g = setup_logger().expect("Failed to initialize logger");
+
     let mut term = Terminal::new();
     term.init()?;
 

@@ -11,7 +11,5 @@ num-traits.workspace = true
 tree-ds.workspace = true
 sparseset.workspace = true
 rustc-hash.workspace = true
-log.workspace = true
-fern.workspace = true
 chrono.workspace = true
 indexmap.workspace = true

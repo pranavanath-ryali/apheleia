@@ -8,6 +8,4 @@ apheleia-app.workspace = true
 apheleia-ecs.workspace = true
 apheleia-core.workspace = true
 
-log.workspace = true
-fern.workspace = true
 chrono.workspace = true

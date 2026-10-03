@@ -12,12 +12,15 @@ use crossterm::{
     },
     terminal::Clear,
 };
+use tracing::info;
 
 use crate::{
     buffer::Buffer,
     cell::layered::MultiLayerCellTrait,
     style::{Style, modifiers::Modifiers},
 };
+
+static mut QUEUE_COUNT: u32 = 0;
 
 #[derive(Debug)]
 pub enum ColorSpace {
@@ -54,6 +57,8 @@ impl Terminal {
     }
 
     pub fn render_update(&mut self, buffer: &mut Buffer) -> io::Result<()> {
+        info!(target: "CORE", "RENDER UPDATE - Started");
+
         buffer.changed_cells.sort_unstable_by_key(|v| (v.1, v.0));
         buffer.changed_cells.dedup();
 
@@ -62,6 +67,9 @@ impl Terminal {
         let mut current_pos = (0u16, 0u16);
         let mut offset_x = 0u16;
 
+        unsafe {
+            QUEUE_COUNT = 0;
+        }
         let changed_cells = take(&mut buffer.changed_cells);
         for (x, y) in changed_cells {
             if current_pos.1 != y || current_pos.0 + offset_x != x {
@@ -73,7 +81,6 @@ impl Terminal {
                 offset_x = 0;
             }
 
-            // println!("{:?}; Cell: {:?}", (current_pos.0 + offset_x, current_pos.1), result_cell);
             let (cell, z_cells) = buffer.get_cell_mut((current_pos.0 + offset_x, current_pos.1));
             let result_cell = z_cells.result();
 
@@ -143,15 +150,22 @@ impl Terminal {
 
         self.stdout.flush()?;
 
+        info!(target: "CORE", "RENDER UPDATE - Ended. Flushed {} render queue calls", unsafe {QUEUE_COUNT});
         Ok(())
     }
 
     pub fn render_clear(&mut self, buffer: &mut Buffer) -> io::Result<()> {
+        info!(target: "CORE", "RENDER CLEAR - Started");
+
         execute!(self.stdout, Clear(crossterm::terminal::ClearType::All))?;
 
         let mut batch_text = String::new();
         let mut current_style = Style::default();
         let mut current_pos = (0u16, 0u16);
+
+        unsafe {
+            QUEUE_COUNT = 0;
+        }
         for y in 0..buffer.size.1 {
             for x in 0..buffer.size.0 {
                 let (cell, z_cells) = buffer.get_cell_mut((x, y));
@@ -197,6 +211,8 @@ impl Terminal {
         self.stdout.flush()?;
 
         buffer.clear_changed();
+
+        info!(target: "CORE", "RENDER CLEAR - Ended. Flushed {} render queue calls", unsafe {QUEUE_COUNT});
         Ok(())
     }
 }
@@ -292,6 +308,10 @@ fn queue_batch(
     queue!(stdout, SetBackgroundColor(bg))?;
     queue!(stdout, Print(text))?;
 
+    unsafe {
+        QUEUE_COUNT += 1;
+    }
+
     Ok(())
 }
 
@@ -313,5 +333,9 @@ fn get_capabilites() -> TerminalCapabilities {
         color_space = ColorSpace::TrueColor;
     }
 
-    TerminalCapabilities { color_space }
+    let capabilities = TerminalCapabilities { color_space };
+
+    info!(target: "CORE", "Found Terminal capabilities: {:#?}", capabilities);
+
+    capabilities
 }
