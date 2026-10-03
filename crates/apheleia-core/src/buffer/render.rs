@@ -6,14 +6,13 @@ use crate::{
 
 impl Buffer {
     pub fn write(&mut self, text: &str, position: (u16, u16), z: i8, style: Option<Style>) {
-        let mut offset_x: u16 = 0;
-        for c in text.chars() {
-            let i = position.1 * self.size.0 + position.0 + offset_x;
+        for (offset_x, c) in text.chars().enumerate() {
+            let i = position.1 * self.size.0 + position.0 + offset_x as u16;
             if position.1 >= self.size.1 {
                 return;
             }
 
-            if position.0 + offset_x >= self.size.0 {
+            if position.0 + offset_x as u16 >= self.size.0 {
                 return;
             }
 
@@ -25,8 +24,8 @@ impl Buffer {
             };
             z_cells.add_update_cell(z, &cell);
 
-            self.changed_cells.push((position.0 + offset_x, position.1));
-            offset_x += 1;
+            self.changed_cells
+                .push((position.0 + offset_x as u16, position.1));
         }
     }
 
@@ -37,14 +36,13 @@ impl Buffer {
         z: i8,
         style: Option<Style>,
     ) {
-        let mut offset_x: u16 = 0;
-        for c in text.chars() {
-            let i = position.1 * self.size.0 + position.0 + offset_x;
+        for (offset_x, c) in text.chars().enumerate() {
+            let i = position.1 * self.size.0 + position.0 + offset_x as u16;
             if position.1 >= self.size.1 {
                 return;
             }
 
-            if position.0 + offset_x >= self.size.0 {
+            if position.0 + offset_x as u16 >= self.size.0 {
                 return;
             }
 
@@ -58,8 +56,8 @@ impl Buffer {
                 },
             );
 
-            self.changed_cells.push((position.0 + offset_x, position.1));
-            offset_x += 1;
+            self.changed_cells
+                .push((position.0 + offset_x as u16, position.1));
         }
     }
 

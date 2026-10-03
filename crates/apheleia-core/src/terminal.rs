@@ -38,6 +38,7 @@ pub struct Terminal {
     pub capabilities: TerminalCapabilities,
 }
 impl Terminal {
+    #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         Self {
             stdout: stdout(),
@@ -119,7 +120,6 @@ impl Terminal {
 
                 batch_text.push(result_cell.c);
                 *cell = result_cell;
-
             } else {
                 queue_batch(&mut self.stdout, &batch_text, current_pos, current_style)?;
 
@@ -210,8 +210,6 @@ fn queue_batch(
     if text.is_empty() {
         return Ok(());
     }
-
-    // println!("BATCHED: {}; POS: {:?}, STYLE: {:?}", text, position, style);
 
     let mut attr: crossterm::style::Attributes = crossterm::style::Attributes::none();
     if !style.modifiers.eq(&Modifiers::NONE) {

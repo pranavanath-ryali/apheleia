@@ -1,12 +1,10 @@
-use std::{io, thread, time::Duration};
-use unicode_width::{UnicodeWidthChar, UnicodeWidthStr};
+use std::io;
 
 use apheleia_core::{
     buffer::Buffer,
     style::{Style, modifiers::Modifiers},
     terminal::Terminal,
 };
-use smallvec::SmallVec;
 
 fn main() -> io::Result<()> {
     let mut term = Terminal::new();
@@ -24,7 +22,12 @@ fn main() -> io::Result<()> {
         (0, 0),
         0,
         Some(Style {
-            fg: apheleia_core::style::color::Color::Rgba { r: 128, g: 97, b: 46, a: 120 },
+            fg: apheleia_core::style::color::Color::Rgba {
+                r: 128,
+                g: 97,
+                b: 46,
+                a: 120,
+            },
             bg: apheleia_core::style::color::Color::Default,
             modifiers: Modifiers::BOLD | Modifiers::ITALIC,
         }),
@@ -35,7 +38,12 @@ fn main() -> io::Result<()> {
         -1,
         Some(Style {
             fg: apheleia_core::style::color::Color::Default,
-            bg: apheleia_core::style::color::Color::Rgba { r: 0, g: 126, b: 126, a: 255 },
+            bg: apheleia_core::style::color::Color::Rgba {
+                r: 0,
+                g: 126,
+                b: 126,
+                a: 255,
+            },
             modifiers: Modifiers::BOLD | Modifiers::ITALIC,
         }),
     );
@@ -45,7 +53,12 @@ fn main() -> io::Result<()> {
         -1,
         Some(Style {
             fg: apheleia_core::style::color::Color::Default,
-            bg: apheleia_core::style::color::Color::Rgba { r: 255, g: 255, b: 255, a: 100 },
+            bg: apheleia_core::style::color::Color::Rgba {
+                r: 255,
+                g: 255,
+                b: 255,
+                a: 100,
+            },
             modifiers: Modifiers::BOLD | Modifiers::ITALIC,
         }),
     );

@@ -1,11 +1,8 @@
-use std::cell;
-
 use smallvec::SmallVec;
 
 use crate::cell::Cell;
 
 pub type MultiLayerCell = SmallVec<[(i8, Cell); 2]>;
-
 pub trait MultiLayerCellTrait {
     fn add_update_cell(&mut self, z: i8, cell: &Cell);
     fn add_cell(&mut self, z: i8, cell: Cell);
@@ -43,9 +40,7 @@ impl MultiLayerCellTrait for MultiLayerCell {
     fn result(&mut self) -> Option<Cell> {
         self.sort_by_key(|(z, _)| *z);
 
-        let Some((_, mut result_cell)) = self.first().cloned() else {
-            return None;
-        };
+        let (_, mut result_cell) = self.first().cloned()?;
         for (_, cell) in &self[1..] {
             result_cell.update(cell);
         }

@@ -35,7 +35,7 @@ pub fn standard_blend(lower_color: (u8, u8, u8, u8), upper_color: (u8, u8, u8, u
     let upper_alpha = upper_color.3 as f32 / 255f32;
     let alpha = upper_alpha + (lower_alpha * (1f32 - upper_alpha));
 
-    let color = Color::Rgba {
+    Color::Rgba {
         r: ((upper_color.0 as f32 * upper_alpha)
             + (lower_color.0 as f32 * lower_alpha * (1f32 - upper_alpha)) / alpha)
             .round() as u8,
@@ -46,9 +46,7 @@ pub fn standard_blend(lower_color: (u8, u8, u8, u8), upper_color: (u8, u8, u8, u
             + (lower_color.2 as f32 * lower_alpha * (1f32 - upper_alpha)) / alpha)
             .round() as u8,
         a: (alpha * 255f32).round() as u8,
-    };
-
-    color
+    }
 }
 
 pub enum ColorType {
