@@ -8,8 +8,7 @@ use crossterm::{
     cursor::{self, MoveTo},
     execute, queue,
     style::{
-        self, Attributes, Color, Print, SetAttribute, SetAttributes, SetBackgroundColor,
-        SetForegroundColor,
+        self, Color, Print, SetAttribute, SetAttributes, SetBackgroundColor, SetForegroundColor,
     },
     terminal::Clear,
 };
@@ -77,8 +76,8 @@ impl Terminal {
             let (cell, z_cells) = buffer.get_cell_mut((current_pos.0 + offset_x, current_pos.1));
             let result_cell = z_cells.result();
 
-            match result_cell {
-                crate::cell::Cell::Transparent => {
+            if let Some(result_cell) = result_cell {
+                if result_cell.transparent {
                     queue_batch(&mut self.stdout, &batch_text, current_pos, current_style)?;
 
                     batch_text.clear();
@@ -91,52 +90,49 @@ impl Terminal {
 
                     continue;
                 }
-                crate::cell::Cell::Opaque { grapheme, style } => {
-                    if result_cell == *cell {
-                        queue_batch(&mut self.stdout, &batch_text, current_pos, current_style)?;
 
-                        batch_text.clear();
-                        current_pos = (x, y);
-                        current_style = style;
-                        offset_x = 0;
+                if result_cell == *cell {
+                    queue_batch(&mut self.stdout, &batch_text, current_pos, current_style)?;
 
-                        match grapheme {
-                            crate::grapheme::Grapheme::Char(ch) => batch_text.push(ch),
-                            crate::grapheme::Grapheme::Width(_) => todo!(),
-                        }
-                        continue;
-                    }
+                    batch_text.clear();
+                    current_pos = (x, y);
+                    current_style = result_cell.style;
+                    offset_x = 0;
 
-                    if style != current_style {
-                        queue_batch(&mut self.stdout, &batch_text, current_pos, current_style)?;
-
-                        batch_text.clear();
-                        current_pos = (x, y);
-                        current_style = style;
-                        offset_x = 1;
-                        *cell = result_cell;
-
-                        match grapheme {
-                            crate::grapheme::Grapheme::Char(ch) => batch_text.push(ch),
-                            crate::grapheme::Grapheme::Width(_) => todo!(),
-                        }
-
-                        continue;
-                    }
-
-                    match grapheme {
-                        crate::grapheme::Grapheme::Char(ch) => batch_text.push(ch),
-                        crate::grapheme::Grapheme::Width(_) => todo!(),
-                    }
+                    batch_text.push(result_cell.c);
+                    continue;
                 }
-                crate::cell::Cell::Translucent {
-                    grapheme,
-                    style,
-                    alpha,
-                } => panic!("Result cell cannot be a Translucent"),
-            }
 
-            *cell = result_cell;
+                if result_cell.style != current_style {
+                    queue_batch(&mut self.stdout, &batch_text, current_pos, current_style)?;
+
+                    batch_text.clear();
+                    current_pos = (x, y);
+                    current_style = result_cell.style;
+                    offset_x = 1;
+
+                    batch_text.push(result_cell.c);
+
+                    *cell = result_cell;
+                    continue;
+                }
+
+                batch_text.push(result_cell.c);
+                *cell = result_cell;
+
+            } else {
+                queue_batch(&mut self.stdout, &batch_text, current_pos, current_style)?;
+
+                batch_text.clear();
+                current_pos = (x, y);
+                offset_x = 0;
+                current_style = Style::default();
+
+                batch_text.push(' ');
+                offset_x += 1;
+
+                continue;
+            }
             offset_x += 1;
         }
 
@@ -159,10 +155,12 @@ impl Terminal {
         for y in 0..buffer.size.1 {
             for x in 0..buffer.size.0 {
                 let (cell, z_cells) = buffer.get_cell_mut((x, y));
-                *cell = z_cells.result();
+                let result_cell = z_cells.result();
 
-                match cell {
-                    crate::cell::Cell::Transparent => {
+                if let Some(result_cell) = result_cell {
+                    *cell = result_cell.clone();
+
+                    if result_cell.transparent {
                         queue_batch(&mut self.stdout, &batch_text, current_pos, current_style)?;
 
                         batch_text.clear();
@@ -170,27 +168,22 @@ impl Terminal {
                         current_style = Style::default();
                         continue;
                     }
-                    crate::cell::Cell::Opaque { grapheme, style } => {
-                        if *style != current_style {
-                            queue_batch(&mut self.stdout, &batch_text, current_pos, current_style)?;
 
-                            batch_text.clear();
-                            current_style = *style;
-                            current_pos = (x, y);
-                        }
+                    if result_cell.style != current_style {
+                        queue_batch(&mut self.stdout, &batch_text, current_pos, current_style)?;
 
-                        match grapheme {
-                            crate::grapheme::Grapheme::Char(c) => batch_text.push(*c),
-                            crate::grapheme::Grapheme::Width(_) => todo!(),
-                        }
+                        batch_text.clear();
+                        current_style = result_cell.style;
+                        current_pos = (x, y);
                     }
-                    crate::cell::Cell::Translucent {
-                        grapheme: _,
-                        style: _,
-                        alpha: _,
-                    } => {
-                        panic!("Final result of cell is not supposed to be Translucent");
-                    }
+                    batch_text.push(result_cell.c);
+                } else {
+                    queue_batch(&mut self.stdout, &batch_text, current_pos, current_style)?;
+
+                    batch_text.clear();
+                    current_pos = (x.saturating_add(1), y);
+                    current_style = Style::default();
+                    continue;
                 }
             }
 
@@ -249,7 +242,7 @@ fn queue_batch(
     }
 
     let fg: crossterm::style::Color = match style.fg {
-        crate::style::color::Color::Reset => Color::Reset,
+        crate::style::color::Color::Default => Color::Reset,
 
         crate::style::color::Color::Black => Color::Black,
         crate::style::color::Color::DarkGrey => Color::DarkGrey,
@@ -268,11 +261,11 @@ fn queue_batch(
         crate::style::color::Color::Grey => Color::Grey,
         crate::style::color::Color::White => Color::White,
         crate::style::color::Color::Ansi(v) => Color::AnsiValue(v),
-        crate::style::color::Color::Rgb { r, g, b } => Color::Rgb { r, g, b },
+        crate::style::color::Color::Rgba { r, g, b, a: _a } => Color::Rgb { r, g, b },
     };
 
     let bg: crossterm::style::Color = match style.bg {
-        crate::style::color::Color::Reset => Color::Reset,
+        crate::style::color::Color::Default => Color::Reset,
 
         crate::style::color::Color::Black => Color::Black,
         crate::style::color::Color::DarkGrey => Color::DarkGrey,
@@ -291,7 +284,7 @@ fn queue_batch(
         crate::style::color::Color::Grey => Color::Grey,
         crate::style::color::Color::White => Color::White,
         crate::style::color::Color::Ansi(v) => Color::AnsiValue(v),
-        crate::style::color::Color::Rgb { r, g, b } => Color::Rgb { r, g, b },
+        crate::style::color::Color::Rgba { r, g, b, a: _a } => Color::Rgb { r, g, b },
     };
 
     queue!(stdout, SetAttribute(style::Attribute::Reset))?;

@@ -2,7 +2,7 @@ pub mod render;
 
 use smallvec::SmallVec;
 
-use crate::{cell::{Cell, layered::MultiLayerCell}, grapheme::Grapheme, style::{Style, color::Color}};
+use crate::cell::{Cell, layered::MultiLayerCell};
 
 pub struct Buffer {
     pub size: (u16, u16),
@@ -16,7 +16,7 @@ impl Buffer {
         let mut cells: Vec<(Cell, MultiLayerCell)> = vec![];
         for _ in 0..size.1 {
             for _ in 0..size.0 {
-                cells.push((Cell::Transparent, SmallVec::new()));
+                cells.push((Cell::default(), SmallVec::new()));
             }
         }
 

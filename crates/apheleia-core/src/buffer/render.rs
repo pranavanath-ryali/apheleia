@@ -1,19 +1,11 @@
 use crate::{
     buffer::Buffer,
     cell::{Cell, layered::MultiLayerCellTrait},
-    grapheme::Grapheme,
     style::Style,
 };
 
 impl Buffer {
-    pub fn write(
-        &mut self,
-        text: &str,
-        position: (u16, u16),
-        z: i8,
-        style: Style,
-        alpha: Option<u8>,
-    ) {
+    pub fn write(&mut self, text: &str, position: (u16, u16), z: i8, style: Option<Style>) {
         let mut offset_x: u16 = 0;
         for c in text.chars() {
             let i = position.1 * self.size.0 + position.0 + offset_x;
@@ -26,20 +18,12 @@ impl Buffer {
             }
 
             let (_, z_cells) = &mut self.cells[i as usize];
-            z_cells.add_update_cell(z, {
-                if alpha.unwrap_or(255) == 255 {
-                    Cell::Opaque {
-                        grapheme: Grapheme::Char(c),
-                        style,
-                    }
-                } else {
-                    Cell::Translucent {
-                        grapheme: Grapheme::Char(c),
-                        style,
-                        alpha: alpha.unwrap(),
-                    }
-                }
-            });
+            let cell = Cell {
+                c,
+                style: style.unwrap_or_default(),
+                transparent: false,
+            };
+            z_cells.add_update_cell(z, &cell);
 
             self.changed_cells.push((position.0 + offset_x, position.1));
             offset_x += 1;
@@ -51,8 +35,7 @@ impl Buffer {
         text: &str,
         position: (u16, u16),
         z: i8,
-        style: Style,
-        alpha: Option<u8>,
+        style: Option<Style>,
     ) {
         let mut offset_x: u16 = 0;
         for c in text.chars() {
@@ -66,20 +49,14 @@ impl Buffer {
             }
 
             let (_, z_cells) = &mut self.cells[i as usize];
-            z_cells.add_cell(z, {
-                if alpha.unwrap_or(255) == 255 {
-                    Cell::Opaque {
-                        grapheme: Grapheme::Char(c),
-                        style,
-                    }
-                } else {
-                    Cell::Translucent {
-                        grapheme: Grapheme::Char(c),
-                        style,
-                        alpha: alpha.unwrap(),
-                    }
-                }
-            });
+            z_cells.add_cell(
+                z,
+                Cell {
+                    c,
+                    style: style.unwrap_or_default(),
+                    transparent: false,
+                },
+            );
 
             self.changed_cells.push((position.0 + offset_x, position.1));
             offset_x += 1;

@@ -1,4 +1,3 @@
-pub(crate) mod grapheme;
 pub(crate) mod cell;
 pub mod buffer;
 pub mod terminal;

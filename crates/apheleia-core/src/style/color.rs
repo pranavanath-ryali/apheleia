@@ -1,5 +1,7 @@
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
 pub enum Color {
+    Default,
+
     Black,
     DarkGrey,
 
@@ -28,10 +30,7 @@ pub enum Color {
     Rgba { r: u8, g: u8, b: u8, a: u8 },
 }
 
-pub fn standard_blend(
-    lower_color: (u8, u8, u8, u8),
-    upper_color: (u8, u8, u8, u8),
-) -> Color {
+pub fn standard_blend(lower_color: (u8, u8, u8, u8), upper_color: (u8, u8, u8, u8)) -> Color {
     let lower_alpha = lower_color.3 as f32 / 255f32;
     let upper_alpha = upper_color.3 as f32 / 255f32;
     let alpha = upper_alpha + (lower_alpha * (1f32 - upper_alpha));
@@ -46,15 +45,25 @@ pub fn standard_blend(
         b: ((upper_color.2 as f32 * upper_alpha)
             + (lower_color.2 as f32 * lower_alpha * (1f32 - upper_alpha)) / alpha)
             .round() as u8,
-        a: (alpha * 255f32).round() as u8
+        a: (alpha * 255f32).round() as u8,
     };
 
     color
 }
 
+pub enum ColorType {
+    Fg,
+    Bg,
+}
+
 impl Color {
-    pub fn to_rgba(&self) -> (u8, u8, u8, u8) {
+    pub fn to_rgba(&self, color_type: ColorType) -> (u8, u8, u8, u8) {
         match self {
+            Color::Default => match color_type {
+                ColorType::Fg => (255, 255, 255, 255),
+                ColorType::Bg => (0, 0, 0, 0),
+            },
+
             Color::Black => (0, 0, 0, 255),
             Color::DarkGrey => (100, 100, 100, 255),
             Color::DarkRed => (128, 0, 0, 255),
@@ -111,4 +120,3 @@ impl Color {
         }
     }
 }
-
