@@ -1,3 +1,5 @@
+use std::cell;
+
 use smallvec::SmallVec;
 
 use crate::cell::Cell;
@@ -5,68 +7,48 @@ use crate::cell::Cell;
 pub type MultiLayerCell = SmallVec<[(i8, Cell); 2]>;
 
 pub trait MultiLayerCellTrait {
-    fn add_update_cell(&mut self, z: i8, cell: Cell);
+    fn add_update_cell(&mut self, z: i8, cell: &Cell);
     fn add_cell(&mut self, z: i8, cell: Cell);
 
-    fn clear(&mut self);
     fn clear_on_z(&mut self, z: i8);
 
-    fn result(&mut self) -> Cell;
+    fn result(&mut self) -> Option<Cell>;
 }
 impl MultiLayerCellTrait for MultiLayerCell {
-    fn add_update_cell(&mut self, z: i8, cell: Cell) {
-        for (cell_z, c) in self.iter_mut() {
-            if *cell_z == z {
-                *c = c.clone().update_cell(&cell);
-
-                return;
-            }
+    fn add_update_cell(&mut self, z: i8, cell: &Cell) {
+        let c_cell = self.iter_mut().find(|(cell_z, _)| *cell_z == z);
+        if let Some((_, c)) = c_cell {
+            c.update(cell);
+            return;
         }
 
-        self.push((z, cell));
+        self.push((z, cell.clone()));
     }
     fn add_cell(&mut self, z: i8, cell: Cell) {
-        for (cell_z, c) in self.iter_mut() {
-            if *cell_z == z {
-                *c = cell.clone();
-
-                return;
-            }
+        let c_cell = self.iter_mut().find(|(cell_z, _)| *cell_z == z);
+        if let Some((_, c)) = c_cell {
+            *c = cell;
+            return;
         }
 
         self.push((z, cell));
     }
 
-    fn clear(&mut self) {
-        self.clear();
-    }
     fn clear_on_z(&mut self, z: i8) {
-        let Some((index, _)) = self
-            .iter()
-            .enumerate()
-            .find(|(_, (cell_z, _))| *cell_z == z)
-        else {
-            return;
-        };
-
-        self.remove(index);
+        if let Some(index) = self.iter().position(|(cell_z, _)| *cell_z == z) {
+            self.swap_remove(index);
+        }
     }
 
-    fn result(&mut self) -> Cell {
+    fn result(&mut self) -> Option<Cell> {
         self.sort_by_key(|(z, _)| *z);
 
-        let mut result_cell = Cell::Transparent;
-        for (_, cell) in self.iter() {
-            result_cell = result_cell.clone().update_cell(cell);
+        let Some((_, mut result_cell)) = self.first().cloned() else {
+            return None;
+        };
+        for (_, cell) in &self[1..] {
+            result_cell.update(cell);
         }
-
-        match result_cell {
-            Cell::Translucent {
-                grapheme,
-                style,
-                alpha: _,
-            } => Cell::Opaque { grapheme, style },
-            _ => result_cell,
-        }
+        Some(result_cell)
     }
 }

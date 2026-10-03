@@ -5,16 +5,14 @@ pub mod color;
 
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
 pub struct Style {
-    pub fg: Color,
-    pub bg: Color,
-    pub modifiers: Modifiers,
+    pub fg: Option<Color>,
+    pub bg: Option<Color>,
 }
 impl Default for Style {
     fn default() -> Self {
         Self {
-            fg: Color::Reset,
-            bg: Color::Reset,
-            modifiers: Modifiers::NONE,
+            fg: None,
+            bg: None,
         }
     }
 }
