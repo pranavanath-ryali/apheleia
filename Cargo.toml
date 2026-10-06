@@ -8,8 +8,10 @@ edition = "2024"
 
 [workspace.dependencies]
 apheleia-core = { path = "crates/apheleia-core" }
+apheleia-types = { path = "crates/apheleia-types" }
 apheleia-app = { path = "crates/apheleia-app" }
 apheleia-ecs = { path = "crates/apheleia-ecs" }
+apheleia-ecs-dep = { path = "crates/apheleia-ecs-dep" }
 apheleia-widgets = { path = "crates/apheleia-widgets" }
 
 smallvec = "1.15.1"

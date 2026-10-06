@@ -1,9 +1,11 @@
 [package]
-name = "apheleia-ecs"
+name = "apheleia-ecs-dep"
 version.workspace = true
 edition.workspace = true
 
 [dependencies]
+apheleia-core.workspace = true
+
 smallvec.workspace = true
 num-traits.workspace = true
 tree-ds.workspace = true

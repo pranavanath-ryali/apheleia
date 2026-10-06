@@ -1,6 +1,7 @@
 use std::{fmt::Display, ops::AddAssign};
 
-use num_traits::{Bounded, Num};
+use log::warn;
+use num_traits::Num;
 
 /// A very simple Id Generator that just increments the count and returns that as the id
 /// Example:
@@ -13,19 +14,22 @@ use num_traits::{Bounded, Num};
 /// ```
 pub struct IdGenerator<T> {
     count: T,
+    max: T,
 }
-impl<T: Num + Copy + PartialOrd + Display + AddAssign + Bounded> IdGenerator<T> {
+impl<T: Num + Copy + PartialOrd + Display + AddAssign> IdGenerator<T> {
     /// Creates a IdGenerator with a max value.
-    pub fn new() -> Self {
+    pub fn new(max: T) -> Self {
+        warn!("IDGENERATOR - Created new IdGenerator with max: {}", max);
         Self {
             count: T::zero(),
+            max,
         }
     }
 
     /// Increments the count and returns the value
     pub fn next_id(&mut self) -> T {
         self.count += T::one();
-        assert!(self.count < T::max_value(), "Reached max IDs: {}", T::max_value());
+        assert!(self.count < self.max, "Reached max IDs: {}", self.max);
 
         self.count
     }

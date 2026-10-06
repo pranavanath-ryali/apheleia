@@ -1,26 +1,16 @@
-use log::info;
 use rustc_hash::FxHashMap;
 
 use crate::{nodedata::NodeData, types::NodeId};
 
-/// Stores NodeData for every NodeId.
 #[derive(Default)]
 pub struct NodeDataStore {
-    id_to_data: FxHashMap<NodeId, NodeData>,
+    data: Vec<NodeData>
 }
 impl NodeDataStore {
-    pub fn set_data(&mut self, id: NodeId, data: NodeData) {
-        info!("[ECS] Set data to Node {} - {:#?}", id, data);
+    pub fn write_data(&mut self, id: NodeId, data: NodeData) {
         self.id_to_data
             .entry(id)
-            .and_modify(|_| info!("[ECS] Skipping NodeData since it already exists"))
+            .and_modify(|d| *d = data.clone())
             .or_insert(data);
-    }
-
-    pub fn get_data(&self, id: NodeId) -> Option<&NodeData> {
-        self.id_to_data.get(&id)
-    }
-    pub fn get_data_mut(&mut self, id: NodeId) -> Option<&mut NodeData> {
-        self.id_to_data.get_mut(&id)
     }
 }
