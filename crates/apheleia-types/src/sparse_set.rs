@@ -1,5 +1,3 @@
-use num_traits::Num;
-
 pub struct SlotMap<T> {
     slots: Vec<Option<T>>,
     index_offset: u8,
