@@ -54,6 +54,7 @@ dependencies = [
 name = "apheleia-ecs"
 version = "0.1.0"
 dependencies = [
+ "apheleia-types",
  "chrono",
  "indexmap",
  "num-traits",

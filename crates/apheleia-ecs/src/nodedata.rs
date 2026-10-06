@@ -1,4 +1,4 @@
-use crate::types::{Point, Size};
+use apheleia_types::{point::Point, size::Size};
 
 #[derive(Clone)]
 pub struct NodeData {
