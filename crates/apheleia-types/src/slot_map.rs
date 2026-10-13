@@ -48,7 +48,7 @@ impl<T> SlotMap<T> {
 
 #[cfg(test)]
 mod test_slot_map {
-    use crate::sparse_set::SlotMap;
+    use crate::slot_map::SlotMap;
 
     #[derive(PartialEq, Debug)]
     struct Data {

@@ -1,4 +1,4 @@
-use apheleia_types::sparse_set::SlotMap;
+use apheleia_types::slot_map::SlotMap;
 
 use crate::{nodedata::NodeData, types::NodeId};
 
@@ -17,6 +17,12 @@ impl NodeDataStore {
     pub fn write_data(&mut self, id: NodeId, data: NodeData) {
         self.data.insert(id as u32, data);
     }
+
+    #[inline]
+    pub fn remove(&mut self, id: NodeId)  {
+        self.data.remove(id as u32);
+    }
+
 
     #[inline]
     pub fn get(&self, id: NodeId) -> Option<&NodeData> {
