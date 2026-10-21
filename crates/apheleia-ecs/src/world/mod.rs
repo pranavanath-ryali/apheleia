@@ -1,14 +1,18 @@
+pub mod node;
+
 use apheleia_types::id_gen::IdGenerator;
 use tree_ds::prelude::{Node, Tree};
 
-use crate::{stores::{extensions::ExtensionStore, nodedata::NodeDataStore}, types::NodeId};
+use crate::{stores::{extensions::ExtensionStore, nodedata::NodeDataStore, resource::ResourceStore, systems::SystemStore}, types::NodeId};
 
 pub struct World {
     nodeid_gen: IdGenerator<NodeId>,
     relations: Tree<NodeId, NodeId>,
 
     nodedata: NodeDataStore,
+    resource_store: ResourceStore,
     extension_store: ExtensionStore,
+    system_store: SystemStore,
 }
 impl Default for World {
     fn default() -> Self {
@@ -20,7 +24,9 @@ impl Default for World {
             relations,
 
             nodedata: Default::default(),
-            extension_store: Default::default()
+            resource_store: Default::default(),
+            extension_store: Default::default(),
+            system_store: Default::default()
         }
     }
 }

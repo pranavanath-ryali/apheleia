@@ -1,4 +1,4 @@
-mod stores;
+pub mod stores;
 pub mod nodedata;
 pub mod world;
 
@@ -7,6 +7,8 @@ pub mod types {
 
     pub mod traits {
         use std::{any::Any, sync::{OnceLock, atomic::AtomicUsize}};
+
+        pub trait Resource: Any + 'static {}
 
         static COMPONENT_ID_COUNT: AtomicUsize = AtomicUsize::new(0);
         pub trait Extension: Any + 'static {

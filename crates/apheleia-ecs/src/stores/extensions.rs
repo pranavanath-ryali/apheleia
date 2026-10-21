@@ -38,7 +38,7 @@ impl<T: Extension> ExtensionContainer<T> for ExtensionPool<T> {
 }
 
 pub(crate) struct ExtensionStore {
-    pools: FxHashMap<usize, Box<dyn Any>>
+    pools: FxHashMap<usize, Box<dyn Any>> // TODO: Migrate this to a flat array
 }
 impl Default for ExtensionStore {
     fn default() -> Self {
