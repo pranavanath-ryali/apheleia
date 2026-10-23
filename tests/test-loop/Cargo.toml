@@ -1,7 +1,10 @@
 [package]
-name = "core-test"
+name = "test-loop"
 version.workspace = true
 edition.workspace = true
 
 [dependencies]
+apheleia-ecs.workspace = true
 apheleia-core.workspace = true
+
+crossterm.workspace = true

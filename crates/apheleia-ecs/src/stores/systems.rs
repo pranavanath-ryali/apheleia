@@ -1,21 +1,12 @@
-use core::panic;
-use std::{any::TypeId, collections::BTreeMap};
+use std::any::TypeId;
 
-use log::{info, warn};
-use rustc_hash::FxHashMap;
-
-use crate::{
-    constants::{MAX_SYSTEMS, SYSTEMS_MAX_PRIORITY_CHANGE},
-    id_generator::IdGenerator,
-    stores::{system::function_system::{IntoSystem, System}, systems::function_system::System},
-    types::{SystemId, SystemRunStage},
-    world::World,
-};
+use crate::{stores::systems::function_system::{IntoSystem, System}, world::World};
 
 pub mod function_system {
-    use crate::traits::system_param::SystemParam;
-    use crate::world::World;
     use std::{any::TypeId, marker::PhantomData};
+    use crate::types::traits::SystemParam;
+
+    use crate::world::World;
 
     pub trait System: 'static {
         fn id(&self) -> TypeId;
@@ -121,7 +112,7 @@ impl SystemStore {
         let system = system.into_system();
         let system_typeid = system.id();
 
-        if self.registered_systems.contains(system_typeid) {
+        if self.registered_systems.contains(&system_typeid) {
             return;
         }
 
@@ -134,7 +125,7 @@ impl SystemStore {
     pub fn add_system_boxed(&mut self, stage: SystemStage, system: Box<dyn System>) {
         let system_typeid = system.id();
 
-        if self.registered_systems.contains(system_typeid) {
+        if self.registered_systems.contains(&system_typeid) {
             return;
         }
         self.registered_systems.push(system_typeid);

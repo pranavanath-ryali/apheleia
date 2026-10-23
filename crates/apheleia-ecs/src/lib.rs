@@ -8,6 +8,8 @@ pub mod types {
     pub mod traits {
         use std::{any::Any, sync::{OnceLock, atomic::AtomicUsize}};
 
+        use crate::world::World;
+
         pub trait Resource: Any + 'static {}
 
         static COMPONENT_ID_COUNT: AtomicUsize = AtomicUsize::new(0);
@@ -19,6 +21,10 @@ pub mod types {
                 static ID: OnceLock<usize> = OnceLock::new();
                 *ID.get_or_init(|| COMPONENT_ID_COUNT.fetch_add(1, std::sync::atomic::Ordering::Relaxed))
             }
+        }
+
+        pub trait SystemParam: Sized + 'static {
+            unsafe fn fetch<'w>(world: *mut World) -> Option<Self>;
         }
     }
 }
