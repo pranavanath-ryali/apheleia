@@ -1,0 +1,15 @@
+use crate::{commands::WorldCommand, types::NodeId};
+
+pub trait NodeSubCommands {
+    fn execute_commands(self: Box<Self>, world: &mut World);
+}
+
+pub struct CreateNode {
+    sub_commands: Vec<Box<dyn NodeSubCommands>>
+}
+impl WorldCommand for CreateNode {
+    fn execute_commands(self: Box<Self>, world: &mut crate::world::World) {
+        let node_id = world.node_create();
+    }
+}
+

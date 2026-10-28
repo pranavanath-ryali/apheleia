@@ -1,12 +1,16 @@
-pub mod stores;
+pub mod commands;
 pub mod nodedata;
+pub mod stores;
 pub mod world;
 
 pub mod types {
     pub type NodeId = u16;
 
     pub mod traits {
-        use std::{any::Any, sync::{OnceLock, atomic::AtomicUsize}};
+        use std::{
+            any::Any,
+            sync::{OnceLock, atomic::AtomicUsize},
+        };
 
         use crate::world::World;
 
@@ -19,7 +23,9 @@ pub mod types {
                 Self: Sized,
             {
                 static ID: OnceLock<usize> = OnceLock::new();
-                *ID.get_or_init(|| COMPONENT_ID_COUNT.fetch_add(1, std::sync::atomic::Ordering::Relaxed))
+                *ID.get_or_init(|| {
+                    COMPONENT_ID_COUNT.fetch_add(1, std::sync::atomic::Ordering::Relaxed)
+                })
             }
         }
 

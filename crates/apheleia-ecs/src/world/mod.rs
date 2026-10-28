@@ -1,11 +1,14 @@
+pub mod commands;
 pub mod extensions;
 pub mod node;
 pub mod resource;
+pub mod nodedata;
 
 use apheleia_types::id_gen::IdGenerator;
 use tree_ds::prelude::{Node, Tree};
 
 use crate::{
+    commands::WorldCommand,
     stores::{
         extensions::ExtensionStore, nodedata::NodeDataStore, resource::ResourceStore,
         systems::SystemStore,
@@ -21,6 +24,8 @@ pub struct World {
     resource_store: ResourceStore,
     extension_store: ExtensionStore,
     system_store: SystemStore,
+
+    commands: Vec<Box<dyn WorldCommand>>,
 }
 impl Default for World {
     fn default() -> Self {
@@ -35,6 +40,8 @@ impl Default for World {
             resource_store: Default::default(),
             extension_store: Default::default(),
             system_store: Default::default(),
+
+            commands: Default::default(),
         }
     }
 }
